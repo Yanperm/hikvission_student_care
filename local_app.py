@@ -83,7 +83,6 @@ def logout():
     return redirect(url_for('index'))
 
 @app.route('/register')
-@login_required
 def register():
     school_id = get_current_school_id()
     students = db.get_students(school_id)
