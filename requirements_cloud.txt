@@ -1,0 +1,12 @@
+Flask
+gunicorn
+opencv-python-headless
+numpy
+Pillow
+PyJWT
+bleach
+pandas
+openpyxl
+firebase-admin
+google-cloud-firestore
+google-cloud-storage

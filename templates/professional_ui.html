@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Care - Face Recognition System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        
+        .status-bar {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #f8fafc;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .status-online { color: #10b981; }
+        .status-offline { color: #ef4444; }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+            min-height: calc(100vh - 100px);
+        }
+        
+        .main-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .video-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            aspect-ratio: 16/9;
+        }
+        
+        #video-stream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-overlay {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            right: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .video-info {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+        
+        .detection-area {
+            min-height: 120px;
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 2px dashed #0ea5e9;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #0369a1;
+            font-weight: 500;
+        }
+        
+        .detected-person {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            border: 2px solid #22c55e;
+            padding: 1rem;
+            border-radius: 12px;
+            animation: pulse 2s infinite;
+        }
+        
+        .person-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .person-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .attendance-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .attendance-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border-left: 4px solid #22c55e;
+        }
+        
+        .attendance-time {
+            background: #22c55e;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 10px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        .add-student-form {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .capture-area {
+            text-align: center;
+            padding: 2rem;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                Student Care System
+            </div>
+            <div class="status-bar">
+                <div class="status-item">
+                    <i class="fas fa-database"></i>
+                    <span id="db-status">SQLite Connected</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-video status-online" id="camera-status"></i>
+                    <span id="camera-text">Camera Ready</span>
+                </div>
+                <div class="status-item">
+                    <i class="fas fa-users"></i>
+                    <span id="total-students">{{ students|length }} Students</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-panel">
+            <div class="card-header">
+                <i class="fas fa-video"></i>
+                Live Face Recognition
+            </div>
+            
+            <div class="video-container">
+                <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Video Stream">
+                <div class="video-overlay">
+                    <div class="video-info">
+                        <i class="fas fa-eye"></i>
+                        <span id="detection-count">0 faces detected</span>
+                    </div>
+                    <div class="video-info">
+                        <i class="fas fa-clock"></i>
+                        <span id="current-time"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button id="camera-btn" class="btn btn-primary" onclick="toggleCamera()">
+                    <i class="fas fa-play"></i>
+                    Start Camera
+                </button>
+                <button class="btn btn-success" onclick="showAddStudent()">
+                    <i class="fas fa-user-plus"></i>
+                    Add Student
+                </button>
+                <a href="/features" class="btn btn-primary" style="text-decoration: none;">
+                    <i class="fas fa-star"></i>
+                    ฟีเจอร์ระบบ
+                </a>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-search"></i>
+                    Current Detection
+                </div>
+                <div id="current-detection" class="detection-area">
+                    <div>
+                        <i class="fas fa-user-slash" style="font-size: 2rem; opacity: 0.5;"></i>
+                        <div>No face detected</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-chart-line"></i>
+                    Today's Statistics
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="checked-in">0</div>
+                        <div class="stat-label">Checked In</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="attendance-rate">0%</div>
+                        <div class="stat-label">Attendance Rate</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-list-check"></i>
+                    Recent Check-ins
+                </div>
+                <div id="attendance-list" class="attendance-list">
+                    <div style="text-align: center; color: #64748b; padding: 2rem;">
+                        No check-ins today
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal -->
+    <div id="add-student-modal" class="add-student-form" style="display: none;">
+        <div class="modal">
+            <div class="card-header">
+                <i class="fas fa-user-plus"></i>
+                Add New Student
+                <button onclick="hideAddStudent()" style="margin-left: auto; background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            
+            <form id="studentForm">
+                <div class="form-group">
+                    <label class="form-label">Student ID</label>
+                    <input type="text" id="student_id" class="form-input" placeholder="Enter student ID" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="name" class="form-input" placeholder="Enter full name" required>
+                </div>
+                
+                <div class="capture-area">
+                    <canvas id="canvas" style="display: none;"></canvas>
+                    <div id="preview"></div>
+                    <div style="margin-top: 1rem;">
+                        <button type="button" class="btn btn-primary" onclick="captureFromStream()">
+                            <i class="fas fa-camera"></i>
+                            Capture Photo
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="retakePhoto()" style="margin-left: 10px;">
+                            <i class="fas fa-redo"></i>
+                            Retake
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">
+                        <i class="fas fa-save"></i>
+                        Save Student
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="hideAddStudent()">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let cameraOn = false;
+        let capturedImage = null;
+        
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleTimeString();
+        }
+        
+        async function toggleCamera() {
+            const btn = document.getElementById('camera-btn');
+            const status = document.getElementById('camera-status');
+            const text = document.getElementById('camera-text');
+            
+            if (!cameraOn) {
+                await fetch('/start_camera', { method: 'POST' });
+                btn.innerHTML = '<i class="fas fa-stop"></i> Stop Camera';
+                btn.className = 'btn btn-danger';
+                status.className = 'fas fa-video status-online';
+                text.textContent = 'Camera Active';
+                cameraOn = true;
+            } else {
+                await fetch('/stop_camera', { method: 'POST' });
+                btn.innerHTML = '<i class="fas fa-play"></i> Start Camera';
+                btn.className = 'btn btn-primary';
+                status.className = 'fas fa-video status-offline';
+                text.textContent = 'Camera Stopped';
+                cameraOn = false;
+            }
+        }
+        
+        function showAddStudent() {
+            document.getElementById('add-student-modal').style.display = 'flex';
+        }
+        
+        function hideAddStudent() {
+            document.getElementById('add-student-modal').style.display = 'none';
+            document.getElementById('studentForm').reset();
+            document.getElementById('preview').innerHTML = '';
+            capturedImage = null;
+        }
+        
+        function captureFromStream() {
+            if (!cameraOn) {
+                alert('Please start camera first!');
+                return;
+            }
+            
+            const videoStream = document.getElementById('video-stream');
+            const canvas = document.getElementById('canvas');
+            canvas.width = videoStream.naturalWidth || 640;
+            canvas.height = videoStream.naturalHeight || 480;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(videoStream, 0, 0, canvas.width, canvas.height);
+            capturedImage = canvas.toDataURL('image/jpeg', 0.8);
+            
+            document.getElementById('preview').innerHTML = 
+                `<img src="${capturedImage}" style="max-width: 200px; border-radius: 10px; border: 3px solid #22c55e;">`;
+        }
+        
+        function retakePhoto() {
+            capturedImage = null;
+            document.getElementById('preview').innerHTML = '';
+        }
+        
+        function loadCurrentDetection() {
+            fetch('/current_detection')
+                .then(response => response.json())
+                .then(data => {
+                    const detectionDiv = document.getElementById('current-detection');
+                    
+                    if (!data.detected) {
+                        detectionDiv.innerHTML = `
+                            <div>
+                                <i class="fas fa-user-slash" style="font-size: 2rem; opacity: 0.5;"></i>
+                                <div>No face detected</div>
+                            </div>`;
+                        detectionDiv.className = 'detection-area';
+                    } else {
+                        detectionDiv.innerHTML = `
+                            <div class="person-info">
+                                <div class="person-avatar">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 1.1rem;">${data.name}</div>
+                                    <div style="color: #64748b;">ID: ${data.student_id}</div>
+                                    <div style="color: #22c55e; font-size: 0.9rem;">
+                                        <i class="fas fa-check-circle"></i>
+                                        ${data.confidence.toFixed(1)}% confidence
+                                    </div>
+                                </div>
+                            </div>`;
+                        detectionDiv.className = 'detected-person';
+                    }
+                });
+        }
+        
+        function loadAttendance() {
+            fetch('/attendance_today')
+                .then(response => response.json())
+                .then(data => {
+                    const attendanceList = document.getElementById('attendance-list');
+                    const checkedInCount = document.getElementById('checked-in');
+                    const attendanceRate = document.getElementById('attendance-rate');
+                    const totalStudents = {{ students|length }};
+                    
+                    if (data.length === 0) {
+                        attendanceList.innerHTML = `
+                            <div style="text-align: center; color: #64748b; padding: 2rem;">
+                                <i class="fas fa-calendar-times" style="font-size: 2rem; opacity: 0.5;"></i>
+                                <div>No check-ins today</div>
+                            </div>`;
+                    } else {
+                        attendanceList.innerHTML = data.map(item => `
+                            <div class="attendance-item">
+                                <div class="attendance-time">${item[2]}</div>
+                                <div>
+                                    <div style="font-weight: 600;">${item[1]}</div>
+                                    <div style="font-size: 0.9rem; color: #64748b;">ID: ${item[0]}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    
+                    checkedInCount.textContent = data.length;
+                    const rate = totalStudents > 0 ? Math.round((data.length / totalStudents) * 100) : 0;
+                    attendanceRate.textContent = rate + '%';
+                });
+        }
+        
+        document.getElementById('studentForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            if (!capturedImage) {
+                alert('Please capture a photo first!');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('student_id', document.getElementById('student_id').value);
+            formData.append('name', document.getElementById('name').value);
+            formData.append('image_data', capturedImage);
+            
+            const response = await fetch('/add_student', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('✅ ' + result.message);
+                hideAddStudent();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                alert('❌ ' + result.message);
+            }
+        };
+        
+        // Initialize
+        setInterval(updateTime, 1000);
+        setInterval(loadCurrentDetection, 1000);
+        setInterval(loadAttendance, 5000);
+        updateTime();
+        loadCurrentDetection();
+        loadAttendance();
+    </script>
+</body>
+</html>

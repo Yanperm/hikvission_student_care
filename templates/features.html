@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ฟีเจอร์ระบบ - Student Care System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+        
+        .nav-menu {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-link {
+            color: #374151;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: #f3f4f6;
+            color: #4f46e5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-title {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .page-title h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .page-title p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-category {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .category-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .education { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+        .security { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .management { background: linear-gradient(135deg, #10b981, #059669); }
+        .analytics { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .future { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        
+        .category-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #374151;
+        }
+        
+        .feature-list {
+            list-style: none;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 1rem;
+            padding: 12px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            background: #f8fafc;
+            transform: translateX(5px);
+        }
+        
+        .feature-status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: white;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        
+        .status-done { background: #10b981; }
+        .status-progress { background: #f59e0b; }
+        .status-planned { background: #6b7280; }
+        
+        .feature-content {
+            flex: 1;
+        }
+        
+        .feature-name {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        
+        .feature-desc {
+            font-size: 0.9rem;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+        
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 8px;
+            margin-top: 2rem;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        
+        .roadmap {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-top: 2rem;
+        }
+        
+        .roadmap-title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 2rem;
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 2rem 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e5e7eb;
+            z-index: 1;
+        }
+        
+        .timeline-item {
+            background: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            border: 3px solid #e5e7eb;
+        }
+        
+        .timeline-item.completed {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .timeline-item.current {
+            background: #f59e0b;
+            border-color: #f59e0b;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .timeline::before {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                Student Care System
+            </div>
+            <nav class="nav-menu">
+                <a href="/" class="nav-link">
+                    <i class="fas fa-home"></i> หน้าหลัก
+                </a>
+                <a href="/features" class="nav-link">
+                    <i class="fas fa-star"></i> ฟีเจอร์
+                </a>
+                <a href="/admin" class="nav-link">
+                    <i class="fas fa-cog"></i> จัดการระบบ
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-title">
+            <h1>🚀 ฟีเจอร์ระบบ</h1>
+            <p>ความสามารถและแผนพัฒนาของระบบ Student Care</p>
+        </div>
+
+        <div class="features-grid">
+            <!-- การจัดการเรียนการสอน -->
+            <div class="feature-category">
+                <div class="category-header">
+                    <div class="category-icon education">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="category-title">การจัดการเรียนการสอน</div>
+                </div>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="feature-status status-done">✓</div>
+                        <div class="feature-content">
+                            <div class="feature-name">เช็คชื่ออัตโนมัติ</div>
+                            <div class="feature-desc">ตรวจจับใบหน้าและบันทึกการเข้าเรียนอัตโนมัติ</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-done">✓</div>
+                        <div class="feature-content">
+                            <div class="feature-name">รายงานการเข้าเรียน</div>
+                            <div class="feature-desc">ดูสถิติและรายงานการมาเรียนแบบ real-time</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-progress">⚡</div>
+                        <div class="feature-content">
+                            <div class="feature-name">ตรวจสอบการมาสาย</div>
+                            <div class="feature-desc">แจ้งเตือนและบันทึกนักเรียนที่มาสาย</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">วิเคราะห์ความตั้งใจเรียน</div>
+                            <div class="feature-desc">ตรวจจับอารมณ์และระดับความสนใจในคาบเรียน</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ความปลอดภัย -->
+            <div class="feature-category">
+                <div class="category-header">
+                    <div class="category-icon security">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="category-title">ความปลอดภัย</div>
+                </div>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="feature-status status-done">✓</div>
+                        <div class="feature-content">
+                            <div class="feature-name">ระบบ Access Control</div>
+                            <div class="feature-desc">ควบคุมการเข้าออกด้วยการจดจำใบหน้า</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-progress">⚡</div>
+                        <div class="feature-content">
+                            <div class="feature-name">ตรวจจับบุคคลแปลกหน้า</div>
+                            <div class="feature-desc">แจ้งเตือนเมื่อพบคนที่ไม่ได้ลงทะเบียน</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">ตรวจสุขภาพเบื้องต้น</div>
+                            <div class="feature-desc">ตรวจไข้และการสวมหน้ากากอนามัย</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">Social Distancing</div>
+                            <div class="feature-desc">ตรวจสอบระยะห่างทางสังคม</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- การบริหารจัดการ -->
+            <div class="feature-category">
+                <div class="category-header">
+                    <div class="category-icon management">
+                        <i class="fas fa-users-cog"></i>
+                    </div>
+                    <div class="category-title">การบริหารจัดการ</div>
+                </div>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="feature-status status-done">✓</div>
+                        <div class="feature-content">
+                            <div class="feature-name">Dashboard แบบ Real-time</div>
+                            <div class="feature-desc">ดูภาพรวมระบบและสถิติสด</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-done">✓</div>
+                        <div class="feature-content">
+                            <div class="feature-name">ระบบ Backup/Restore</div>
+                            <div class="feature-desc">สำรองและกู้คืนข้อมูลอัตโนมัติ</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-progress">⚡</div>
+                        <div class="feature-content">
+                            <div class="feature-name">Multi-Database Support</div>
+                            <div class="feature-desc">รองรับฐานข้อมูลหลายประเภท</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">การแจ้งเตือนผู้ปกครอง</div>
+                            <div class="feature-desc">ส่ง SMS/Email แจ้งการเข้าเรียน</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- การวิเคราะห์ข้อมูล -->
+            <div class="feature-category">
+                <div class="category-header">
+                    <div class="category-icon analytics">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="category-title">การวิเคราะห์ข้อมูล</div>
+                </div>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="feature-status status-done">✓</div>
+                        <div class="feature-content">
+                            <div class="feature-name">รายงาน Excel/PDF</div>
+                            <div class="feature-desc">ส่งออกรายงานในรูปแบบต่างๆ</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-progress">⚡</div>
+                        <div class="feature-content">
+                            <div class="feature-name">วิเคราะห์แนวโน้ม</div>
+                            <div class="feature-desc">ดูแพทเทิร์นการเข้าเรียนและทำนาย</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">AI Insights</div>
+                            <div class="feature-desc">ข้อเสนอแนะจาก AI เพื่อปรับปรุงการเรียน</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">Predictive Analytics</div>
+                            <div class="feature-desc">ทำนายนักเรียนที่เสี่ยงจะขาดเรียน</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ฟีเจอร์อนาคต -->
+            <div class="feature-category">
+                <div class="category-header">
+                    <div class="category-icon future">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <div class="category-title">ฟีเจอร์อนาคต</div>
+                </div>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">Mobile App</div>
+                            <div class="feature-desc">แอปมือถือสำหรับครูและผู้ปกครอง</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">Multi-Camera Network</div>
+                            <div class="feature-desc">เชื่อมต่อกล้องหลายจุดทั่วโรงเรียน</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">AI Chatbot</div>
+                            <div class="feature-desc">ตอบคำถามและช่วยเหลือผู้ใช้งาน</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">LMS Integration</div>
+                            <div class="feature-desc">เชื่อมต่อระบบการเรียนการสอนออนไลน์</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- API & Integration -->
+            <div class="feature-category">
+                <div class="category-header">
+                    <div class="category-icon analytics">
+                        <i class="fas fa-plug"></i>
+                    </div>
+                    <div class="category-title">API & Integration</div>
+                </div>
+                <ul class="feature-list">
+                    <li class="feature-item">
+                        <div class="feature-status status-done">✓</div>
+                        <div class="feature-content">
+                            <div class="feature-name">RESTful API</div>
+                            <div class="feature-desc">API สำหรับเชื่อมต่อระบบภายนอก</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-progress">⚡</div>
+                        <div class="feature-content">
+                            <div class="feature-name">Webhook Support</div>
+                            <div class="feature-desc">ส่งข้อมูลแบบ real-time ไปยังระบบอื่น</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">Third-party Integration</div>
+                            <div class="feature-desc">เชื่อมต่อ Google Classroom, Microsoft Teams</div>
+                        </div>
+                    </li>
+                    <li class="feature-item">
+                        <div class="feature-status status-planned">○</div>
+                        <div class="feature-content">
+                            <div class="feature-name">Cloud Sync</div>
+                            <div class="feature-desc">ซิงค์ข้อมูลกับ Cloud Storage</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="roadmap">
+            <h2 class="roadmap-title">🎯 ความคืบหน้าโดยรวม</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 65%"></div>
+            </div>
+            <div class="progress-text">
+                ระบบพัฒนาเสร็จแล้ว 65% | เหลืออีก 8 ฟีเจอร์หลัก
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline">
+                <div class="timeline-item completed">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="timeline-item completed">
+                    <i class="fas fa-check"></i>
+                </div>
+                <div class="timeline-item current">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <div class="timeline-item">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="timeline-item">
+                    <i class="fas fa-rocket"></i>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 1rem; font-size: 0.9rem; color: #6b7280;">
+                <span>Phase 1<br>Core System</span>
+                <span>Phase 2<br>Security</span>
+                <span>Phase 3<br>Analytics</span>
+                <span>Phase 4<br>AI Features</span>
+                <span>Phase 5<br>Integration</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
