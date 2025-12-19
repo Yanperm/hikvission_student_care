@@ -60,6 +60,31 @@ def get_students():
     conn.close()
     return jsonify([{'student_id': r[0], 'student_name': r[1], 'class_name': r[2]} for r in rows])
 
+@app.route('/api/student/<student_id>', methods=['GET'])
+def get_student_profile(student_id):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    
+    # Get attendance records
+    c.execute("SELECT * FROM attendance WHERE student_id = ? ORDER BY timestamp DESC", (student_id,))
+    attendance = c.fetchall()
+    
+    # Calculate stats
+    total_attendance = len(attendance)
+    month_attendance = len([a for a in attendance if a[2].startswith(datetime.now().strftime('%Y-%m'))])
+    attendance_rate = int((month_attendance / 20) * 100) if month_attendance else 0  # Assume 20 school days per month
+    
+    conn.close()
+    
+    return jsonify({
+        'total_attendance': total_attendance,
+        'month_attendance': month_attendance,
+        'attendance_rate': attendance_rate,
+        'behavior_warnings': 0,
+        'attendance': [{'timestamp': a[2], 'status': a[3], 'camera_type': 'classroom'} for a in attendance[:10]],
+        'behaviors': []
+    })
+
 @app.route('/')
 def dashboard():
     return render_template('cloud_dashboard.html')

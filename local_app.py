@@ -92,6 +92,13 @@ def camera_classroom():
 def camera_behavior():
     return render_template('camera_behavior.html')
 
+@app.route('/student/<student_id>')
+def student_profile(student_id):
+    students = load_students()
+    if student_id in students:
+        return render_template('student_profile.html', student=students[student_id])
+    return 'Student not found', 404
+
 @app.route('/recognize_face', methods=['POST'])
 def recognize_face():
     import cv2
