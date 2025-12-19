@@ -21,10 +21,14 @@ data/students/*.png
 *.log
 student-care.log
 
-# Environment
+# Environment & Secrets
 .env
+.env.*
 *.pem
 *.ppk
+*.key
+firebase_credentials.json
+config.json
 
 # IDE
 .vscode/

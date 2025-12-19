@@ -13,10 +13,10 @@ import base64
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'softubon-student-care-2025-secret-key-' + os.urandom(24).hex())
+app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24).hex()
 
 # AWS Cloud API URL
-CLOUD_API_URL = "http://43.210.87.220:8080"
+CLOUD_API_URL = os.environ.get('CLOUD_API_URL', 'http://localhost:8080')
 cloud_sync = CloudSync(CLOUD_API_URL)
 
 # Login required decorator

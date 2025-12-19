@@ -1,0 +1,23 @@
+{
+  "database": {
+    "type": "firebase",
+    "config": {
+      "project_id": "your-project-id"
+    }
+  },
+  "deployment": {
+    "platform": "cloud_run",
+    "region": "asia-southeast1",
+    "service_name": "student-care-system"
+  },
+  "firebase": {
+    "apiKey": "YOUR_FIREBASE_API_KEY",
+    "authDomain": "your-project.firebaseapp.com",
+    "databaseURL": "https://your-project.firebasedatabase.app",
+    "projectId": "your-project-id",
+    "storageBucket": "your-project.firebasestorage.app",
+    "messagingSenderId": "YOUR_SENDER_ID",
+    "appId": "YOUR_APP_ID",
+    "measurementId": "YOUR_MEASUREMENT_ID"
+  }
+}

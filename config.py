@@ -27,8 +27,8 @@ class Config:
     PERMANENT_SESSION_LIFETIME = 3600  # 1 hour
     
     # Security
-    SUPER_ADMIN_USERNAME = os.environ.get('SUPER_ADMIN_USER') or 'superadmin@softubon.com'
-    SUPER_ADMIN_PASSWORD = os.environ.get('SUPER_ADMIN_PASS') or 'Softubon@2025'
+    SUPER_ADMIN_USERNAME = os.environ.get('SUPER_ADMIN_USER', 'admin@example.com')
+    SUPER_ADMIN_PASSWORD = os.environ.get('SUPER_ADMIN_PASS', 'change-this-password')
     
     # Package Limits
     PACKAGE_LIMITS = {
