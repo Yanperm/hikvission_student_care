@@ -1,136 +1,239 @@
-# 🚀 Student Care System - Google Cloud Run Deployment
+# 🚀 คำแนะนำ Deploy ไปยัง AWS EC2
 
-## ✅ ระบบพร้อม Deploy แล้ว!
+## 📋 ข้อมูล Server
 
-### 📋 **ข้อมูลที่ตั้งค่าแล้ว:**
-- **Project ID:** solutions-4e649
-- **Firebase Config:** ✅ เสร็จแล้ว
-- **Database:** Firebase Firestore
-- **Region:** asia-southeast1
+- **IP Address:** `43.210.87.220`
+- **Port:** `8080`
+- **OS:** Ubuntu 20.04/22.04
+- **User:** `ubuntu`
 
----
+## 🔑 Step 1: เชื่อมต่อ EC2
 
-## 🔧 **ขั้นตอนการ Deploy:**
-
-### **1. ติดตั้ง Google Cloud SDK**
 ```bash
-# Download และติดตั้งจาก:
-https://cloud.google.com/sdk/docs/install
+ssh -i your-key.pem ubuntu@43.210.87.220
 ```
 
-### **2. Login และตั้งค่า Project**
+## 📥 Step 2: Deploy (วิธีที่ 1 - Automatic)
+
 ```bash
-# Login to Google Cloud
-gcloud auth login
-
-# Set project
-gcloud config set project solutions-4e649
-
-# Enable APIs
-gcloud services enable cloudbuild.googleapis.com
-gcloud services enable run.googleapis.com
-gcloud services enable firestore.googleapis.com
-```
-
-### **3. สร้าง Service Account Key (สำคัญ!)**
-```bash
-# ไปที่ Firebase Console:
-https://console.firebase.google.com/project/solutions-4e649
-
-# ไป Settings > Service Accounts
-# คลิก "Generate new private key"
-# Download ไฟล์ JSON
-# เปลี่ยนชื่อเป็น "firebase_credentials.json"
-# วางในโฟลเดอร์ d:\Hikvission\
-```
-
-### **4. Deploy ไป Cloud Run**
-```bash
-# เปิด Command Prompt ใน d:\Hikvission\
-cd d:\Hikvission
-
-# Deploy
-gcloud run deploy student-care-system \
-    --source . \
-    --platform managed \
-    --region asia-southeast1 \
-    --allow-unauthenticated \
-    --memory 2Gi \
-    --cpu 1 \
-    --max-instances 10 \
-    --port 8080
-```
-
-### **5. หรือใช้ Script อัตโนมัติ**
-```bash
-# ทำให้ script executable (ถ้าใช้ Git Bash)
+# Download and run deploy script
+curl -o deploy.sh https://raw.githubusercontent.com/Yanperm/hikvission_student_care/main/deploy_to_ec2.sh
 chmod +x deploy.sh
-
-# รัน script
 ./deploy.sh
 ```
 
----
+## 📥 Step 2: Deploy (วิธีที่ 2 - Manual)
 
-## 🎯 **หลัง Deploy เสร็จ:**
-
-### **URLs ที่จะได้:**
-- **Main App:** https://student-care-system-xxx.a.run.app
-- **Admin Panel:** https://student-care-system-xxx.a.run.app/admin
-- **Features:** https://student-care-system-xxx.a.run.app/features
-
-### **Login Credentials:**
-- **Admin:** admin / admin123
-- **Teacher:** teacher / teacher123
-
----
-
-## 📊 **Firebase Firestore Setup:**
-
-### **Collections ที่จะสร้างอัตโนมัติ:**
-- `students` - ข้อมูลนักเรียน
-- `attendance` - บันทึกการเข้าเรียน
-- `system` - การตั้งค่าระบบ
-
-### **ตรวจสอบ Firestore:**
-```
-https://console.firebase.google.com/project/solutions-4e649/firestore
-```
-
----
-
-## 💡 **Tips:**
-
-### **การ Debug:**
+### 2.1 Update System
 ```bash
-# ดู logs
-gcloud run services logs read student-care-system --region=asia-southeast1
-
-# ดู service details
-gcloud run services describe student-care-system --region=asia-southeast1
+sudo apt update && sudo apt upgrade -y
 ```
 
-### **การอัปเดต:**
+### 2.2 Install Dependencies
 ```bash
-# Deploy version ใหม่
-gcloud run deploy student-care-system --source . --region=asia-southeast1
+sudo apt install -y python3 python3-pip python3-venv git
 ```
 
+### 2.3 Clone Repository
+```bash
+cd ~
+git clone https://github.com/Yanperm/hikvission_student_care.git
+cd hikvission_student_care
+```
+
+### 2.4 Setup Virtual Environment
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install gunicorn
+```
+
+### 2.5 Create Data Directory
+```bash
+mkdir -p data/students
+```
+
+### 2.6 Test Run
+```bash
+python3 local_app.py
+# Press Ctrl+C to stop
+```
+
+### 2.7 Setup Systemd Service
+```bash
+sudo nano /etc/systemd/system/student-care.service
+```
+
+Paste:
+```ini
+[Unit]
+Description=Student Care System
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/hikvission_student_care
+Environment="PATH=/home/ubuntu/hikvission_student_care/venv/bin"
+ExecStart=/home/ubuntu/hikvission_student_care/venv/bin/gunicorn -w 4 -b 0.0.0.0:8080 wsgi:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Save: `Ctrl+X`, `Y`, `Enter`
+
+### 2.8 Start Service
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable student-care
+sudo systemctl start student-care
+sudo systemctl status student-care
+```
+
+### 2.9 Configure Firewall
+```bash
+sudo ufw allow 8080/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw --force enable
+```
+
+## ✅ Step 3: Verify Deployment
+
+### 3.1 Check Service Status
+```bash
+sudo systemctl status student-care
+```
+
+### 3.2 Check Logs
+```bash
+sudo journalctl -u student-care -f
+```
+
+### 3.3 Test Access
+```bash
+curl http://localhost:8080
+```
+
+### 3.4 Access from Browser
+```
+http://43.210.87.220:8080
+```
+
+## 👥 Step 4: Setup Parent-Student Relations
+
+```bash
+cd ~/hikvission_student_care
+source venv/bin/activate
+python add_parent_relation.py
+```
+
+Edit the file to add relations:
+```python
+add_relation('parent@school.com', 'STD001', 'parent')
+add_relation('parent@school.com', 'STD002', 'parent')
+```
+
+## 🔄 Update Deployment
+
+```bash
+cd ~/hikvission_student_care
+git pull origin main
+source venv/bin/activate
+pip install -r requirements.txt
+sudo systemctl restart student-care
+```
+
+Or use quick script:
+```bash
+./deploy_quick.sh
+```
+
+## 🐛 Troubleshooting
+
+### Service won't start
+```bash
+# Check logs
+sudo journalctl -u student-care -n 50
+
+# Check if port is in use
+sudo lsof -i :8080
+
+# Kill process if needed
+sudo kill -9 $(sudo lsof -t -i:8080)
+```
+
+### Permission denied
+```bash
+sudo chown -R ubuntu:ubuntu ~/hikvission_student_care
+chmod +x deploy_quick.sh
+```
+
+### Database issues
+```bash
+cd ~/hikvission_student_care
+rm -rf data/database.db
+python3 -c "from database import db; print('Database initialized')"
+```
+
+## 📊 Monitoring
+
+### View Logs (Real-time)
+```bash
+sudo journalctl -u student-care -f
+```
+
+### Check Resource Usage
+```bash
+htop
+```
+
+### Check Disk Space
+```bash
+df -h
+```
+
+## 🔐 Security
+
+### Change Default Passwords
+```bash
+cd ~/hikvission_student_care
+python3
+```
+
+```python
+from database import db
+conn = db.get_connection()
+cursor = conn.cursor()
+cursor.execute("UPDATE users SET password='NewPassword123' WHERE username='superadmin@softubon.com'")
+conn.commit()
+conn.close()
+```
+
+### Enable Firewall
+```bash
+sudo ufw status
+sudo ufw enable
+```
+
+## 🎯 Login Credentials
+
+| Role | Username | Password |
+|------|----------|----------|
+| Super Admin | superadmin@softubon.com | Softubon@2025 |
+| Admin | admin@school.com | admin123 |
+| Teacher | teacher@school.com | teacher123 |
+| Parent | parent@school.com | parent123 |
+
+## 📞 Support
+
+**SOFTUBON CO.,LTD.**
+- GitHub: https://github.com/Yanperm/hikvission_student_care
+- Email: support@softubon.com
+
 ---
 
-## 🔒 **Security Notes:**
-
-1. **Service Account Key** - เก็บไฟล์ JSON ให้ปลอดภัย
-2. **Environment Variables** - ใช้ Google Secret Manager ในการผลิต
-3. **Authentication** - เปิดใช้ Firebase Auth สำหรับ production
-
----
-
-## 📞 **Support:**
-
-หากมีปัญหาในการ Deploy:
-1. ตรวจสอบ Firebase credentials
-2. ตรวจสอบ Google Cloud permissions
-3. ดู error logs ใน Cloud Console
-
-**ระบบพร้อม Deploy แล้ว! 🎉**
+© 2025 SOFTUBON CO.,LTD. All rights reserved.
