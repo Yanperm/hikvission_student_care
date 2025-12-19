@@ -224,7 +224,8 @@
             
             const response = await fetch('/add_student', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'include'
             });
             
             const result = await response.json();
