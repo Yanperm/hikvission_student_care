@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบลาเรียน - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        h1 { text-align: center; color: white; margin-bottom: 30px; font-size: 48px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Kanit', sans-serif; font-size: 16px; }
+        .form-group textarea { min-height: 120px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 18px; width: 100%; }
+        .leave-list { margin-top: 20px; }
+        .leave-item { padding: 20px; background: #f8f9fa; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #667eea; }
+        .leave-status { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-approved { background: #d4edda; color: #155724; }
+        .status-rejected { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>📋 ระบบลาเรียน</h1>
+    
+    <div class="container">
+        <div class="card">
+            <h2>➕ ส่งใบลา</h2>
+            <form id="leaveForm">
+                <div class="form-group">
+                    <label>นักเรียน:</label>
+                    <select id="student" required>
+                        <option value="">เลือกนักเรียน</option>
+                        <option value="STD001">สมชาย ใจดี (STD001)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ประเภทการลา:</label>
+                    <select id="leaveType" required>
+                        <option value="sick">ลาป่วย</option>
+                        <option value="personal">ลากิจ</option>
+                        <option value="other">อื่นๆ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>วันที่ลา:</label>
+                    <input type="date" id="leaveDate" required>
+                </div>
+                <div class="form-group">
+                    <label>ถึงวันที่:</label>
+                    <input type="date" id="leaveEndDate" required>
+                </div>
+                <div class="form-group">
+                    <label>เหตุผล:</label>
+                    <textarea id="reason" placeholder="ระบุเหตุผลการลา..." required></textarea>
+                </div>
+                <button type="submit" class="btn">📤 ส่งใบลา</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>📋 ประวัติการลา</h2>
+            <div class="leave-list">
+                <div class="leave-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <strong>ลาป่วย - สมชาย ใจดี</strong>
+                        <span class="leave-status status-approved">✅ อนุมัติ</span>
+                    </div>
+                    <div style="color: #666;">วันที่: 15-16 มกราคม 2025</div>
+                    <div style="color: #666; margin-top: 5px;">เหตุผล: ป่วยเป็นไข้</div>
+                </div>
+                <div class="leave-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <strong>ลากิจ - สมหญิง รักเรียน</strong>
+                        <span class="leave-status status-pending">⏳ รออนุมัติ</span>
+                    </div>
+                    <div style="color: #666;">วันที่: 20 มกราคม 2025</div>
+                    <div style="color: #666; margin-top: 5px;">เหตุผล: ไปงานครอบครัว</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('leaveForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('ส่งใบลาสำเร็จ! รอครูอนุมัติ');
+            e.target.reset();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คะแนนและรางวัล - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 40px; }
+        .header h1 { font-size: 48px; margin-bottom: 10px; }
+        .leaderboard { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        .rank-item { display: flex; align-items: center; padding: 20px; background: #f8f9fa; border-radius: 15px; margin-bottom: 15px; transition: all 0.3s; }
+        .rank-item:hover { transform: translateX(10px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .rank-number { font-size: 32px; font-weight: 800; width: 60px; text-align: center; }
+        .rank-1 { color: #FFD700; }
+        .rank-2 { color: #C0C0C0; }
+        .rank-3 { color: #CD7F32; }
+        .rank-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin: 0 20px; }
+        .rank-info { flex: 1; }
+        .rank-name { font-weight: 600; font-size: 20px; margin-bottom: 5px; }
+        .rank-class { color: #999; }
+        .rank-points { font-size: 28px; font-weight: 700; color: #667eea; }
+        .badges { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px; }
+        .badge { background: white; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .badge-icon { font-size: 60px; margin-bottom: 15px; }
+        .badge-name { font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 คะแนนและรางวัล</h1>
+            <p style="font-size: 20px;">Leaderboard & Achievements</p>
+        </div>
+
+        <div class="leaderboard">
+            <h2 style="margin-bottom: 30px;">🏅 อันดับคะแนน</h2>
+            <div class="rank-item">
+                <div class="rank-number rank-1">🥇</div>
+                <div class="rank-avatar">👦</div>
+                <div class="rank-info">
+                    <div class="rank-name">สมชาย ใจดี</div>
+                    <div class="rank-class">ม.1/1</div>
+                </div>
+                <div class="rank-points">1,250 ⭐</div>
+            </div>
+            <div class="rank-item">
+                <div class="rank-number rank-2">🥈</div>
+                <div class="rank-avatar">👧</div>
+                <div class="rank-info">
+                    <div class="rank-name">สมหญิง รักเรียน</div>
+                    <div class="rank-class">ม.1/1</div>
+                </div>
+                <div class="rank-points">1,180 ⭐</div>
+            </div>
+            <div class="rank-item">
+                <div class="rank-number rank-3">🥉</div>
+                <div class="rank-avatar">👦</div>
+                <div class="rank-info">
+                    <div class="rank-name">สมศักดิ์ ขยัน</div>
+                    <div class="rank-class">ม.1/2</div>
+                </div>
+                <div class="rank-points">1,050 ⭐</div>
+            </div>
+        </div>
+
+        <div class="leaderboard">
+            <h2 style="margin-bottom: 30px;">🎖️ Badge & Achievement</h2>
+            <div class="badges">
+                <div class="badge">
+                    <div class="badge-icon">🎓</div>
+                    <div class="badge-name">นักเรียนดีเด่น</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">📚</div>
+                    <div class="badge-name">รักการอ่าน</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">⚡</div>
+                    <div class="badge-name">เข้าเรียนตรงเวลา</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">🌟</div>
+                    <div class="badge-name">ช่วยเหลือเพื่อน</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -299,6 +299,41 @@ def schedule():
 def teaching_log():
     return render_template('teaching_log.html')
 
+@app.route('/chat')
+@login_required
+def chat():
+    return render_template('chat.html')
+
+@app.route('/gallery')
+@login_required
+def gallery():
+    return render_template('gallery.html')
+
+@app.route('/rewards')
+@login_required
+def rewards():
+    return render_template('rewards.html')
+
+@app.route('/leave_request')
+@login_required
+def leave_request():
+    return render_template('leave_request.html')
+
+@app.route('/announcements')
+@login_required
+def announcements():
+    return render_template('announcements.html')
+
+@app.route('/grades')
+@login_required
+def grades():
+    return render_template('grades.html')
+
+@app.route('/classroom_management')
+@login_required
+def classroom_management():
+    return render_template('classroom_management.html')
+
 @app.route('/multi_school')
 @super_admin_required
 def multi_school():

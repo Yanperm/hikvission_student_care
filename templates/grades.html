@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>รายงานผลการเรียน - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        .student-info { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 30px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; }
+        .grade-A { color: #4CAF50; font-weight: 700; }
+        .grade-B { color: #2196F3; font-weight: 700; }
+        .grade-C { color: #FF9800; font-weight: 700; }
+        .grade-D { color: #f44336; font-weight: 700; }
+        .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }
+        .summary-card { background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center; }
+        .summary-card h3 { font-size: 36px; color: #667eea; margin: 10px 0; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 รายงานผลการเรียน</h1>
+        
+        <div class="student-info">
+            <h2 style="margin-bottom: 15px;">ข้อมูลนักเรียน</h2>
+            <div class="info-row">
+                <span><strong>ชื่อ-นามสกุล:</strong> สมชาย ใจดี</span>
+                <span><strong>รหัสนักเรียน:</strong> STD001</span>
+            </div>
+            <div class="info-row">
+                <span><strong>ชั้น:</strong> ม.1/1</span>
+                <span><strong>ภาคเรียน:</strong> 1/2568</span>
+            </div>
+        </div>
+
+        <h2>📚 ผลการเรียนรายวิชา</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>รหัสวิชา</th>
+                    <th>ชื่อวิชา</th>
+                    <th>คะแนนเก็บ (30%)</th>
+                    <th>คะแนนสอบกลางภาค (30%)</th>
+                    <th>คะแนนสอบปลายภาค (40%)</th>
+                    <th>คะแนนรวม</th>
+                    <th>เกรด</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>TH101</td>
+                    <td>ภาษาไทย</td>
+                    <td>28</td>
+                    <td>27</td>
+                    <td>36</td>
+                    <td>91</td>
+                    <td class="grade-A">A</td>
+                </tr>
+                <tr>
+                    <td>MA101</td>
+                    <td>คณิตศาสตร์</td>
+                    <td>25</td>
+                    <td>24</td>
+                    <td>32</td>
+                    <td>81</td>
+                    <td class="grade-B">B+</td>
+                </tr>
+                <tr>
+                    <td>SC101</td>
+                    <td>วิทยาศาสตร์</td>
+                    <td>27</td>
+                    <td>26</td>
+                    <td>35</td>
+                    <td>88</td>
+                    <td class="grade-A">A</td>
+                </tr>
+                <tr>
+                    <td>EN101</td>
+                    <td>ภาษาอังกฤษ</td>
+                    <td>26</td>
+                    <td>25</td>
+                    <td>33</td>
+                    <td>84</td>
+                    <td class="grade-B">B+</td>
+                </tr>
+                <tr>
+                    <td>SO101</td>
+                    <td>สังคมศึกษา</td>
+                    <td>29</td>
+                    <td>28</td>
+                    <td>38</td>
+                    <td>95</td>
+                    <td class="grade-A">A</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="summary">
+            <div class="summary-card">
+                <p>คะแนนเฉลี่ย</p>
+                <h3>87.8</h3>
+            </div>
+            <div class="summary-card">
+                <p>เกรดเฉลี่ย</p>
+                <h3>3.68</h3>
+            </div>
+            <div class="summary-card">
+                <p>อันดับในห้อง</p>
+                <h3>3/40</h3>
+            </div>
+            <div class="summary-card">
+                <p>ผลการเรียน</p>
+                <h3 style="color: #4CAF50;">ผ่าน</h3>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="btn" onclick="window.print()">🖨️ พิมพ์ใบรายงาน</button>
+        </div>
+    </div>
+</body>
+</html>

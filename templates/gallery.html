@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>อัลบั้มรูป - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: #f5f7fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 40px; }
+        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; }
+        .tab { padding: 12px 24px; background: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .tab.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .gallery-item { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .gallery-item:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.15); }
+        .gallery-img { width: 100%; height: 250px; object-fit: cover; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 80px; }
+        .gallery-info { padding: 20px; }
+        .gallery-title { font-weight: 600; margin-bottom: 10px; }
+        .gallery-date { color: #999; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>📸 อัลบั้มรูปกิจกรรม</h1>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h2>รูปภาพกิจกรรม</h2>
+            <button class="btn" onclick="uploadPhoto()">➕ อัปโหลดรูป</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active">ทั้งหมด</button>
+            <button class="tab">กิจกรรมโรงเรียน</button>
+            <button class="tab">กีฬาสี</button>
+            <button class="tab">ทัศนศึกษา</button>
+            <button class="tab">วันสำคัญ</button>
+        </div>
+
+        <div class="gallery-grid">
+            <div class="gallery-item">
+                <div class="gallery-img">📸</div>
+                <div class="gallery-info">
+                    <div class="gallery-title">กิจกรรมกีฬาสี 2025</div>
+                    <div class="gallery-date">15 มกราคม 2025 • 25 รูป</div>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-img">🎓</div>
+                <div class="gallery-info">
+                    <div class="gallery-title">พิธีไหว้ครู</div>
+                    <div class="gallery-date">10 มกราคม 2025 • 18 รูป</div>
+                </div>
+            </div>
+            <div class="gallery-item">
+                <div class="gallery-img">🏕️</div>
+                <div class="gallery-info">
+                    <div class="gallery-title">ค่ายพักแรม</div>
+                    <div class="gallery-date">5 มกราคม 2025 • 42 รูป</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function uploadPhoto() {
+            alert('ฟีเจอร์อัปโหลดรูป - กำลังพัฒนา');
+        }
+    </script>
+</body>
+</html>
