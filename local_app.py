@@ -669,32 +669,39 @@ def recognize_face():
 
 @app.route('/add_student', methods=['POST'])
 def add_student():
-    student_id = request.form.get('student_id')
-    name = request.form.get('name')
-    class_name = request.form.get('class_name', '')
-    image_data = request.form.get('image_data')
-    school_id = get_current_school_id()
-    
-    if not student_id or not name or not image_data:
-        return jsonify({'success': False, 'message': 'กรุณากรอกข้อมูลให้ครบถ้วน'})
-    
-    # Save image
-    os.makedirs('data/students', exist_ok=True)
-    image_path = f"data/students/{student_id}.jpg"
-    
-    # Convert base64 to image
-    if ',' in image_data:
-        image_data = image_data.split(',')[1]
-    with open(image_path, 'wb') as f:
-        f.write(base64.b64decode(image_data))
-    
-    # Save to database
-    db.add_student(student_id, name, class_name, school_id, image_path)
-    
-    # Sync to cloud
-    cloud_sync.sync_student(student_id, name, class_name, image_path)
-    
-    return jsonify({'success': True, 'message': f'เพิ่มนักเรียน {name} สำเร็จ'})
+    try:
+        student_id = request.form.get('student_id')
+        name = request.form.get('name')
+        class_name = request.form.get('class_name', '')
+        image_data = request.form.get('image_data')
+        school_id = get_current_school_id()
+        
+        if not student_id or not name or not image_data:
+            return jsonify({'success': False, 'message': 'กรุณากรอกข้อมูลให้ครบถ้วน'})
+        
+        # Save image
+        os.makedirs('data/students', exist_ok=True)
+        image_path = f"data/students/{student_id}.jpg"
+        
+        # Convert base64 to image
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        
+        # Add padding if needed
+        image_data += '=' * (4 - len(image_data) % 4)
+        
+        with open(image_path, 'wb') as f:
+            f.write(base64.b64decode(image_data))
+        
+        # Save to database
+        db.add_student(student_id, name, class_name, school_id, image_path)
+        
+        # Sync to cloud
+        cloud_sync.sync_student(student_id, name, class_name, image_path)
+        
+        return jsonify({'success': True, 'message': f'เพิ่มนักเรียน {name} สำเร็จ'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'})
 
 # API Endpoints for Real Database Operations
 
