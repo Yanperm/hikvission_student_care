@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกการสอน - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Kanit', sans-serif; font-size: 16px; }
+        .form-group textarea { min-height: 150px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 18px; width: 100%; }
+        .log-list { margin-top: 40px; }
+        .log-item { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #667eea; }
+        .log-date { font-weight: 600; color: #667eea; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 บันทึกการสอน</h1>
+        
+        <form id="teachingLogForm">
+            <div class="form-group">
+                <label>วันที่:</label>
+                <input type="date" id="date" required>
+            </div>
+            <div class="form-group">
+                <label>วิชา:</label>
+                <input type="text" id="subject" placeholder="เช่น คณิตศาสตร์" required>
+            </div>
+            <div class="form-group">
+                <label>หัวข้อที่สอน:</label>
+                <input type="text" id="topic" placeholder="เช่น เรขาคณิต" required>
+            </div>
+            <div class="form-group">
+                <label>เนื้อหาที่สอน:</label>
+                <textarea id="content" placeholder="รายละเอียดเนื้อหาที่สอนในวันนี้..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>การบ้าน:</label>
+                <textarea id="homework" placeholder="การบ้านที่มอบหมาย (ถ้ามี)"></textarea>
+            </div>
+            <button type="submit" class="btn">💾 บันทึก</button>
+        </form>
+
+        <div class="log-list">
+            <h2>📋 บันทึกย้อนหลัง</h2>
+            <div id="logsList">
+                <p style="text-align: center; color: #999; padding: 40px;">ยังไม่มีบันทึก</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('date').valueAsDate = new Date();
+        
+        document.getElementById('teachingLogForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('บันทึกสำเร็จ!');
+            e.target.reset();
+            document.getElementById('date').valueAsDate = new Date();
+        });
+    </script>
+</body>
+</html>

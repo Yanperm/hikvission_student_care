@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตารางเรียน - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        .schedule-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .schedule-table th, .schedule-table td { border: 2px solid #e0e0e0; padding: 20px; text-align: center; }
+        .schedule-table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; }
+        .schedule-table td { background: #f8f9fa; min-height: 80px; vertical-align: top; }
+        .subject { background: white; padding: 10px; border-radius: 8px; margin: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .subject-name { font-weight: 600; color: #667eea; }
+        .subject-teacher { font-size: 14px; color: #666; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; margin: 10px 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📅 ตารางเรียน/ตารางสอน</h1>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button class="btn" onclick="location.href='/admin'">← กลับ</button>
+            <button class="btn" onclick="addSchedule()">➕ เพิ่มรายวิชา</button>
+        </div>
+        
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>เวลา</th>
+                    <th>จันทร์</th>
+                    <th>อังคาร</th>
+                    <th>พุธ</th>
+                    <th>พฤหัสบดี</th>
+                    <th>ศุกร์</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>08:00-09:00</strong></td>
+                    <td><div class="subject"><div class="subject-name">คณิตศาสตร์</div><div class="subject-teacher">ครูสมชาย</div></div></td>
+                    <td><div class="subject"><div class="subject-name">ภาษาไทย</div><div class="subject-teacher">ครูสมหญิง</div></div></td>
+                    <td><div class="subject"><div class="subject-name">วิทยาศาสตร์</div><div class="subject-teacher">ครูสมศักดิ์</div></div></td>
+                    <td><div class="subject"><div class="subject-name">สังคม</div><div class="subject-teacher">ครูสมใจ</div></div></td>
+                    <td><div class="subject"><div class="subject-name">ภาษาอังกฤษ</div><div class="subject-teacher">ครูสมพร</div></div></td>
+                </tr>
+                <tr>
+                    <td><strong>09:00-10:00</strong></td>
+                    <td colspan="5" style="text-align: center; color: #999;">คลิกเพื่อเพิ่มรายวิชา</td>
+                </tr>
+                <tr>
+                    <td><strong>10:00-11:00</strong></td>
+                    <td colspan="5" style="text-align: center; color: #999;">คลิกเพื่อเพิ่มรายวิชา</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function addSchedule() {
+            alert('ฟีเจอร์เพิ่มรายวิชา - กำลังพัฒนา');
+        }
+    </script>
+</body>
+</html>

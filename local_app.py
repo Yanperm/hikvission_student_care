@@ -284,6 +284,21 @@ def anti_bullying():
 def pricing():
     return render_template('pricing.html')
 
+@app.route('/teacher_dashboard')
+@login_required
+def teacher_dashboard():
+    return render_template('teacher_dashboard.html')
+
+@app.route('/schedule')
+@login_required
+def schedule():
+    return render_template('schedule.html')
+
+@app.route('/teaching_log')
+@login_required
+def teaching_log():
+    return render_template('teaching_log.html')
+
 @app.route('/multi_school')
 @super_admin_required
 def multi_school():
