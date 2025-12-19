@@ -46,6 +46,7 @@ class Database:
                 name TEXT NOT NULL,
                 role TEXT NOT NULL,
                 school_id TEXT,
+                class_info TEXT,
                 created_at TEXT
             )
         ''')

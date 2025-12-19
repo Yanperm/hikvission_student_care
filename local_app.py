@@ -9,7 +9,7 @@ import base64
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'softubon-student-care-2025-secret-key'  # Change in production
+app.secret_key = os.environ.get('SECRET_KEY', 'softubon-student-care-2025-secret-key-' + os.urandom(24).hex())
 
 # AWS Cloud API URL
 CLOUD_API_URL = "http://43.210.87.220:8080"
@@ -334,6 +334,81 @@ def delete_school_api(school_id):
 def get_stats():
     stats = db.get_stats()
     return jsonify({'success': True, 'stats': stats})
+
+@app.route('/manage_users')
+@login_required
+def manage_users():
+    if session.get('role') not in ['admin', 'super_admin']:
+        return redirect(url_for('admin'))
+    return render_template('manage_users.html')
+
+@app.route('/api/users', methods=['GET'])
+@login_required
+def get_users_api():
+    if session.get('role') not in ['admin', 'super_admin']:
+        return jsonify({'success': False, 'message': 'ไม่มีสิทธิ์เข้าถึง'})
+    
+    school_id = get_current_school_id()
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    
+    if session.get('role') == 'super_admin':
+        cursor.execute('SELECT * FROM users ORDER BY created_at DESC')
+    else:
+        cursor.execute('SELECT * FROM users WHERE school_id = ? ORDER BY created_at DESC', (school_id,))
+    
+    users = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    
+    return jsonify({'success': True, 'users': users})
+
+@app.route('/api/users', methods=['POST'])
+@login_required
+def create_user_api():
+    if session.get('role') not in ['admin', 'super_admin']:
+        return jsonify({'success': False, 'message': 'ไม่มีสิทธิ์เข้าถึง'})
+    
+    data = request.json
+    school_id = get_current_school_id()
+    
+    # ตรวจสอบว่า username ซ้ำหรือไม่
+    existing_user = db.get_user(data['username'])
+    if existing_user:
+        return jsonify({'success': False, 'message': 'Username นี้มีอยู่ในระบบแล้ว'})
+    
+    # เพิ่มผู้ใช้ใหม่
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO users (username, password, name, role, school_id, class_info, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        data['username'],
+        data['password'],
+        data['name'],
+        data['role'],
+        school_id,
+        data.get('class_info', ''),
+        datetime.now().isoformat()
+    ))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'เพิ่มผู้ใช้งานสำเร็จ'})
+
+@app.route('/api/users/<int:user_id>', methods=['DELETE'])
+@login_required
+def delete_user_api(user_id):
+    if session.get('role') not in ['admin', 'super_admin']:
+        return jsonify({'success': False, 'message': 'ไม่มีสิทธิ์เข้าถึง'})
+    
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM users WHERE id = ?', (user_id,))
+    conn.commit()
+    conn.close()
+    
+    return jsonify({'success': True, 'message': 'ลบผู้ใช้งานสำเร็จ'})
 
 @app.route('/recognize_face', methods=['POST'])
 @login_required
@@ -735,7 +810,7 @@ def gate_entry():
     return jsonify({
         'success': True,
         'message': 'บันทึกและแจ้งเตือนผู้ปกครองสำเร็จ (LINE)',
-        'line_sent': bool(line_token)
+        'line_sent': bool(line_user_id)
     })
 
 @app.route('/api/student/<student_id>/line_token', methods=['POST'])
@@ -821,4 +896,6 @@ def get_gate_logs():
 
 if __name__ == '__main__':
     os.makedirs('data/students', exist_ok=True)
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=port, debug=debug)
