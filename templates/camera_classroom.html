@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>กล้องในห้องเรียน - Student Care</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/notification.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Kanit', sans-serif; background: #1a1a2e; color: white; }
@@ -69,12 +70,34 @@
         </div>
     </div>
 
+    <script src="/static/notification.js"></script>
     <script>
         let video = document.getElementById('video');
         let canvas = document.getElementById('canvas');
         let stream = null;
         let isScanning = false;
         let checkedToday = new Set();
+
+        async function loadTodayAttendance() {
+            try {
+                const response = await fetch('/api/attendance');
+                const data = await response.json();
+                if (data.success) {
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayRecords = data.attendance.filter(a => {
+                        const recordDate = new Date(a.timestamp).toISOString().split('T')[0];
+                        return recordDate === today && a.camera_type === 'classroom';
+                    });
+                    
+                    todayRecords.forEach(record => {
+                        checkedToday.add(record.student_id);
+                        addCheckinItem(record.student_id, record.student_name, '', false);
+                    });
+                }
+            } catch (error) {
+                console.error('Load attendance error:', error);
+            }
+        }
 
         async function startCamera() {
             try {
@@ -84,7 +107,7 @@
                 scanFaces();
                 updateStatus('กำลังสแกนใบหน้า...', 'scanning');
             } catch (err) {
-                alert('ไม่สามารถเปิดกล้องได้: ' + err);
+                showToast('ไม่สามารถเปิดกล้องได้: ' + err, 'error');
             }
         }
 
@@ -118,6 +141,10 @@
                 if (result.success && result.student_id) {
                     if (!checkedToday.has(result.student_id)) {
                         await checkin(result.student_id, result.student_name, result.class_name);
+                    } else {
+                        updateStatus('✅ ' + result.student_name + ' เช็คชื่อแล้ววันนี้', 'success');
+                        showToast(result.student_name + ' เช็คชื่อแล้ววันนี้', 'info');
+                        setTimeout(() => updateStatus('กำลังสแกนใบหน้า...', 'scanning'), 2000);
                     }
                 }
             } catch (error) {
@@ -128,27 +155,13 @@
         }
 
         async function checkin(studentId, studentName, className) {
-            try {
-                const response = await fetch('/manual_checkin', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ student_id: studentId, camera_type: 'classroom' })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    checkedToday.add(studentId);
-                    addCheckinItem(studentId, studentName, className);
-                    updateStatus('✅ เช็คชื่อ ' + studentName + ' สำเร็จ!', 'success');
-                    setTimeout(() => updateStatus('กำลังสแกนใบหน้า...', 'scanning'), 2000);
-                }
-            } catch (error) {
-                console.error('Checkin error:', error);
-            }
+            checkedToday.add(studentId);
+            addCheckinItem(studentId, studentName, className, true);
+            updateStatus('✅ เช็คชื่อ ' + studentName + ' สำเร็จ!', 'success');
+            setTimeout(() => updateStatus('กำลังสแกนใบหน้า...', 'scanning'), 2000);
         }
 
-        function addCheckinItem(studentId, studentName, className) {
+        function addCheckinItem(studentId, studentName, className, isNew = true) {
             const list = document.getElementById('checkinList');
             const time = new Date().toLocaleTimeString('th-TH');
             const item = document.createElement('div');
@@ -157,7 +170,11 @@
                 <strong>${studentName}</strong><br>
                 <small>รหัส: ${studentId} | ห้อง: ${className || '-'}<br>เวลา: ${time}</small>
             `;
-            list.insertBefore(item, list.firstChild);
+            if (isNew) {
+                list.insertBefore(item, list.firstChild);
+            } else {
+                list.appendChild(item);
+            }
             document.getElementById('count').textContent = checkedToday.size;
         }
 
@@ -167,6 +184,7 @@
             status.className = 'status ' + type;
         }
 
+        loadTodayAttendance();
         startCamera();
     </script>
 </body>

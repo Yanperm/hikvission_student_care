@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Check-in System</title>
+    <link rel="stylesheet" href="/static/notification.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
@@ -41,23 +42,24 @@
         <div class="card">
             <h2>รายชื่อนักเรียน ({{ students|length }} คน)</h2>
             <div class="student-grid">
-                {% for id, student in students.items() %}
-                <div class="student-btn" onclick="checkin('{{ id }}', '{{ student.name }}', this)">
-                    <img src="/student_image/{{ id }}" class="student-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22%3E%3Ccircle cx=%2240%22 cy=%2240%22 r=%2240%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2240%22%3E👤%3C/text%3E%3C/svg%3E'">
+                {% for student in students %}
+                <div class="student-btn" onclick="checkin('{{ student.student_id }}', '{{ student.name }}', this)">
+                    <img src="/student_image/{{ student.student_id }}" class="student-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2280%22%3E%3Ccircle cx=%2240%22 cy=%2240%22 r=%2240%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2240%22%3E👤%3C/text%3E%3C/svg%3E'">
                     <div><strong>{{ student.name }}</strong></div>
-                    <div style="font-size: 12px; color: #666;">{{ id }}</div>
+                    <div style="font-size: 12px; color: #666;">{{ student.student_id }}</div>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </div>
 
+    <script src="/static/notification.js"></script>
     <script>
         const checkedToday = new Set();
 
         async function checkin(studentId, studentName, element) {
             if (checkedToday.has(studentId)) {
-                showMessage('นักเรียนคนนี้เช็คชื่อแล้ว!', 'error');
+                showToast(studentName + ' เช็คชื่อแล้ววันนี้', 'info');
                 return;
             }
 
@@ -73,11 +75,14 @@
                 if (result.success) {
                     element.classList.add('checked');
                     checkedToday.add(studentId);
+                    showToast('เช็คชื่อ ' + studentName + ' สำเร็จ!', 'success');
                     showMessage('✅ เช็คชื่อ ' + studentName + ' สำเร็จ!', 'success');
                 } else {
+                    showToast(result.message, 'error');
                     showMessage('❌ ' + result.message, 'error');
                 }
             } catch (error) {
+                showToast('เกิดข้อผิดพลาด', 'error');
                 showMessage('❌ เกิดข้อผิดพลาด: ' + error, 'error');
             }
         }

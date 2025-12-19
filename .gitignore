@@ -23,10 +23,19 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
-venv/
-ENV/
-env/
+# Environment
+.env
+.venv
+
+# Data
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
 
 # IDE
 .vscode/
@@ -35,36 +44,22 @@ env/
 *.swo
 *~
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Logs
-logs/
-*.log
-
-# Data files
-data/students/
-data/*.npy
-data/*.json
-static/uploads/
-
-# Backups
-backups/
-
-# Firebase credentials
-firebase_credentials.json
-*credentials*.json
-
-# Config files with sensitive data
-config.json
-
 # OS
 .DS_Store
 Thumbs.db
+
+# Uploads
+uploads/
+data/students/*.jpg
+data/students/*.png
+data/students/*.jpeg
+
+# Temporary
+tmp/
+temp/
 *.tmp
 
-# Environment variables
-.env
-.env.local
+# Security
+*.pem
+*.key
+secrets/

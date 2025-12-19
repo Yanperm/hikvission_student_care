@@ -1,163 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Student Care System</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Login - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .login-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        
-        .logo {
-            font-size: 3rem;
-            color: #4f46e5;
-            margin-bottom: 1rem;
-        }
-        
-        .login-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-        
-        .login-subtitle {
-            color: #6b7280;
-            margin-bottom: 2rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-            text-align: left;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #374151;
-        }
-        
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-input:focus {
-            outline: none;
-            border-color: #4f46e5;
-        }
-        
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #4f46e5, #7c3aed);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 1rem;
-        }
-        
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
-        }
-        
-        .error-message {
-            background: #fecaca;
-            color: #991b1b;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            border-left: 4px solid #ef4444;
-        }
-        
-        .demo-credentials {
-            background: #f0f9ff;
-            border: 1px solid #0ea5e9;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-            text-align: left;
-        }
-        
-        .demo-credentials h4 {
-            color: #0369a1;
-            margin-bottom: 0.5rem;
-        }
-        
-        .demo-credentials p {
-            font-size: 0.9rem;
-            color: #0369a1;
-            margin: 0.25rem 0;
-        }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-container { background: white; border-radius: 20px; padding: 50px; width: 90%; max-width: 450px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .logo { text-align: center; font-size: 48px; margin-bottom: 10px; }
+        h1 { text-align: center; color: #333; margin-bottom: 10px; font-size: 32px; }
+        p { text-align: center; color: #666; margin-bottom: 30px; }
+        .form-group { margin: 25px 0; }
+        .form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: #333; }
+        .form-group input { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; font-family: 'Kanit', sans-serif; transition: all 0.3s; }
+        .form-group input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .btn-login { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 50px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-login:hover { transform: scale(1.02); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
+        .alert { padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .back-link { text-align: center; margin-top: 20px; }
+        .back-link a { color: #667eea; text-decoration: none; font-weight: 600; }
+        .back-link a:hover { text-decoration: underline; }
+        .demo-credentials { background: #e3f2fd; padding: 15px; border-radius: 10px; margin-top: 20px; font-size: 14px; }
+        .demo-credentials strong { color: #2196F3; }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="logo">
-            <i class="fas fa-graduation-cap"></i>
-        </div>
-        <h1 class="login-title">Student Care</h1>
-        <p class="login-subtitle">Face Recognition System</p>
+        <div class="logo">🎓</div>
+        <h1>Student Care</h1>
+        <p>เข้าสู่ระบบ</p>
         
-        {% if error %}
-        <div class="error-message">
-            <i class="fas fa-exclamation-triangle"></i>
-            {{ error }}
-        </div>
-        {% endif %}
+        <div id="alert" class="alert"></div>
         
-        <form method="POST">
+        <form onsubmit="handleLogin(event)">
             <div class="form-group">
-                <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-input" placeholder="Enter username" required>
+                <label>Username / Email:</label>
+                <input type="text" id="username" required autofocus>
             </div>
             
             <div class="form-group">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-input" placeholder="Enter password" required>
+                <label>Password:</label>
+                <input type="password" id="password" required>
             </div>
             
-            <button type="submit" class="login-btn">
-                <i class="fas fa-sign-in-alt"></i>
-                Login to Admin Panel
-            </button>
+            <button type="submit" class="btn-login">🔐 เข้าสู่ระบบ</button>
         </form>
         
         <div class="demo-credentials">
-            <h4><i class="fas fa-info-circle"></i> Demo Credentials</h4>
-            <p><strong>Admin:</strong> admin / admin123</p>
-            <p><strong>Teacher:</strong> teacher / teacher123</p>
+            <strong>🔑 Demo Accounts:</strong><br>
+            <small>
+                Super Admin: superadmin@softubon.com / Softubon@2025<br>
+                School Admin: admin@school.com / admin123<br>
+                Teacher: teacher@school.com / teacher123<br>
+                Parent: parent@school.com / parent123
+            </small>
+        </div>
+        
+        <div class="back-link">
+            <a href="/">← กลับหน้าหลัก</a>
         </div>
     </div>
+
+    <script>
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const alert = document.getElementById('alert');
+            
+            // Send login request
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert.className = 'alert alert-success';
+                    alert.textContent = '✅ เข้าสู่ระบบสำเร็จ! กำลังเปลี่ยนหน้า...';
+                    alert.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/admin';
+                    }, 1000);
+                } else {
+                    alert.className = 'alert alert-error';
+                    alert.textContent = '❌ ' + (data.message || 'Username หรือ Password ไม่ถูกต้อง');
+                    alert.style.display = 'block';
+                }
+            })
+            .catch(err => {
+                alert.className = 'alert alert-error';
+                alert.textContent = '❌ เกิดข้อผิดพลาด กรุณาลองใหม่';
+                alert.style.display = 'block';
+            });
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่า LINE Notify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/notification.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #06C755 0%, #00B900 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        h1 { color: #06C755; margin-bottom: 10px; }
+        .step { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #06C755; }
+        .step h3 { color: #333; margin-bottom: 10px; }
+        .form-group { margin: 20px 0; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Kanit', sans-serif; }
+        input:focus, select:focus { outline: none; border-color: #06C755; }
+        .btn { background: #06C755; color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-weight: 600; width: 100%; font-size: 16px; transition: all 0.3s; }
+        .btn:hover { background: #00B900; transform: translateY(-2px); }
+        .line-logo { text-align: center; font-size: 48px; margin-bottom: 20px; }
+        a { color: #06C755; text-decoration: none; font-weight: 600; }
+        a:hover { text-decoration: underline; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 4px; color: #e91e63; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="line-logo">💚</div>
+            <h1 style="text-align: center;">ตั้งค่า LINE Official Account</h1>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">รับการแจ้งเตือนเมื่อบุตรเข้า-ออกโรงเรียน</p>
+            
+            <div class="step">
+                <h3>📱 ขั้นตอนที่ 1: เพิ่มเพื่อน LINE OA</h3>
+                <ol style="margin-left: 20px; color: #666;">
+                    <li>เปิดแอพ LINE บนมือถือ</li>
+                    <li>สแกน QR Code ของโรงเรียน</li>
+                    <li>เพิ่มเพื่อน LINE Official Account</li>
+                    <li>คัดลอก LINE User ID ของท่าน</li>
+                    <li>หรือติดต่อโรงเรียนเพื่อขอ User ID</li>
+                </ol>
+            </div>
+            
+            <div class="step">
+                <h3>✏️ ขั้นตอนที่ 2: กรอกข้อมูล</h3>
+                <form id="lineForm" onsubmit="saveToken(event)">
+                    <div class="form-group">
+                        <label>เลือกบุตร:</label>
+                        <select id="studentId" required>
+                            <option value="">-- เลือกนักเรียน --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>LINE User ID:</label>
+                        <input type="text" id="lineToken" placeholder="กรอก LINE User ID" required>
+                        <small style="color: #999;">ตัวอย่าง: U1234567890abcdef...</small>
+                    </div>
+                    
+                    <button type="submit" class="btn">💾 บันทึก</button>
+                </form>
+            </div>
+            
+            <div class="step">
+                <h3>✅ เสร็จแล้ว!</h3>
+                <p style="color: #666;">ท่านจะได้รับการแจ้งเตือนทาง LINE เมื่อ:</p>
+                <ul style="margin-left: 20px; color: #666; margin-top: 10px;">
+                    <li>🟢 บุตรเข้าโรงเรียน</li>
+                    <li>🟠 บุตรออกจากโรงเรียน</li>
+                    <li>⚠️ บุตรขาดเรียน</li>
+                    <li>📝 พฤติกรรมที่ต้องติดตาม</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="text-align: center; color: white; margin-top: 20px;">
+            <a href="/admin" style="color: white;">← กลับหน้า Admin</a>
+        </div>
+    </div>
+
+    <script src="/static/notification.js"></script>
+    <script>
+        async function loadStudents() {
+            const res = await fetch('/api/students');
+            const data = await res.json();
+            const select = document.getElementById('studentId');
+            
+            data.students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.student_id;
+                option.textContent = `${student.name} (${student.student_id})`;
+                select.appendChild(option);
+            });
+        }
+        
+        async function saveToken(e) {
+            e.preventDefault();
+            
+            const studentId = document.getElementById('studentId').value;
+            const lineToken = document.getElementById('lineToken').value;
+            
+            const res = await fetch(`/api/student/${studentId}/line_token`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ line_token: lineToken })
+            });
+            
+            const result = await res.json();
+            
+            if (result.success) {
+                await showAlert('สำเร็จ!', 'บันทึก LINE User ID เรียบร้อย ท่านจะได้รับการแจ้งเตือนทาง LINE OA', 'success');
+                document.getElementById('lineForm').reset();
+            } else {
+                showToast('เกิดข้อผิดพลาด', 'error');
+            }
+        }
+        
+        loadStudents();
+    </script>
+</body>
+</html>

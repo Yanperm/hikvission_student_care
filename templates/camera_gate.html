@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>กล้องหน้าประตูโรงเรียน - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/notification.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: #1a1a2e; color: white; }
+        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; }
+        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-links a:hover { background: #667eea; color: white; }
+        .container { max-width: 1400px; margin: 20px auto; padding: 20px; }
+        .header { text-align: center; padding: 30px; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); border-radius: 20px; margin-bottom: 30px; }
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background: #16213e; border-radius: 20px; padding: 30px; }
+        #video { width: 100%; border-radius: 15px; background: #000; }
+        .status { padding: 20px; border-radius: 10px; margin: 15px 0; text-align: center; font-weight: 600; font-size: 18px; }
+        .status.scanning { background: #2196F3; }
+        .status.checkin { background: #4CAF50; animation: pulse 1s; }
+        .status.checkout { background: #FF9800; animation: pulse 1s; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .log-list { max-height: 600px; overflow-y: auto; }
+        .log-item { background: #0f3460; padding: 20px; margin: 15px 0; border-radius: 10px; }
+        .log-item.checkin { border-left: 5px solid #4CAF50; }
+        .log-item.checkout { border-left: 5px solid #FF9800; }
+        .btn { background: #2196F3; color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; margin: 5px; }
+        .btn:hover { background: #1976D2; transform: scale(1.05); }
+        .btn-stop { background: #f44336; }
+        .btn-checkin { background: #4CAF50; }
+        .btn-checkout { background: #FF9800; }
+        .mode-selector { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care</div>
+            <div class="nav-links">
+                <a href="/">🏠 หน้าหลัก</a>
+                <a href="/camera_classroom">📚 กล้องในห้องเรียน</a>
+                <a href="/camera_gate">🚪 กล้องหน้าประตู</a>
+                <a href="/admin">👨💼 Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>🚪 กล้องหน้าประตูโรงเรียน</h1>
+            <p>ระบบจะแจ้งเตือนผู้ปกครอง เมื่อบุตรเข้า-ออกโรงเรียน</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>📹 กล้องหน้าประตู</h2>
+                <div id="status" class="status scanning">🔍 กำลังสแกนใบหน้า...</div>
+                
+                <div class="mode-selector">
+                    <button class="btn btn-checkin" onclick="setMode('checkin')">🟢 โหมดเข้าโรงเรียน</button>
+                    <button class="btn btn-checkout" onclick="setMode('checkout')">🟠 โหมดออกจากโรงเรียน</button>
+                </div>
+                
+                <video id="video" autoplay></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn" onclick="startCamera()">▶️ เริ่มกล้อง</button>
+                    <button class="btn btn-stop" onclick="stopCamera()">⏹️ หยุดกล้อง</button>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; text-align: center;">
+                    <strong>โหมดปัจจุบัน: <span id="currentMode">เข้าโรงเรียน</span></strong>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📋 บันทึกเข้า-ออก (<span id="count">0</span> รายการ)</h2>
+                <div id="logList" class="log-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/notification.js"></script>
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let stream = null;
+        let isScanning = false;
+        let checkedToday = new Set();
+        let currentMode = 'checkin'; // checkin or checkout
+        let logCount = 0;
+
+        function setMode(mode) {
+            currentMode = mode;
+            const modeText = mode === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
+            document.getElementById('currentMode').textContent = modeText;
+            showToast('เปลี่ยนเป็นโหมด' + modeText, 'info');
+        }
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                isScanning = true;
+                scanFaces();
+                updateStatus('กำลังสแกนใบหน้า...', 'scanning');
+            } catch (err) {
+                showToast('ไม่สามารถเปิดกล้องได้: ' + err, 'error');
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                isScanning = false;
+                updateStatus('หยุดการสแกน', 'scanning');
+            }
+        }
+
+        async function scanFaces() {
+            if (!isScanning) return;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+            
+            try {
+                const response = await fetch('/recognize_face', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData, camera_type: 'gate' })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.student_id) {
+                    const key = result.student_id + '_' + currentMode;
+                    if (!checkedToday.has(key)) {
+                        await processGateEntry(result.student_id, result.student_name, result.class_name);
+                    } else {
+                        const modeText = currentMode === 'checkin' ? 'เข้า' : 'ออก';
+                        showToast(result.student_name + ' บันทึก' + modeText + 'แล้ววันนี้', 'info');
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+
+            setTimeout(scanFaces, 2000);
+        }
+
+        async function processGateEntry(studentId, studentName, className) {
+            const key = studentId + '_' + currentMode;
+            checkedToday.add(key);
+            
+            // บันทึกลง database
+            await fetch('/api/gate_entry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    student_id: studentId,
+                    student_name: studentName,
+                    type: currentMode
+                })
+            });
+            
+            // แสดงผล
+            const modeText = currentMode === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
+            const icon = currentMode === 'checkin' ? '🟢' : '🟠';
+            
+            addLogItem(studentId, studentName, className, currentMode);
+            updateStatus(icon + ' ' + studentName + ' ' + modeText + ' สำเร็จ!', currentMode);
+            showToast(studentName + ' ' + modeText + ' - แจ้งเตือนผู้ปกครองแล้ว', 'success');
+            
+            setTimeout(() => updateStatus('กำลังสแกนใบหน้า...', 'scanning'), 3000);
+        }
+
+        function addLogItem(studentId, studentName, className, type) {
+            const list = document.getElementById('logList');
+            const time = new Date().toLocaleTimeString('th-TH');
+            const item = document.createElement('div');
+            item.className = 'log-item ' + type;
+            
+            const icon = type === 'checkin' ? '🟢' : '🟠';
+            const text = type === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
+            
+            item.innerHTML = `
+                ${icon} <strong>${studentName}</strong><br>
+                <small>รหัส: ${studentId} | ห้อง: ${className || '-'}<br>
+                ${text} เวลา: ${time}<br>
+                ✅ แจ้งเตือนผู้ปกครองแล้ว</small>
+            `;
+            list.insertBefore(item, list.firstChild);
+            logCount++;
+            document.getElementById('count').textContent = logCount;
+        }
+
+        function updateStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        async function loadTodayLogs() {
+            try {
+                const response = await fetch('/api/gate_logs');
+                const data = await response.json();
+                if (data.success) {
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayLogs = data.logs.filter(log => {
+                        const logDate = new Date(log.timestamp).toISOString().split('T')[0];
+                        return logDate === today;
+                    });
+                    
+                    todayLogs.reverse().forEach(log => {
+                        const key = log.student_id + '_' + log.type;
+                        checkedToday.add(key);
+                        addLogItem(log.student_id, log.student_name, '', log.type);
+                    });
+                }
+            } catch (error) {
+                console.error('Load logs error:', error);
+            }
+        }
+
+        loadTodayLogs();
+        startCamera();
+    </script>
+</body>
+</html>

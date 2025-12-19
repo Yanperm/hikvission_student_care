@@ -124,45 +124,92 @@
 
         async function loadData() {
             try {
-                const response = await fetch('http://43.210.87.220:8080/api/student/' + studentId);
-                const data = await response.json();
-
-                // Update stats
-                document.getElementById('totalAttendance').textContent = data.total_attendance || 0;
-                document.getElementById('monthAttendance').textContent = data.month_attendance || 0;
-                document.getElementById('attendanceRate').textContent = (data.attendance_rate || 0) + '%';
-                document.getElementById('behaviorWarnings').textContent = data.behavior_warnings || 0;
-
-                // Update attendance table
-                if (data.attendance && data.attendance.length > 0) {
-                    const tbody = document.querySelector('#attendanceTable tbody');
-                    tbody.innerHTML = data.attendance.map(a => `
-                        <tr>
-                            <td>${new Date(a.timestamp).toLocaleDateString('th-TH')}</td>
-                            <td>${new Date(a.timestamp).toLocaleTimeString('th-TH')}</td>
-                            <td>${a.camera_type === 'classroom' ? '📚 ห้องเรียน' : '👀 ตรวจจับพฤติกรรม'}</td>
-                            <td><span class="badge badge-success">✅ ${a.status}</span></td>
-                        </tr>
-                    `).join('');
+                const response = await fetch('/api/student/' + studentId, {
+                    credentials: 'same-origin'
+                });
+                
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
                 }
+                
+                const data = await response.json();
+                console.log('API Response:', data);
 
-                // Update behavior table
-                if (data.behaviors && data.behaviors.length > 0) {
-                    const tbody = document.querySelector('#behaviorTable tbody');
-                    tbody.innerHTML = data.behaviors.map(b => {
-                        const badgeClass = b.severity === 'warning' ? 'badge-warning' : 'badge-success';
-                        return `
+                if (data.success) {
+                    const attendance = data.attendance || [];
+                    const behaviors = data.behaviors || [];
+
+                    // Calculate stats
+                    const totalAttendance = attendance.length;
+                    const now = new Date();
+                    const currentMonth = now.getMonth();
+                    const currentYear = now.getFullYear();
+                    const monthAttendance = attendance.filter(a => {
+                        const date = new Date(a.timestamp);
+                        return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+                    }).length;
+                    const workingDays = 22; // approximate
+                    const attendanceRate = Math.round((monthAttendance / workingDays) * 100);
+                    const behaviorWarnings = behaviors.filter(b => b.severity === 'warning' || b.severity === 'danger').length;
+
+                    // Update stats
+                    document.getElementById('totalAttendance').textContent = totalAttendance;
+                    document.getElementById('monthAttendance').textContent = monthAttendance;
+                    document.getElementById('attendanceRate').textContent = attendanceRate + '%';
+                    document.getElementById('behaviorWarnings').textContent = behaviorWarnings;
+
+                    // Update attendance table
+                    const attendanceBody = document.querySelector('#attendanceTable tbody');
+                    if (attendance.length > 0) {
+                        attendanceBody.innerHTML = attendance.slice(0, 50).map(a => `
                             <tr>
-                                <td>${new Date(b.timestamp).toLocaleDateString('th-TH')}</td>
-                                <td>${new Date(b.timestamp).toLocaleTimeString('th-TH')}</td>
-                                <td>${b.behavior}</td>
-                                <td><span class="badge ${badgeClass}">${b.severity === 'warning' ? '⚠️ ผิดปกติ' : '✅ ปกติ'}</span></td>
+                                <td>${new Date(a.timestamp).toLocaleDateString('th-TH')}</td>
+                                <td>${new Date(a.timestamp).toLocaleTimeString('th-TH')}</td>
+                                <td>${a.camera_type === 'classroom' ? '📚 ห้องเรียน' : a.camera_type === 'behavior' ? '👀 ตรวจจับพฤติกรรม' : '✋ เช็คชื่อด้วยตนเอง'}</td>
+                                <td><span class="badge badge-success">✅ ${a.status}</span></td>
                             </tr>
-                        `;
-                    }).join('');
+                        `).join('');
+                    } else {
+                        attendanceBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">ยังไม่มีข้อมูล</td></tr>';
+                    }
+
+                    // Update behavior table
+                    const behaviorBody = document.querySelector('#behaviorTable tbody');
+                    if (behaviors.length > 0) {
+                        behaviorBody.innerHTML = behaviors.slice(0, 50).map(b => {
+                            let badgeClass = 'badge-success';
+                            let icon = '✅';
+                            let text = 'ปกติ';
+                            if (b.severity === 'danger') {
+                                badgeClass = 'badge-danger';
+                                icon = '🚨';
+                                text = 'ร้ายแรง';
+                            } else if (b.severity === 'warning') {
+                                badgeClass = 'badge-warning';
+                                icon = '⚠️';
+                                text = 'ผิดปกติ';
+                            }
+                            return `
+                                <tr>
+                                    <td>${new Date(b.timestamp).toLocaleDateString('th-TH')}</td>
+                                    <td>${new Date(b.timestamp).toLocaleTimeString('th-TH')}</td>
+                                    <td>${b.behavior}</td>
+                                    <td><span class="badge ${badgeClass}">${icon} ${text}</span></td>
+                                </tr>
+                            `;
+                        }).join('');
+                    } else {
+                        behaviorBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">ยังไม่มีข้อมูล</td></tr>';
+                    }
+                } else {
+                    console.error('API Error:', data.message);
+                    alert('ข้อผิดพลาด: ' + (data.message || 'ไม่สามารถโหลดข้อมูลได้'));
                 }
             } catch (error) {
                 console.error('Error loading data:', error);
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+                document.querySelector('#attendanceTable tbody').innerHTML = '<tr><td colspan="4" style="text-align: center; color: #f44336;">ไม่สามารถโหลดข้อมูลได้</td></tr>';
+                document.querySelector('#behaviorTable tbody').innerHTML = '<tr><td colspan="4" style="text-align: center; color: #f44336;">ไม่สามารถโหลดข้อมูลได้</td></tr>';
             }
         }
 

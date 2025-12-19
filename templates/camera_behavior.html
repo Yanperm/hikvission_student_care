@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ตรวจจับพฤติกรรม - Student Care</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/notification.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Kanit', sans-serif; background: #1a1a2e; color: white; }
@@ -70,6 +71,7 @@
         </div>
     </div>
 
+    <script src="/static/notification.js"></script>
     <script>
         let video = document.getElementById('video');
         let canvas = document.getElementById('canvas');
@@ -85,7 +87,7 @@
                 monitorBehavior();
                 updateStatus('กำลังตรวจสอบพฤติกรรม...', 'monitoring');
             } catch (err) {
-                alert('ไม่สามารถเปิดกล้องได้: ' + err);
+                showToast('ไม่สามารถเปิดกล้องได้: ' + err, 'error');
             }
         }
 
@@ -97,6 +99,8 @@
                 updateStatus('หยุดการตรวจสอบ', 'monitoring');
             }
         }
+
+        const detectedBehaviors = new Set();
 
         async function monitorBehavior() {
             if (!isMonitoring) return;
@@ -117,18 +121,46 @@
                 const result = await response.json();
 
                 if (result.success && result.student_id) {
-                    // Simulate behavior detection
-                    const behaviors = ['นั่งเรียนปกติ', 'ง่วงนอน', 'คุยกับเพื่อน', 'ไม่สนใจเรียน'];
-                    const randomBehavior = behaviors[Math.floor(Math.random() * behaviors.length)];
-                    const severity = randomBehavior === 'นั่งเรียนปกติ' ? 'normal' : 'warning';
-                    
-                    addBehaviorItem(result.student_id, result.student_name, randomBehavior, severity);
+                    const todayKey = result.student_id + '_' + new Date().toISOString().split('T')[0];
+                    if (!detectedBehaviors.has(todayKey)) {
+                        detectedBehaviors.add(todayKey);
+                        
+                        // Simulate behavior detection
+                        const behaviors = ['นั่งเรียนปกติ', 'ง่วงนอน', 'คุยกับเพื่อน', 'ไม่สนใจเรียน', 'เล่นโทรศัพท์'];
+                        const randomBehavior = behaviors[Math.floor(Math.random() * behaviors.length)];
+                        const severity = randomBehavior === 'นั่งเรียนปกติ' ? 'normal' : 'warning';
+                        
+                        // บันทึกลง database
+                        await saveBehavior(result.student_id, result.student_name, randomBehavior, severity);
+                        
+                        addBehaviorItem(result.student_id, result.student_name, randomBehavior, severity);
+                    } else {
+                        // บันทึกแล้ววันนี้
+                        console.log(result.student_name + ' บันทึกพฤติกรรมแล้ววันนี้');
+                    }
                 }
             } catch (error) {
                 console.error('Error:', error);
             }
 
-            setTimeout(monitorBehavior, 3000);
+            setTimeout(monitorBehavior, 5000);
+        }
+
+        async function saveBehavior(studentId, studentName, behavior, severity) {
+            try {
+                await fetch('/api/behavior', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        student_name: studentName,
+                        behavior: behavior,
+                        severity: severity
+                    })
+                });
+            } catch (error) {
+                console.error('Save behavior error:', error);
+            }
         }
 
         function addBehaviorItem(studentId, studentName, behavior, severity) {
@@ -161,6 +193,27 @@
             status.className = 'status ' + type;
         }
 
+        async function loadTodayBehaviors() {
+            try {
+                const response = await fetch('/api/behavior');
+                const data = await response.json();
+                if (data.success) {
+                    const today = new Date().toISOString().split('T')[0];
+                    const todayRecords = data.behaviors.filter(b => {
+                        const recordDate = new Date(b.timestamp).toISOString().split('T')[0];
+                        return recordDate === today;
+                    });
+                    
+                    todayRecords.reverse().forEach(record => {
+                        addBehaviorItem(record.student_id, record.student_name, record.behavior, record.severity);
+                    });
+                }
+            } catch (error) {
+                console.error('Load behaviors error:', error);
+            }
+        }
+
+        loadTodayBehaviors();
         startCamera();
     </script>
 </body>

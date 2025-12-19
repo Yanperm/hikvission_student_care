@@ -147,7 +147,7 @@
         <div class="card">
             <h2>รายชื่อนักเรียน ({{ students|length }} คน)</h2>
             <div class="students-list">
-                {% for label, student in students.items() %}
+                {% for student in students %}
                 <div class="student-card">
                     <strong>{{ student.name }}</strong><br>
                     รหัส: {{ student.student_id }}

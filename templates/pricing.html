@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แพ็คเก็จและราคา - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; margin-bottom: 30px; }
+        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-links a:hover { background: #667eea; color: white; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 20px 40px; }
+        .header { text-align: center; padding: 40px 20px; color: white; }
+        .header h1 { font-size: 48px; margin-bottom: 20px; }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; margin: 40px 0; }
+        .pricing-card { background: white; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); transition: all 0.3s; position: relative; }
+        .pricing-card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+        .pricing-card.popular { border: 5px solid #FF9800; }
+        .popular-badge { position: absolute; top: -15px; right: 20px; background: #FF9800; color: white; padding: 8px 20px; border-radius: 20px; font-weight: 700; }
+        .package-name { font-size: 28px; font-weight: 700; color: #333; margin-bottom: 10px; }
+        .package-icon { font-size: 64px; margin: 20px 0; }
+        .package-students { font-size: 20px; color: #666; margin-bottom: 20px; }
+        .package-price { font-size: 48px; font-weight: 800; color: #667eea; margin: 20px 0; }
+        .package-price span { font-size: 20px; color: #666; }
+        .features-list { text-align: left; margin: 30px 0; }
+        .features-list li { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .btn-select { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 40px; border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 18px; width: 100%; transition: all 0.3s; }
+        .btn-select:hover { transform: scale(1.05); }
+        .enterprise { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .enterprise .package-name, .enterprise .package-students, .enterprise .package-price { color: white; }
+        .enterprise .features-list li { border-bottom-color: rgba(255,255,255,0.2); }
+        .enterprise .btn-select { background: white; color: #667eea; }
+        .comparison { background: white; border-radius: 20px; padding: 40px; margin: 40px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: center; border-bottom: 1px solid #e0e0e0; }
+        th { background: #f8f9fa; font-weight: 600; }
+        .check { color: #4CAF50; font-size: 24px; }
+        .cross { color: #f44336; font-size: 24px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care</div>
+            <div class="nav-links">
+                <a href="/">🏠 หน้าหลัก</a>
+                <a href="/pricing">💰 แพ็คเก็จ</a>
+                <a href="/all_features">📋 ฟีเจอร์</a>
+                <a href="/admin">👨💼 Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>💰 แพ็คเก็จและราคา</h1>
+        <p>เลือกแพ็คเก็จที่เหมาะกับขนาดโรงเรียนของคุณ</p>
+    </div>
+
+    <div class="container">
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <div class="package-icon">🏫</div>
+                <div class="package-name">Starter</div>
+                <div class="package-students">โรงเรียนขนาดเล็ก<br>1-100 คน</div>
+                <div class="package-price">฿9,900<span>/ปี</span></div>
+                <p style="font-size: 14px; color: #999; margin-top: -10px;">ยังไม่รวม VAT 7%</p>
+                <ul class="features-list">
+                    <li>✅ ฟีเจอร์หลัก 6 อย่าง</li>
+                    <li>✅ Face Recognition</li>
+                    <li>✅ เช็คชื่ออัตโนมัติ</li>
+                    <li>✅ Dashboard Admin</li>
+                    <li>✅ Cloud Sync 10GB</li>
+                    <li>✅ 1 โรงเรียน</li>
+                    <li>✅ Support Email</li>
+                    <li>❌ Dashboard ผู้ปกครอง</li>
+                    <li>❌ AI Analytics</li>
+                    <li>❌ Multi-Camera</li>
+                </ul>
+                <button class="btn-select" onclick="selectPackage('Starter')">เลือกแพ็คเก็จนี้</button>
+            </div>
+
+            <div class="pricing-card popular">
+                <div class="popular-badge">⭐ ยอดนิยม</div>
+                <div class="package-icon">🏫</div>
+                <div class="package-name">Professional</div>
+                <div class="package-students">โรงเรียนขนาดกลาง<br>101-500 คน</div>
+                <div class="package-price">฿29,900<span>/ปี</span></div>
+                <p style="font-size: 14px; color: #333; margin-top: -10px;">ยังไม่รวม VAT 7%</p>
+                <ul class="features-list">
+                    <li>✅ ฟีเจอร์ทั้งหมด 21 อย่าง</li>
+                    <li>✅ AI Face Recognition 99.6%</li>
+                    <li>✅ Dashboard ผู้ปกครอง</li>
+                    <li>✅ รายงานขั้นสูง</li>
+                    <li>✅ ตรวจจับอารมณ์</li>
+                    <li>✅ ดูแลสุขภาพจิต</li>
+                    <li>✅ ป้องกันการกลั่นแกล้ง</li>
+                    <li>✅ Cloud Sync 50GB</li>
+                    <li>✅ 1 โรงเรียน</li>
+                    <li>✅ Support 24/7</li>
+                </ul>
+                <button class="btn-select" onclick="selectPackage('Professional')">เลือกแพ็คเก็จนี้</button>
+            </div>
+
+            <div class="pricing-card">
+                <div class="package-icon">🏫</div>
+                <div class="package-name">Business</div>
+                <div class="package-students">โรงเรียนขนาดใหญ่<br>501-2,000 คน</div>
+                <div class="package-price">฿79,900<span>/ปี</span></div>
+                <p style="font-size: 14px; color: #999; margin-top: -10px;">ยังไม่รวม VAT 7%</p>
+                <ul class="features-list">
+                    <li>✅ ฟีเจอร์ทั้งหมด 21 อย่าง</li>
+                    <li>✅ AI Face Recognition 99.6%</li>
+                    <li>✅ Multi-Camera (ไม่จำกัด)</li>
+                    <li>✅ กล้องหลายจุด</li>
+                    <li>✅ PWA Mobile App</li>
+                    <li>✅ Learning Analytics</li>
+                    <li>✅ Cloud Sync 200GB</li>
+                    <li>✅ 1 โรงเรียน</li>
+                    <li>✅ Priority Support</li>
+                    <li>✅ On-site Training</li>
+                </ul>
+                <button class="btn-select" onclick="selectPackage('Business')">เลือกแพ็คเก็จนี้</button>
+            </div>
+
+            <div class="pricing-card enterprise">
+                <div class="package-icon">🏢</div>
+                <div class="package-name">Enterprise</div>
+                <div class="package-students">หลายโรงเรียน<br>2,000+ คน</div>
+                <div class="package-price">ติดต่อเรา</div>
+                <ul class="features-list">
+                    <li>✅ ฟีเจอร์ทั้งหมด + Custom</li>
+                    <li>✅ Multi-School Support</li>
+                    <li>✅ ไม่จำกัดจำนวนนักเรียน</li>
+                    <li>✅ ไม่จำกัดจำนวนโรงเรียน</li>
+                    <li>✅ Custom AI Training</li>
+                    <li>✅ API Integration</li>
+                    <li>✅ Cloud Sync Unlimited</li>
+                    <li>✅ Dedicated Server</li>
+                    <li>✅ 24/7 Premium Support</li>
+                    <li>✅ Custom Development</li>
+                </ul>
+                <button class="btn-select" onclick="contactSales()">ติดต่อฝ่ายขาย</button>
+            </div>
+        </div>
+
+        <div class="comparison">
+            <h2 style="text-align: center; margin-bottom: 30px;">📊 เปรียบเทียบแพ็คเก็จ</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ฟีเจอร์</th>
+                        <th>Starter</th>
+                        <th>Professional</th>
+                        <th>Business</th>
+                        <th>Enterprise</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>จำนวนนักเรียน</td>
+                        <td>1-100</td>
+                        <td>101-500</td>
+                        <td>501-2,000</td>
+                        <td>ไม่จำกัด</td>
+                    </tr>
+                    <tr>
+                        <td>จำนวนโรงเรียน</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>ไม่จำกัด</td>
+                    </tr>
+                    <tr>
+                        <td>Face Recognition</td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>Dashboard ผู้ปกครอง</td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>AI Analytics</td>
+                        <td><span class="cross">✗</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                        <td><span class="check">✓</span></td>
+                    </tr>
+                    <tr>
+                        <td>Multi-Camera</td>
+                        <td><span class="cross">✗</span></td>
+                        <td>4 กล้อง</td>
+                        <td>ไม่จำกัด</td>
+                        <td>ไม่จำกัด</td>
+                    </tr>
+                    <tr>
+                        <td>Cloud Storage</td>
+                        <td>10GB</td>
+                        <td>50GB</td>
+                        <td>200GB</td>
+                        <td>ไม่จำกัด</td>
+                    </tr>
+                    <tr>
+                        <td>Support</td>
+                        <td>Email</td>
+                        <td>24/7</td>
+                        <td>Priority</td>
+                        <td>Premium</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="background: white; padding: 40px; border-radius: 20px; text-align: center;">
+            <h2 style="margin-bottom: 20px;">💡 ไม่แน่ใจว่าควรเลือกแพ็คเก็จไหน?</h2>
+            <p style="font-size: 18px; color: #666; margin-bottom: 30px;">ติดต่อทีมงานเพื่อปรึกษาฟรี</p>
+            <button class="btn-select" style="width: auto; padding: 15px 50px;" onclick="contactSales()">📞 ติดต่อเรา</button>
+        </div>
+    </div>
+
+    <script>
+        function selectPackage(packageName) {
+            alert(`✅ คุณเลือกแพ็คเก็จ: ${packageName}\n\nทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง\n\nEmail: sales@softubon.com\nTel: 02-xxx-xxxx`);
+        }
+
+        function contactSales() {
+            alert(`📞 ติดต่อฝ่ายขาย\n\nSOFTUBON CO.,LTD.\nEmail: sales@softubon.com\nTel: 02-xxx-xxxx\nLine: @softubon\n\nเปิดทำการ: จันทร์-ศุกร์ 9:00-18:00`);
+        }
+    </script>
+</body>
+</html>

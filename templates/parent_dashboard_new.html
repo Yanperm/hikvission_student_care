@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard ผู้ปกครอง</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/notification.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; margin-bottom: 30px; }
+        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-links a:hover { background: #667eea; color: white; }
+        .logout { background: #f44336; color: white; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 20px 40px; }
+        .header { text-align: center; padding: 40px 20px; color: white; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .student-card { background: #f8f9fa; padding: 25px; border-radius: 15px; margin-bottom: 20px; border-left: 5px solid #667eea; }
+        .student-card h3 { color: #333; margin-bottom: 10px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 50px; cursor: pointer; font-weight: 600; }
+        .btn:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care - ผู้ปกครอง</div>
+            <div class="nav-links">
+                <a href="/">🏠 หน้าหลัก</a>
+                <a href="/parent_dashboard">👨👩👧 Dashboard</a>
+                <a href="/logout" class="logout">🚪 ออกจากระบบ</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>👨👩👧 Dashboard ผู้ปกครอง</h1>
+        <p>ติดตามการเรียนและพฤติกรรมของบุตรหลาน</p>
+    </div>
+
+    <div class="container">
+        {% if students %}
+            {% for student in students %}
+            <div class="student-card">
+                <h3>{{ student.name }} ({{ student.student_id }})</h3>
+                <p>ห้อง: {{ student.class_name or '-' }}</p>
+                <p>สถานะ LINE: 
+                    {% if student.has_line %}
+                    <span style="color: #4CAF50;">✅ เชื่อมต่อแล้ว</span>
+                    {% else %}
+                    <span style="color: #FF9800;">⚠️ ยังไม่ได้เชื่อมต่อ</span>
+                    {% endif %}
+                </p>
+                <button class="btn" onclick="location.href='/student/{{ student.student_id }}'" style="margin-top: 10px;">ดูรายละเอียด</button>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <p style="text-align: center; color: #666;">ยังไม่มีข้อมูลบุตรหลาน กรุณาติดต่อโรงเรียนเพื่อเชื่อมโยงบัญชี</p>
+            </div>
+        {% endif %}
+
+        <div class="card">
+            <h2>💚 ตั้งค่า LINE Official Account</h2>
+            <p style="margin-bottom: 20px;">รับการแจ้งเตือนทาง LINE เมื่อบุตรเข้า-ออกโรงเรียน</p>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="color: #06C755; margin-bottom: 15px;">📱 วิธีตั้งค่า (ง่ายมาก!):</h3>
+                <ol style="margin-left: 20px; color: #666; line-height: 2;">
+                    <li>เพิ่มเพื่อน LINE OA ของโรงเรียน (สแกน QR Code)</li>
+                    <li>ส่งข้อความ <strong>"รหัสนักเรียน"</strong> (ตัวอย่าง: STD001) ไปที่ LINE OA</li>
+                    <li>ระบบจะตอบกลับว่า <strong>"✅ เชื่อมต่อสำเร็จ!"</strong></li>
+                    <li>เสร็จ! จะได้รับการแจ้งเตือนทันที</li>
+                </ol>
+            </div>
+            
+            <div style="margin: 20px 0;">
+                <h4>สถานะการเชื่อมต่อ:</h4>
+                <div style="margin-top: 15px;">
+                    {% for student in students %}
+                    <div style="padding: 15px; background: {% if student.has_line %}#d4edda{% else %}#f8f9fa{% endif %}; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>{{ student.name }}</strong> ({{ student.student_id }})<br>
+                            <small style="color: #666;">ห้อง: {{ student.class_name or '-' }}</small>
+                        </div>
+                        <div>
+                            {% if student.has_line %}
+                            <span style="color: #155724; font-weight: 600;">✅ เชื่อมต่อแล้ว</span>
+                            {% else %}
+                            <span style="color: #856404; font-weight: 600;">⚠️ ยังไม่ได้เชื่อมต่อ</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/notification.js"></script>
+</body>
+</html>
