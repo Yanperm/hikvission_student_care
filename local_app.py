@@ -669,7 +669,6 @@ def recognize_face():
         return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/add_student', methods=['POST'])
-@login_required
 def add_student():
     student_id = request.form.get('student_id')
     name = request.form.get('name')
