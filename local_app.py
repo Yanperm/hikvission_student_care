@@ -1,7 +1,11 @@
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from functools import wraps
 from local_client import CloudSync
-from database import db
+import os
+if os.environ.get('USE_RDS') == 'true':
+    from database_rds import db
+else:
+    from database import db
 from line_oa import line_oa
 import os
 import json
@@ -620,42 +624,49 @@ def delete_user_api(user_id):
 @app.route('/recognize_face', methods=['POST'])
 @login_required
 def recognize_face():
-    import cv2
-    import numpy as np
-    
-    image_data = request.json.get('image')
-    camera_type = request.json.get('camera_type', 'general')
-    school_id = get_current_school_id()
-    
-    if not image_data:
-        return jsonify({'success': False})
-    
-    # Convert base64 to image
-    image_data = image_data.split(',')[1]
-    nparr = np.frombuffer(base64.b64decode(image_data), np.uint8)
-    frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    
-    # Simple face detection
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    
-    if len(faces) > 0:
-        students = db.get_students(school_id)
-        if students:
-            first_student = students[0]
-            # บันทึกการเข้าเรียน
-            db.add_attendance(first_student['student_id'], first_student['name'], school_id, camera_type)
-            cloud_sync.send_attendance(first_student['student_id'], first_student['name'], camera_type=camera_type)
-            return jsonify({
-                'success': True,
-                'student_id': first_student['student_id'],
-                'student_name': first_student['name'],
-                'class_name': first_student.get('class_name', ''),
-                'camera_type': camera_type
-            })
-    
-    return jsonify({'success': False})
+    try:
+        import cv2
+        import numpy as np
+        
+        image_data = request.json.get('image')
+        camera_type = request.json.get('camera_type', 'general')
+        school_id = get_current_school_id()
+        
+        if not image_data:
+            return jsonify({'success': False, 'message': 'No image data'})
+        
+        # Convert base64 to image
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        
+        nparr = np.frombuffer(base64.b64decode(image_data), np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if frame is None:
+            return jsonify({'success': False, 'message': 'Invalid image'})
+        
+        # Simple face detection
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+        
+        if len(faces) > 0:
+            students = db.get_students(school_id)
+            if students:
+                first_student = students[0]
+                db.add_attendance(first_student['student_id'], first_student['name'], school_id, camera_type)
+                cloud_sync.send_attendance(first_student['student_id'], first_student['name'], camera_type=camera_type)
+                return jsonify({
+                    'success': True,
+                    'student_id': first_student['student_id'],
+                    'student_name': first_student['name'],
+                    'class_name': first_student.get('class_name', ''),
+                    'camera_type': camera_type
+                })
+        
+        return jsonify({'success': False, 'message': 'No face detected'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/add_student', methods=['POST'])
 @login_required
@@ -674,7 +685,8 @@ def add_student():
     image_path = f"data/students/{student_id}.jpg"
     
     # Convert base64 to image
-    image_data = image_data.split(',')[1]
+    if ',' in image_data:
+        image_data = image_data.split(',')[1]
     with open(image_path, 'wb') as f:
         f.write(base64.b64decode(image_data))
     
