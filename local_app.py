@@ -674,7 +674,8 @@ def add_student():
         name = request.form.get('name')
         class_name = request.form.get('class_name', '')
         image_data = request.form.get('image_data')
-        school_id = get_current_school_id()
+        # ใช้ default school_id ถ้าไม่ได้ login
+        school_id = session.get('school_id', 'SCH001')
         
         if not student_id or not name or not image_data:
             return jsonify({'success': False, 'message': 'กรุณากรอกข้อมูลให้ครบถ้วน'})
