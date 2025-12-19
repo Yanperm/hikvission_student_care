@@ -127,16 +127,21 @@
                 </div>
                 
                 <div class="video-container">
-                    <video id="video" autoplay></video>
+                    <video id="video" autoplay style="display:none;"></video>
                     <canvas id="canvas"></canvas>
                     <div id="preview" style="margin: 10px 0;"></div>
+                    
+                    <!-- อัพโหลดรูป -->
+                    <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
+                    
                     <div>
-                        <button type="button" class="btn-capture" onclick="startCamera()">เปิดกล้อง</button>
-                        <button type="button" class="btn-capture" onclick="capturePhoto()">ถ่ายรูป</button>
-                        <button type="button" class="btn-capture" onclick="retakePhoto()" style="background: #ff9800;">ถ่ายใหม่</button>
+                        <button type="button" class="btn-capture" onclick="document.getElementById('fileInput').click()">📷 อัพโหลดรูป</button>
+                        <button type="button" class="btn-capture" onclick="startCamera()" style="background: #4CAF50;">📹 ถ่ายด้วยกล้อง</button>
+                        <button type="button" class="btn-capture" onclick="capturePhoto()" id="captureBtn" style="display:none;">ถ่ายรูป</button>
+                        <button type="button" class="btn-capture" onclick="retakePhoto()" style="background: #ff9800;">ลบรูป</button>
                     </div>
                     <p style="font-size: 14px; color: #666; margin-top: 10px;">
-                        💡 เคล็ดลับ: ให้ใบหน้าอยู่ตรงกลาง แสงสว่างเพียงพอ และมองตรงกล้อง
+                        💡 สามารถอัพโหลดรูปหรือถ่ายด้วยกล้อง (HTTPS เท่านั้น)
                     </p>
                 </div>
                 
@@ -166,13 +171,28 @@
         let canvas = document.getElementById('canvas');
         let capturedImage = null;
 
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    capturedImage = e.target.result;
+                    const preview = document.getElementById('preview');
+                    preview.innerHTML = '<img src="' + capturedImage + '" style="max-width: 300px; border-radius: 10px; border: 3px solid #4CAF50;">';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
         function startCamera() {
             navigator.mediaDevices.getUserMedia({ video: true })
                 .then(stream => {
                     video.srcObject = stream;
+                    video.style.display = 'block';
+                    document.getElementById('captureBtn').style.display = 'inline-block';
                 })
                 .catch(err => {
-                    alert('ไม่สามารถเปิดกล้องได้: ' + err);
+                    alert('ไม่สามารถเปิดกล้องได้ (ต้องใช้ HTTPS) กรุณาอัพโหลดรูปแทน');
                 });
         }
 
