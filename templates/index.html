@@ -216,32 +216,39 @@
                 return;
             }
             
-            const formData = new FormData();
-            formData.append('student_id', studentId);
-            formData.append('name', name);
-            formData.append('class_name', className);
-            // ส่งเฉพาะ base64 string (ตัด data:image/jpeg;base64, ออก)
-            const base64Data = capturedImage.split(',')[1];
-            formData.append('image_data', base64Data);
-            
-            const response = await fetch('/add_student', {
-                method: 'POST',
-                body: formData,
-                credentials: 'include'
-            });
-            
-            const result = await response.json();
-            const alertDiv = document.getElementById('alert');
-            
-            if (result.success) {
-                alertDiv.className = 'alert alert-success';
-                alertDiv.textContent = '✅ ' + result.message;
-                alertDiv.style.display = 'block';
+            try {
+                // ส่งแบบ FormData เหมือนที่ทดสอบ
+                const formData = new FormData();
+                formData.append('student_id', studentId);
+                formData.append('name', name);
+                formData.append('class_name', className);
+                // ส่งเฉพาะ base64 string
+                const base64Data = capturedImage.split(',')[1];
+                formData.append('image_data', base64Data);
                 
-                setTimeout(() => location.reload(), 2000);
-            } else {
+                const response = await fetch('/add_student', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                const alertDiv = document.getElementById('alert');
+                
+                if (result.success) {
+                    alertDiv.className = 'alert alert-success';
+                    alertDiv.textContent = '✅ ' + result.message;
+                    alertDiv.style.display = 'block';
+                    
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    alertDiv.className = 'alert alert-error';
+                    alertDiv.textContent = '❌ ' + result.message;
+                    alertDiv.style.display = 'block';
+                }
+            } catch (error) {
+                const alertDiv = document.getElementById('alert');
                 alertDiv.className = 'alert alert-error';
-                alertDiv.textContent = '❌ ' + result.message;
+                alertDiv.textContent = '❌ เกิดข้อผิดพลาด: ' + error.message;
                 alertDiv.style.display = 'block';
             }
         };
