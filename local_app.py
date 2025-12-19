@@ -30,6 +30,10 @@ def index():
     students = load_students()
     return render_template('index.html', students=students)
 
+@app.route('/features')
+def features():
+    return render_template('features.html')
+
 @app.route('/admin')
 def admin():
     students = load_students()
