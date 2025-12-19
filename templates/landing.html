@@ -4,69 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Care - ระบบดูแลนักเรียนอัจฉริยะ</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Kanit', sans-serif; overflow-x: hidden; }
         
-        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; color: white; text-align: center; position: relative; overflow: hidden; }
-        .hero::before { content: ''; position: absolute; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 50px 50px; animation: move 20s linear infinite; }
-        @keyframes move { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 50px); } }
+        /* Navbar */
+        .navbar { position: fixed; top: 0; width: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px 0; z-index: 1000; box-shadow: 0 2px 20px rgba(0,0,0,0.1); }
+        .nav-container { max-width: 1400px; margin: 0 auto; padding: 0 40px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .nav-links { display: flex; gap: 30px; align-items: center; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 600; transition: all 0.3s; }
+        .nav-links a:hover { color: #667eea; }
+        .btn-nav { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 30px; border-radius: 50px; }
         
-        .hero-content { position: relative; z-index: 1; max-width: 1200px; padding: 40px 20px; }
-        .hero h1 { font-size: 72px; font-weight: 800; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
-        .hero p { font-size: 28px; margin-bottom: 40px; opacity: 0.95; }
-        .hero-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
-        .btn-hero { padding: 20px 50px; font-size: 20px; font-weight: 600; border: none; border-radius: 50px; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s; }
+        /* Hero */
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; color: white; text-align: center; position: relative; overflow: hidden; padding-top: 80px; }
+        .hero::before { content: ''; position: absolute; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 2px, transparent 2px); background-size: 60px 60px; animation: move 30s linear infinite; }
+        @keyframes move { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(60px, 60px) rotate(360deg); } }
+        
+        .hero-content { position: relative; z-index: 1; max-width: 1200px; padding: 60px 40px; }
+        .hero h1 { font-size: 80px; font-weight: 900; margin-bottom: 30px; text-shadow: 3px 3px 6px rgba(0,0,0,0.3); line-height: 1.2; animation: fadeInUp 1s; }
+        .hero .subtitle { font-size: 32px; margin-bottom: 20px; opacity: 0.95; animation: fadeInUp 1.2s; }
+        .hero .description { font-size: 22px; margin-bottom: 50px; opacity: 0.9; animation: fadeInUp 1.4s; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .hero-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; animation: fadeInUp 1.6s; }
+        .btn-hero { padding: 22px 55px; font-size: 22px; font-weight: 700; border: none; border-radius: 50px; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.4s; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .btn-primary { background: white; color: #667eea; }
-        .btn-primary:hover { transform: scale(1.05); box-shadow: 0 10px 40px rgba(255,255,255,0.3); }
-        .btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; }
-        .btn-secondary:hover { background: white; color: #667eea; }
+        .btn-primary:hover { transform: translateY(-5px) scale(1.05); box-shadow: 0 15px 50px rgba(255,255,255,0.4); }
+        .btn-secondary { background: rgba(255,255,255,0.15); color: white; border: 3px solid white; backdrop-filter: blur(10px); }
+        .btn-secondary:hover { background: white; color: #667eea; transform: translateY(-5px); }
         
-        .features-section { padding: 100px 20px; background: white; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .section-title { text-align: center; margin-bottom: 60px; }
-        .section-title h2 { font-size: 48px; color: #333; margin-bottom: 20px; }
-        .section-title p { font-size: 20px; color: #666; }
+        /* Features */
+        .features-section { padding: 120px 40px; background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%); }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .section-title { text-align: center; margin-bottom: 80px; }
+        .section-title h2 { font-size: 56px; font-weight: 800; color: #333; margin-bottom: 20px; }
+        .section-title p { font-size: 24px; color: #666; }
         
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
-        .feature-box { text-align: center; padding: 40px; border-radius: 20px; transition: all 0.3s; }
-        .feature-box:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-        .feature-icon { font-size: 80px; margin-bottom: 20px; }
-        .feature-box h3 { font-size: 24px; color: #333; margin-bottom: 15px; }
-        .feature-box p { color: #666; line-height: 1.8; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 40px; }
+        .feature-box { background: white; text-align: center; padding: 50px 40px; border-radius: 25px; transition: all 0.4s; box-shadow: 0 5px 20px rgba(0,0,0,0.08); border: 2px solid transparent; }
+        .feature-box:hover { transform: translateY(-15px); box-shadow: 0 20px 60px rgba(102,126,234,0.2); border-color: #667eea; }
+        .feature-icon { font-size: 90px; margin-bottom: 25px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1)); }
+        .feature-box h3 { font-size: 28px; font-weight: 700; color: #333; margin-bottom: 20px; }
+        .feature-box p { color: #666; line-height: 1.9; font-size: 18px; }
         
-        .stats-section { padding: 100px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; text-align: center; }
-        .stat-box h3 { font-size: 64px; font-weight: 800; margin-bottom: 10px; }
-        .stat-box p { font-size: 20px; opacity: 0.9; }
+        /* Stats */
+        .stats-section { padding: 120px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; position: relative; overflow: hidden; }
+        .stats-section::before { content: ''; position: absolute; width: 100%; height: 100%; background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>'); opacity: 0.3; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 50px; text-align: center; position: relative; z-index: 1; }
+        .stat-box { padding: 40px; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px; transition: all 0.3s; }
+        .stat-box:hover { transform: scale(1.05); background: rgba(255,255,255,0.15); }
+        .stat-box h3 { font-size: 72px; font-weight: 900; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .stat-box p { font-size: 22px; opacity: 0.95; font-weight: 500; }
         
-        .cta-section { padding: 100px 20px; background: #f8f9fa; text-align: center; }
-        .cta-section h2 { font-size: 48px; color: #333; margin-bottom: 30px; }
-        .cta-section p { font-size: 24px; color: #666; margin-bottom: 40px; }
+        /* CTA */
+        .cta-section { padding: 120px 40px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); text-align: center; }
+        .cta-section h2 { font-size: 56px; font-weight: 800; color: #333; margin-bottom: 30px; }
+        .cta-section p { font-size: 26px; color: #666; margin-bottom: 50px; max-width: 800px; margin-left: auto; margin-right: auto; }
         
-        .footer { background: #333; color: white; padding: 40px 20px; text-align: center; }
+        /* Footer */
+        .footer { background: #1a1a1a; color: white; padding: 60px 40px 30px; }
+        .footer-content { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; margin-bottom: 40px; }
+        .footer-section h3 { font-size: 22px; margin-bottom: 20px; color: #667eea; }
+        .footer-section p, .footer-section a { color: #ccc; line-height: 2; text-decoration: none; display: block; }
+        .footer-section a:hover { color: white; }
+        .footer-bottom { text-align: center; padding-top: 30px; border-top: 1px solid #333; color: #999; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 48px; }
+            .hero .subtitle { font-size: 24px; }
+            .section-title h2 { font-size: 36px; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care</div>
+            <div class="nav-links">
+                <a href="#features">ฟีเจอร์</a>
+                <a href="/all_features">ฟีเจอร์ทั้งหมด</a>
+                <a href="/pricing">แพ็คเก็จ</a>
+                <a href="/login" class="btn-nav">เข้าสู่ระบบ</a>
+            </div>
+        </div>
+    </nav>
+
     <section class="hero">
         <div class="hero-content">
             <h1>🎓 Student Care</h1>
-            <p>ระบบดูแลนักเรียนอัจฉริยะด้วย AI และ Face Recognition</p>
-            <p style="font-size: 20px; margin-bottom: 50px;">ดูแลนักเรียนทั้งด้านการเรียน สุขภาพจิต และความปลอดภัย</p>
+            <div class="subtitle">ระบบดูแลนักเรียนอัจฉริยะด้วย AI</div>
+            <div class="description">ดูแลนักเรียนทั้งด้านการเรียน สุขภาพจิต และความปลอดภัย<br>ด้วยเทคโนโลยี Face Recognition และ Cloud Computing</div>
             <div class="hero-buttons">
-                <a href="/login" class="btn-hero btn-primary">🔐 เข้าสู่ระบบ</a>
-                <a href="/all_features" class="btn-hero btn-secondary">🚀 ดูฟีเจอร์</a>
-                <a href="/pricing" class="btn-hero btn-secondary">💰 แพ็คเก็จ</a>
+                <a href="/login" class="btn-hero btn-primary">🚀 เริ่มใช้งานฟรี</a>
+                <a href="/all_features" class="btn-hero btn-secondary">📋 ดูฟีเจอร์ทั้งหมด</a>
             </div>
         </div>
     </section>
 
-    <section class="features-section">
+    <section class="features-section" id="features">
         <div class="container">
             <div class="section-title">
                 <h2>ทำไมต้อง Student Care?</h2>
-                <p>ระบบดูแลนักเรียนที่ครบครันที่สุด</p>
+                <p>ระบบดูแลนักเรียนที่ครบครันและทันสมัยที่สุด</p>
             </div>
             <div class="features-grid">
                 <div class="feature-box">
@@ -105,8 +148,9 @@
 
     <section class="stats-section">
         <div class="container">
-            <div class="section-title" style="color: white;">
+            <div class="section-title" style="color: white; margin-bottom: 60px;">
                 <h2>ระบบที่ครบครันที่สุด</h2>
+                <p style="color: rgba(255,255,255,0.9);">ตัวเลขที่พิสูจน์ความเป็นเลิศ</p>
             </div>
             <div class="stats-grid">
                 <div class="stat-box">
@@ -132,16 +176,40 @@
     <section class="cta-section">
         <div class="container">
             <h2>พร้อมเริ่มต้นแล้วหรือยัง?</h2>
-            <p>ดูแลนักเรียนของคุณด้วยเทคโนโลยีที่ทันสมัยที่สุด</p>
-            <a href="/all_features" class="btn-hero btn-primary" style="font-size: 24px; padding: 25px 60px;">🚀 เริ่มใช้งานเลย</a>
+            <p>ดูแลนักเรียนของคุณด้วยเทคโนโลยีที่ทันสมัยที่สุด<br>เริ่มต้นใช้งานได้ทันที ไม่ต้องติดตั้งซับซ้อน</p>
+            <a href="/login" class="btn-hero btn-primary" style="font-size: 26px; padding: 28px 70px;">🚀 เริ่มใช้งานเลย</a>
         </div>
     </section>
 
     <footer class="footer">
-        <div class="container">
-            <p style="font-size: 18px; margin-bottom: 20px;">🎓 Student Care - ระบบดูแลนักเรียนอัจฉริยะ</p>
-            <p>Powered by AI, Face Recognition & AWS Cloud</p>
-            <p style="margin-top: 20px; opacity: 0.7;">© 2025 SOFTUBON CO.,LTD. (Student Care System.) All rights reserved.</p>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>🎓 Student Care</h3>
+                <p>ระบบดูแลนักเรียนอัจฉริยะด้วย AI และ Face Recognition</p>
+            </div>
+            <div class="footer-section">
+                <h3>ฟีเจอร์</h3>
+                <a href="/all_features">ฟีเจอร์ทั้งหมด 21 ฟีเจอร์</a>
+                <a href="/ai_face_recognition">AI Face Recognition</a>
+                <a href="/mental_health">ดูแลสุขภาพจิต</a>
+                <a href="/anti_bullying">ป้องกันการกลั่นแกล้ง</a>
+            </div>
+            <div class="footer-section">
+                <h3>บริการ</h3>
+                <a href="/pricing">แพ็คเก็จและราคา</a>
+                <a href="/login">เข้าสู่ระบบ</a>
+                <a href="/pwa_mobile">Mobile App</a>
+            </div>
+            <div class="footer-section">
+                <h3>ติดต่อเรา</h3>
+                <p>📧 support@softubon.com</p>
+                <p>🌐 www.softubon.com</p>
+                <p>☁️ AWS Cloud Powered</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 SOFTUBON CO.,LTD. (Student Care System.) All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 14px;">Powered by AI, Face Recognition & AWS Cloud</p>
         </div>
     </footer>
 </body>
