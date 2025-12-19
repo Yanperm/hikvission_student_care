@@ -130,20 +130,13 @@ class Database:
             )
         ''')
         
-        # Insert default users if not exists
-        cursor.execute("SELECT COUNT(*) FROM users")
+        # Insert only super admin if not exists
+        cursor.execute("SELECT COUNT(*) FROM users WHERE role='super_admin'")
         if cursor.fetchone()[0] == 0:
-            default_users = [
-                ('superadmin@softubon.com', 'Softubon@2025', 'Super Admin', 'super_admin', None),
-                ('admin@school.com', 'admin123', 'School Admin', 'admin', 'SCH001'),
-                ('teacher@school.com', 'teacher123', 'Teacher', 'teacher', 'SCH001'),
-                ('parent@school.com', 'parent123', 'Parent', 'parent', 'SCH001')
-            ]
-            for user in default_users:
-                cursor.execute('''
-                    INSERT INTO users (username, password, name, role, school_id, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                ''', (*user, datetime.now().isoformat()))
+            cursor.execute('''
+                INSERT INTO users (username, password, name, role, school_id, created_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', ('superadmin@softubon.com', 'Softubon@2025', 'Super Admin', 'super_admin', None, datetime.now().isoformat()))
         
         conn.commit()
         conn.close()
