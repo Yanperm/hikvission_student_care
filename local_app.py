@@ -72,10 +72,11 @@ def checkin():
 @app.route('/manual_checkin', methods=['POST'])
 def manual_checkin():
     student_id = request.json.get('student_id')
+    camera_type = request.json.get('camera_type', 'general')
     students = load_students()
     if student_id in students:
         student = students[student_id]
-        cloud_sync.send_attendance(student_id, student['name'])
+        cloud_sync.send_attendance(student_id, student['name'], camera_type=camera_type)
         return jsonify({'success': True, 'message': 'Check-in success'})
     return jsonify({'success': False, 'message': 'Student not found'})
 

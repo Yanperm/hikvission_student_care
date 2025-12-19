@@ -15,7 +15,10 @@ def init_db():
                  (student_id TEXT PRIMARY KEY, student_name TEXT, class_name TEXT, created_at TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS attendance
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id TEXT, student_name TEXT, 
-                  timestamp TEXT, status TEXT)''')
+                  timestamp TEXT, status TEXT, camera_type TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS behaviors
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, student_id TEXT, student_name TEXT,
+                  timestamp TEXT, behavior TEXT, severity TEXT, camera_type TEXT)''')
     conn.commit()
     conn.close()
 
@@ -24,8 +27,19 @@ def record_attendance():
     data = request.json
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    c.execute("INSERT INTO attendance (student_id, student_name, timestamp, status) VALUES (?, ?, ?, ?)",
-              (data['student_id'], data['student_name'], data['timestamp'], data['status']))
+    c.execute("INSERT INTO attendance (student_id, student_name, timestamp, status, camera_type) VALUES (?, ?, ?, ?, ?)",
+              (data['student_id'], data['student_name'], data['timestamp'], data['status'], data.get('camera_type', 'general')))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True}), 200
+
+@app.route('/api/behavior', methods=['POST'])
+def record_behavior():
+    data = request.json
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("INSERT INTO behaviors (student_id, student_name, timestamp, behavior, severity, camera_type) VALUES (?, ?, ?, ?, ?, ?)",
+              (data['student_id'], data['student_name'], data['timestamp'], data['behavior'], data['severity'], data.get('camera_type', 'behavior')))
     conn.commit()
     conn.close()
     return jsonify({'success': True}), 200
@@ -69,10 +83,15 @@ def get_student_profile(student_id):
     c.execute("SELECT * FROM attendance WHERE student_id = ? ORDER BY timestamp DESC", (student_id,))
     attendance = c.fetchall()
     
+    # Get behavior records
+    c.execute("SELECT * FROM behaviors WHERE student_id = ? ORDER BY timestamp DESC", (student_id,))
+    behaviors = c.fetchall()
+    
     # Calculate stats
     total_attendance = len(attendance)
     month_attendance = len([a for a in attendance if a[2].startswith(datetime.now().strftime('%Y-%m'))])
-    attendance_rate = int((month_attendance / 20) * 100) if month_attendance else 0  # Assume 20 school days per month
+    attendance_rate = int((month_attendance / 20) * 100) if month_attendance else 0
+    behavior_warnings = len([b for b in behaviors if b[4] == 'warning'])
     
     conn.close()
     
@@ -80,9 +99,9 @@ def get_student_profile(student_id):
         'total_attendance': total_attendance,
         'month_attendance': month_attendance,
         'attendance_rate': attendance_rate,
-        'behavior_warnings': 0,
-        'attendance': [{'timestamp': a[2], 'status': a[3], 'camera_type': 'classroom'} for a in attendance[:10]],
-        'behaviors': []
+        'behavior_warnings': behavior_warnings,
+        'attendance': [{'timestamp': a[2], 'status': a[3], 'camera_type': a[4] if len(a) > 4 else 'general'} for a in attendance[:10]],
+        'behaviors': [{'timestamp': b[2], 'behavior': b[3], 'severity': b[4]} for b in behaviors[:10]]
     })
 
 @app.route('/')
