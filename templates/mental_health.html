@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ดูแลสุขภาพจิต - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; margin-bottom: 30px; }
+        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-links a:hover { background: #667eea; color: white; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 20px 40px; }
+        .header { text-align: center; padding: 40px 20px; color: white; }
+        .header h1 { font-size: 48px; margin-bottom: 20px; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .alert-box { padding: 20px; border-radius: 15px; margin: 15px 0; border-left: 5px solid; }
+        .alert-danger { background: #f8d7da; border-color: #f44336; color: #721c24; }
+        .alert-warning { background: #fff3cd; border-color: #FFC107; color: #856404; }
+        .alert-success { background: #d4edda; border-color: #4CAF50; color: #155724; }
+        .student-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .student-card { background: #f8f9fa; padding: 25px; border-radius: 15px; border-left: 5px solid; }
+        .student-card.risk-high { border-color: #f44336; }
+        .student-card.risk-medium { border-color: #FFC107; }
+        .student-card.risk-low { border-color: #4CAF50; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 50px; cursor: pointer; font-weight: 600; margin: 5px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin: 20px 0; }
+        .stat-box { background: #f8f9fa; padding: 25px; border-radius: 15px; text-align: center; }
+        .stat-box h3 { font-size: 42px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care</div>
+            <div class="nav-links">
+                <a href="/">🏠 หน้าหลัก</a>
+                <a href="/all_features">📋 ฟีเจอร์ทั้งหมด</a>
+                <a href="/mental_health">💚 สุขภาพจิต</a>
+                <a href="/admin">👨💼 Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>💚 ระบบดูแลสุขภาพจิตนักเรียน</h1>
+        <p>ตรวจจับและช่วยเหลือนักเรียนที่มีความเสี่ยงทางจิตใจ</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>⚠️ แจ้งเตือนเร่งด่วน</h2>
+            <div class="alert-box alert-danger">
+                <strong>🚨 ความเสี่ยงสูง:</strong> พบนักเรียน 2 คน มีสัญญาณเครียดหนัก ต้องติดตามด่วน
+            </div>
+            <div class="alert-box alert-warning">
+                <strong>⚠️ ความเสี่ยงปานกลาง:</strong> พบนักเรียน 5 คน มีอารมณ์เศร้าบ่อยครั้ง
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box" style="border-left: 5px solid #f44336;">
+                <p>🚨 เสี่ยงสูง</p>
+                <h3 style="color: #f44336;">2</h3>
+            </div>
+            <div class="stat-box" style="border-left: 5px solid #FFC107;">
+                <p>⚠️ เสี่ยงปานกลาง</p>
+                <h3 style="color: #FFC107;">5</h3>
+            </div>
+            <div class="stat-box" style="border-left: 5px solid #4CAF50;">
+                <p>✅ ปกติ</p>
+                <h3 style="color: #4CAF50;">43</h3>
+            </div>
+            <div class="stat-box" style="border-left: 5px solid #2196F3;">
+                <p>📞 ติดตามแล้ว</p>
+                <h3 style="color: #2196F3;">12</h3>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>👥 นักเรียนที่ต้องติดตาม</h2>
+            <div class="student-list">
+                <div class="student-card risk-high">
+                    <h3>สมชาย ใจดี (STD001)</h3>
+                    <p><strong>ระดับความเสี่ยง:</strong> 🚨 สูง</p>
+                    <p><strong>สัญญาณ:</strong></p>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>เศร้า 8 ครั้ง/สัปดาห์</li>
+                        <li>ขาดเรียน 3 วัน</li>
+                        <li>ไม่พูดคุยกับเพื่อน</li>
+                    </ul>
+                    <button class="btn" onclick="contactParent('STD001')">📞 ติดต่อผู้ปกครอง</button>
+                    <button class="btn" style="background: #4CAF50;" onclick="counseling('STD001')">💬 นัดพบนักจิตวิทยา</button>
+                </div>
+                <div class="student-card risk-high">
+                    <h3>สมหญิง รักเรียน (STD002)</h3>
+                    <p><strong>ระดับความเสี่ยง:</strong> 🚨 สูง</p>
+                    <p><strong>สัญญาณ:</strong></p>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>โกรธง่าย 6 ครั้ง/สัปดาห์</li>
+                        <li>คะแนนลดลงมาก</li>
+                        <li>ง่วงนอนตลอดเวลา</li>
+                    </ul>
+                    <button class="btn" onclick="contactParent('STD002')">📞 ติดต่อผู้ปกครอง</button>
+                    <button class="btn" style="background: #4CAF50;" onclick="counseling('STD002')">💬 นัดพบนักจิตวิทยา</button>
+                </div>
+                <div class="student-card risk-medium">
+                    <h3>สมศักดิ์ ขยัน (STD003)</h3>
+                    <p><strong>ระดับความเสี่ยง:</strong> ⚠️ ปานกลาง</p>
+                    <p><strong>สัญญาณ:</strong></p>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        <li>เครียด 4 ครั้ง/สัปดาห์</li>
+                        <li>เข้าเรียนสาย</li>
+                    </ul>
+                    <button class="btn" onclick="followUp('STD003')">👁️ ติดตามต่อ</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 การวิเคราะห์</h2>
+            <div style="background: #f8f9fa; padding: 25px; border-radius: 15px;">
+                <h3>🧠 AI วิเคราะห์จาก:</h3>
+                <ul style="line-height: 2; margin-top: 15px;">
+                    <li>✅ อารมณ์จากใบหน้า (เศร้า, โกรธ, เครียด)</li>
+                    <li>✅ พฤติกรรมในห้องเรียน (ง่วงนอน, ไม่สนใจ)</li>
+                    <li>✅ การเข้าเรียน (ขาดเรียนบ่อย, สาย)</li>
+                    <li>✅ คะแนนความประพฤติ (ลดลงอย่างรวดเร็ว)</li>
+                    <li>✅ การมีปฏิสัมพันธ์กับเพื่อน (แยกตัว, ไม่พูดคุย)</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📞 ช่องทางขอความช่วยเหลือ</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                <div style="background: #e3f2fd; padding: 25px; border-radius: 15px;">
+                    <h3>📞 สายด่วนสุขภาพจิต</h3>
+                    <p style="font-size: 32px; font-weight: 700; color: #2196F3; margin: 15px 0;">1323</p>
+                    <p>กรมสุขภาพจิต (24 ชม.)</p>
+                </div>
+                <div style="background: #f3e5f5; padding: 25px; border-radius: 15px;">
+                    <h3>💬 สายด่วนเด็กและเยาวชน</h3>
+                    <p style="font-size: 32px; font-weight: 700; color: #9C27B0; margin: 15px 0;">1387</p>
+                    <p>กระทรวงพัฒนาสังคม (24 ชม.)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function contactParent(studentId) {
+            alert(`📞 กำลังติดต่อผู้ปกครอง...\n\nนักเรียน: ${studentId}\nส่ง SMS และ Email แจ้งเตือนแล้ว\nนัดพบผู้ปกครอง: พรุ่งนี้ 14:00 น.`);
+        }
+
+        function counseling(studentId) {
+            alert(`💬 นัดพบนักจิตวิทยา\n\nนักเรียน: ${studentId}\nวันที่: พรุ่งนี้ 10:00 น.\nสถานที่: ห้องให้คำปรึกษา\n\nส่งการแจ้งเตือนไปยังผู้ปกครองแล้ว`);
+        }
+
+        function followUp(studentId) {
+            alert(`👁️ ติดตามนักเรียน ${studentId}\n\nบันทึกเข้าระบบติดตามแล้ว\nจะแจ้งเตือนอีกครั้งใน 3 วัน`);
+        }
+    </script>
+</body>
+</html>

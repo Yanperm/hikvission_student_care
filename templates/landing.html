@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Care - ระบบดูแลนักเรียนอัจฉริยะ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; overflow-x: hidden; }
+        
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; color: white; text-align: center; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 50px 50px; animation: move 20s linear infinite; }
+        @keyframes move { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 50px); } }
+        
+        .hero-content { position: relative; z-index: 1; max-width: 1200px; padding: 40px 20px; }
+        .hero h1 { font-size: 72px; font-weight: 800; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .hero p { font-size: 28px; margin-bottom: 40px; opacity: 0.95; }
+        .hero-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .btn-hero { padding: 20px 50px; font-size: 20px; font-weight: 600; border: none; border-radius: 50px; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s; }
+        .btn-primary { background: white; color: #667eea; }
+        .btn-primary:hover { transform: scale(1.05); box-shadow: 0 10px 40px rgba(255,255,255,0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 2px solid white; }
+        .btn-secondary:hover { background: white; color: #667eea; }
+        
+        .features-section { padding: 100px 20px; background: white; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section-title { text-align: center; margin-bottom: 60px; }
+        .section-title h2 { font-size: 48px; color: #333; margin-bottom: 20px; }
+        .section-title p { font-size: 20px; color: #666; }
+        
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+        .feature-box { text-align: center; padding: 40px; border-radius: 20px; transition: all 0.3s; }
+        .feature-box:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .feature-icon { font-size: 80px; margin-bottom: 20px; }
+        .feature-box h3 { font-size: 24px; color: #333; margin-bottom: 15px; }
+        .feature-box p { color: #666; line-height: 1.8; }
+        
+        .stats-section { padding: 100px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 40px; text-align: center; }
+        .stat-box h3 { font-size: 64px; font-weight: 800; margin-bottom: 10px; }
+        .stat-box p { font-size: 20px; opacity: 0.9; }
+        
+        .cta-section { padding: 100px 20px; background: #f8f9fa; text-align: center; }
+        .cta-section h2 { font-size: 48px; color: #333; margin-bottom: 30px; }
+        .cta-section p { font-size: 24px; color: #666; margin-bottom: 40px; }
+        
+        .footer { background: #333; color: white; padding: 40px 20px; text-align: center; }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-content">
+            <h1>🎓 Student Care</h1>
+            <p>ระบบดูแลนักเรียนอัจฉริยะด้วย AI และ Face Recognition</p>
+            <p style="font-size: 20px; margin-bottom: 50px;">ดูแลนักเรียนทั้งด้านการเรียน สุขภาพจิต และความปลอดภัย</p>
+            <div class="hero-buttons">
+                <a href="/all_features" class="btn-hero btn-primary">🚀 เริ่มใช้งาน</a>
+                <a href="/features" class="btn-hero btn-secondary">📋 ดูฟีเจอร์ทั้งหมด</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>ทำไมต้อง Student Care?</h2>
+                <p>ระบบดูแลนักเรียนที่ครบครันที่สุด</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-box">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI Face Recognition</h3>
+                    <p>จดจำใบหน้าด้วย Deep Learning ความแม่นยำ 99.6% เช็คชื่ออัตโนมัติ ไม่ต้องสแกนบัตร</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">💚</div>
+                    <h3>ดูแลสุขภาพจิต</h3>
+                    <p>ตรวจจับนักเรียนที่มีความเสี่ยงทางจิตใจ แจ้งเตือนและช่วยเหลือทันที</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>ป้องกันการกลั่นแกล้ง</h3>
+                    <p>AI ตรวจจับการกลั่นแกล้งอัตโนมัติ พร้อมระบบแจ้งเหตุไม่ระบุชื่อ</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">📚</div>
+                    <h3>วิเคราะห์การเรียนรู้</h3>
+                    <p>คาดการณ์ผลการเรียน แนะนำวิธีสอนที่เหมาะสมกับแต่ละคน</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">📱</div>
+                    <h3>PWA Mobile App</h3>
+                    <p>ใช้งานได้ทุกอุปกรณ์ ติดตั้งบนมือถือได้ ทำงาน Offline</p>
+                </div>
+                <div class="feature-box">
+                    <div class="feature-icon">☁️</div>
+                    <h3>Cloud Sync</h3>
+                    <p>ข้อมูลปลอดภัย ซิงค์อัตโนมัติ เข้าถึงได้ทุกที่ทุกเวลา</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section">
+        <div class="container">
+            <div class="section-title" style="color: white;">
+                <h2>ระบบที่ครบครันที่สุด</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h3>21</h3>
+                    <p>ฟีเจอร์ครบครัน</p>
+                </div>
+                <div class="stat-box">
+                    <h3>99.6%</h3>
+                    <p>ความแม่นยำ AI</p>
+                </div>
+                <div class="stat-box">
+                    <h3>24/7</h3>
+                    <p>ทำงานตลอดเวลา</p>
+                </div>
+                <div class="stat-box">
+                    <h3>100%</h3>
+                    <p>ดูแลนักเรียนทุกคน</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <div class="container">
+            <h2>พร้อมเริ่มต้นแล้วหรือยัง?</h2>
+            <p>ดูแลนักเรียนของคุณด้วยเทคโนโลยีที่ทันสมัยที่สุด</p>
+            <a href="/all_features" class="btn-hero btn-primary" style="font-size: 24px; padding: 25px 60px;">🚀 เริ่มใช้งานเลย</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p style="font-size: 18px; margin-bottom: 20px;">🎓 Student Care - ระบบดูแลนักเรียนอัจฉริยะ</p>
+            <p>Powered by AI, Face Recognition & AWS Cloud</p>
+            <p style="margin-top: 20px; opacity: 0.7;">© 2025 SOFTUBON CO.,LTD. (Student Care System.) All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

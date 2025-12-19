@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ป้องกันการกลั่นแกล้ง - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; margin-bottom: 30px; }
+        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-links a:hover { background: #667eea; color: white; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 20px 40px; }
+        .header { text-align: center; padding: 40px 20px; color: white; }
+        .header h1 { font-size: 48px; margin-bottom: 20px; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .alert-box { padding: 25px; border-radius: 15px; margin: 15px 0; border-left: 5px solid #f44336; background: #ffebee; }
+        .report-form { background: #f8f9fa; padding: 30px; border-radius: 15px; }
+        .form-group { margin: 20px 0; }
+        .form-group label { display: block; margin-bottom: 10px; font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 10px; font-family: 'Kanit', sans-serif; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-weight: 600; width: 100%; }
+        .incident-list { display: grid; gap: 20px; }
+        .incident-card { background: #fff3cd; padding: 25px; border-radius: 15px; border-left: 5px solid #FFC107; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care</div>
+            <div class="nav-links">
+                <a href="/">🏠 หน้าหลัก</a>
+                <a href="/all_features">📋 ฟีเจอร์ทั้งหมด</a>
+                <a href="/anti_bullying">🛡️ ป้องกันกลั่นแกล้ง</a>
+                <a href="/admin">👨💼 Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>🛡️ ระบบป้องกันการกลั่นแกล้ง</h1>
+        <p>ตรวจจับและแก้ไขปัญหาการกลั่นแกล้งในโรงเรียน</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="alert-box">
+                <h3>🚨 แจ้งเตือนเร่งด่วน</h3>
+                <p><strong>พบเหตุการณ์ต้องสงสัย:</strong> นักเรียน 1 คน ถูกแยกตัวจากกลุ่มเพื่อนอย่างต่อเนื่อง 5 วัน</p>
+                <button class="btn" style="width: auto; margin-top: 15px;" onclick="investigate()">🔍 สอบสวนเพิ่มเติม</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📝 แบบฟอร์มแจ้งเหตุ (ไม่ระบุชื่อได้)</h2>
+            <div class="report-form">
+                <form onsubmit="submitReport(event)">
+                    <div class="form-group">
+                        <label>ประเภทเหตุการณ์:</label>
+                        <select required>
+                            <option value="">-- เลือก --</option>
+                            <option>การกลั่นแกล้งทางกาย</option>
+                            <option>การกลั่นแกล้งทางวาจา</option>
+                            <option>การกลั่นแกล้งทางออนไลน์ (Cyberbullying)</option>
+                            <option>การแยกตัวจากกลุ่ม</option>
+                            <option>การข่มขู่</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>รายละเอียดเหตุการณ์:</label>
+                        <textarea rows="5" placeholder="อธิบายสิ่งที่เกิดขึ้น..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>สถานที่เกิดเหตุ:</label>
+                        <input type="text" placeholder="เช่น ห้องเรียน, สนามกีฬา, ห้องน้ำ" required>
+                    </div>
+                    <div class="form-group">
+                        <label>วันที่เกิดเหตุ:</label>
+                        <input type="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ต้องการระบุชื่อผู้แจ้ง:</label>
+                        <select id="anonymous">
+                            <option value="yes">ไม่ระบุชื่อ (Anonymous)</option>
+                            <option value="no">ระบุชื่อ</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">📤 ส่งรายงาน</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔍 AI ตรวจจับอัตโนมัติ</h2>
+            <div style="background: #e3f2fd; padding: 25px; border-radius: 15px;">
+                <h3>🤖 ระบบตรวจจับจาก:</h3>
+                <ul style="line-height: 2; margin-top: 15px;">
+                    <li>✅ การวิเคราะห์ภาพจากกล้อง (ตรวจจับการทะเลาะวิวาท)</li>
+                    <li>✅ รูปแบบการมีปฏิสัมพันธ์ (นักเรียนถูกแยกตัว)</li>
+                    <li>✅ การเปลี่ยนแปลงพฤติกรรม (เศร้า, กลัว, โกรธ)</li>
+                    <li>✅ การขาดเรียนผิดปกติ</li>
+                    <li>✅ คะแนนลดลงอย่างรวดเร็ว</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 เหตุการณ์ที่รายงาน</h2>
+            <div class="incident-list">
+                <div class="incident-card">
+                    <h3>เหตุการณ์ #001</h3>
+                    <p><strong>ประเภท:</strong> การกลั่นแกล้งทางวาจา</p>
+                    <p><strong>สถานะ:</strong> 🔄 กำลังสอบสวน</p>
+                    <p><strong>วันที่:</strong> 15/01/2025</p>
+                    <p><strong>ผู้รับผิดชอบ:</strong> ครูแนะแนว</p>
+                    <button class="btn" style="width: auto; margin-top: 10px; background: #4CAF50;">✅ ดำเนินการแล้ว</button>
+                </div>
+                <div class="incident-card">
+                    <h3>เหตุการณ์ #002</h3>
+                    <p><strong>ประเภท:</strong> การแยกตัวจากกลุ่ม</p>
+                    <p><strong>สถานะ:</strong> ⏳ รอดำเนินการ</p>
+                    <p><strong>วันที่:</strong> 14/01/2025</p>
+                    <p><strong>ผู้รับผิดชอบ:</strong> -</p>
+                    <button class="btn" style="width: auto; margin-top: 10px;">📞 รับเรื่อง</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📞 ช่องทางขอความช่วยเหลือ</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                <div style="background: #ffebee; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h3>🚨 แจ้งเหตุด่วน</h3>
+                    <p style="font-size: 32px; font-weight: 700; color: #f44336; margin: 15px 0;">191</p>
+                    <p>ตำรวจ (24 ชม.)</p>
+                </div>
+                <div style="background: #e8f5e9; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h3>💬 ปรึกษาปัญหา</h3>
+                    <p style="font-size: 32px; font-weight: 700; color: #4CAF50; margin: 15px 0;">1387</p>
+                    <p>สายด่วนเด็กและเยาวชน</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function submitReport(e) {
+            e.preventDefault();
+            alert('✅ ส่งรายงานสำเร็จ!\n\nเลขที่รายงาน: #003\nสถานะ: รอดำเนินการ\n\nทีมงานจะตรวจสอบและดำเนินการภายใน 24 ชั่วโมง\n\nข้อมูลของคุณจะถูกเก็บเป็นความลับ');
+            e.target.reset();
+        }
+
+        function investigate() {
+            alert('🔍 เริ่มการสอบสวน\n\n1. สัมภาษณ์นักเรียนที่เกี่ยวข้อง\n2. ตรวจสอบภาพจากกล้อง\n3. พูดคุยกับครูประจำชั้น\n4. ติดต่อผู้ปกครอง\n\nกำหนดเสร็จ: 2 วัน');
+        }
+    </script>
+</body>
+</html>

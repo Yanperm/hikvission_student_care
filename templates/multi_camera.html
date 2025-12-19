@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>กล้องหลายจุด - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: #1a1a2e; color: white; }
+        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; }
+        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1600px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-links a:hover { background: #667eea; color: white; }
+        .container { max-width: 1600px; margin: 20px auto; padding: 20px; }
+        .header { text-align: center; padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 20px; margin-bottom: 30px; }
+        .camera-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 30px; }
+        .camera-card { background: #16213e; border-radius: 20px; padding: 20px; }
+        .camera-card video { width: 100%; border-radius: 15px; background: #000; }
+        .camera-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .status-badge { padding: 8px 20px; border-radius: 20px; font-weight: 600; font-size: 14px; }
+        .status-active { background: #4CAF50; }
+        .status-inactive { background: #f44336; }
+        .detection-info { background: #0f3460; padding: 15px; border-radius: 10px; margin-top: 15px; }
+        .summary-card { background: #16213e; border-radius: 20px; padding: 30px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .summary-item { background: #0f3460; padding: 25px; border-radius: 15px; text-align: center; }
+        .summary-item h3 { font-size: 42px; color: #667eea; margin: 10px 0; }
+        .btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care</div>
+            <div class="nav-links">
+                <a href="/">🏠 หน้าหลัก</a>
+                <a href="/features">📋 ฟีเจอร์ระบบ</a>
+                <a href="/multi_camera">📷 กล้องหลายจุด</a>
+                <a href="/admin">👨💼 Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>📷 ระบบกล้องหลายจุด</h1>
+            <p>ติดตามและตรวจสอบหลายห้องเรียนพร้อมกัน</p>
+        </div>
+
+        <div class="summary-card" style="margin-bottom: 30px;">
+            <h2>📊 สรุปภาพรวม</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <p>📹 กล้องทั้งหมด</p>
+                    <h3>4</h3>
+                </div>
+                <div class="summary-item">
+                    <p>✅ กล้องออนไลน์</p>
+                    <h3 id="onlineCameras">4</h3>
+                </div>
+                <div class="summary-item">
+                    <p>👥 ตรวจพบใบหน้า</p>
+                    <h3 id="totalFaces">0</h3>
+                </div>
+                <div class="summary-item">
+                    <p>⚠️ แจ้งเตือน</p>
+                    <h3 id="totalAlerts">0</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="camera-grid">
+            <div class="camera-card">
+                <div class="camera-header">
+                    <h3>📚 ห้อง ม.1/1</h3>
+                    <span class="status-badge status-active">🟢 ออนไลน์</span>
+                </div>
+                <video id="camera1" autoplay></video>
+                <div class="detection-info">
+                    <p>👥 ตรวจพบ: <span id="faces1">0</span> คน</p>
+                    <p>✅ เช็คชื่อแล้ว: <span id="checked1">0</span> คน</p>
+                    <p>⏰ อัพเดทล่าสุด: <span id="time1">-</span></p>
+                </div>
+                <button class="btn" onclick="toggleCamera(1)" style="margin-top: 10px;">⏸️ หยุดชั่วคราว</button>
+            </div>
+
+            <div class="camera-card">
+                <div class="camera-header">
+                    <h3>📚 ห้อง ม.1/2</h3>
+                    <span class="status-badge status-active">🟢 ออนไลน์</span>
+                </div>
+                <video id="camera2" autoplay></video>
+                <div class="detection-info">
+                    <p>👥 ตรวจพบ: <span id="faces2">0</span> คน</p>
+                    <p>✅ เช็คชื่อแล้ว: <span id="checked2">0</span> คน</p>
+                    <p>⏰ อัพเดทล่าสุด: <span id="time2">-</span></p>
+                </div>
+                <button class="btn" onclick="toggleCamera(2)" style="margin-top: 10px;">⏸️ หยุดชั่วคราว</button>
+            </div>
+
+            <div class="camera-card">
+                <div class="camera-header">
+                    <h3>📚 ห้อง ม.2/1</h3>
+                    <span class="status-badge status-active">🟢 ออนไลน์</span>
+                </div>
+                <video id="camera3" autoplay></video>
+                <div class="detection-info">
+                    <p>👥 ตรวจพบ: <span id="faces3">0</span> คน</p>
+                    <p>✅ เช็คชื่อแล้ว: <span id="checked3">0</span> คน</p>
+                    <p>⏰ อัพเดทล่าสุด: <span id="time3">-</span></p>
+                </div>
+                <button class="btn" onclick="toggleCamera(3)" style="margin-top: 10px;">⏸️ หยุดชั่วคราว</button>
+            </div>
+
+            <div class="camera-card">
+                <div class="camera-header">
+                    <h3>📚 ห้อง ม.2/2</h3>
+                    <span class="status-badge status-active">🟢 ออนไลน์</span>
+                </div>
+                <video id="camera4" autoplay></video>
+                <div class="detection-info">
+                    <p>👥 ตรวจพบ: <span id="faces4">0</span> คน</p>
+                    <p>✅ เช็คชื่อแล้ว: <span id="checked4">0</span> คน</p>
+                    <p>⏰ อัพเดทล่าสุด: <span id="time4">-</span></p>
+                </div>
+                <button class="btn" onclick="toggleCamera(4)" style="margin-top: 10px;">⏸️ หยุดชั่วคราว</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cameras = [1, 2, 3, 4];
+        const cameraStreams = {};
+        const cameraActive = {};
+
+        async function initCamera(cameraId) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById(`camera${cameraId}`);
+                video.srcObject = stream;
+                cameraStreams[cameraId] = stream;
+                cameraActive[cameraId] = true;
+                
+                simulateDetection(cameraId);
+            } catch (err) {
+                console.error(`Camera ${cameraId} error:`, err);
+            }
+        }
+
+        function toggleCamera(cameraId) {
+            if (cameraActive[cameraId]) {
+                cameraStreams[cameraId].getTracks().forEach(track => track.stop());
+                cameraActive[cameraId] = false;
+            } else {
+                initCamera(cameraId);
+            }
+        }
+
+        function simulateDetection(cameraId) {
+            if (!cameraActive[cameraId]) return;
+
+            const faces = Math.floor(Math.random() * 5) + 1;
+            const checked = Math.floor(Math.random() * faces);
+            
+            document.getElementById(`faces${cameraId}`).textContent = faces;
+            document.getElementById(`checked${cameraId}`).textContent = checked;
+            document.getElementById(`time${cameraId}`).textContent = new Date().toLocaleTimeString('th-TH');
+
+            updateSummary();
+
+            setTimeout(() => simulateDetection(cameraId), 5000);
+        }
+
+        function updateSummary() {
+            let totalFaces = 0;
+            let totalChecked = 0;
+
+            cameras.forEach(id => {
+                totalFaces += parseInt(document.getElementById(`faces${id}`).textContent || 0);
+                totalChecked += parseInt(document.getElementById(`checked${id}`).textContent || 0);
+            });
+
+            document.getElementById('totalFaces').textContent = totalFaces;
+            document.getElementById('totalAlerts').textContent = Math.floor(Math.random() * 3);
+        }
+
+        // Initialize all cameras
+        cameras.forEach(id => initCamera(id));
+    </script>
+</body>
+</html>

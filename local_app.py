@@ -27,6 +27,10 @@ def save_students(students):
 
 @app.route('/')
 def index():
+    return render_template('landing.html')
+
+@app.route('/register')
+def register():
     students = load_students()
     return render_template('index.html', students=students)
 
@@ -103,6 +107,58 @@ def student_profile(student_id):
     if student_id in students:
         return render_template('student_profile.html', student=students[student_id])
     return 'Student not found', 404
+
+@app.route('/parent_dashboard')
+def parent_dashboard():
+    return render_template('parent_dashboard.html')
+
+@app.route('/reports')
+def reports():
+    return render_template('reports.html')
+
+@app.route('/emotion_detection')
+def emotion_detection():
+    return render_template('emotion_detection.html')
+
+@app.route('/multi_camera')
+def multi_camera():
+    return render_template('multi_camera.html')
+
+@app.route('/notification_system')
+def notification_system():
+    return render_template('notification_system.html')
+
+@app.route('/behavior_score')
+def behavior_score():
+    return render_template('behavior_score.html')
+
+@app.route('/multi_user')
+def multi_user():
+    return render_template('multi_user.html')
+
+@app.route('/ai_face_recognition')
+def ai_face_recognition():
+    return render_template('ai_face_recognition.html')
+
+@app.route('/pwa_mobile')
+def pwa_mobile():
+    return render_template('pwa_mobile.html')
+
+@app.route('/all_features')
+def all_features():
+    return render_template('all_features.html')
+
+@app.route('/mental_health')
+def mental_health():
+    return render_template('mental_health.html')
+
+@app.route('/learning_analytics')
+def learning_analytics():
+    return render_template('learning_analytics.html')
+
+@app.route('/anti_bullying')
+def anti_bullying():
+    return render_template('anti_bullying.html')
 
 @app.route('/recognize_face', methods=['POST'])
 def recognize_face():

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>วิเคราะห์การเรียนรู้ - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; margin-bottom: 30px; }
+        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-links a:hover { background: #667eea; color: white; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 20px 40px; }
+        .header { text-align: center; padding: 40px 20px; color: white; }
+        .header h1 { font-size: 48px; margin-bottom: 20px; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .insight-box { background: #e3f2fd; padding: 25px; border-radius: 15px; margin: 15px 0; border-left: 5px solid #2196F3; }
+        .recommendation { background: #f3e5f5; padding: 20px; border-radius: 10px; margin: 10px 0; }
+        .chart-container { height: 400px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care</div>
+            <div class="nav-links">
+                <a href="/">🏠 หน้าหลัก</a>
+                <a href="/all_features">📋 ฟีเจอร์ทั้งหมด</a>
+                <a href="/learning_analytics">📚 วิเคราะห์การเรียน</a>
+                <a href="/admin">👨💼 Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>📚 ระบบวิเคราะห์การเรียนรู้ด้วย AI</h1>
+        <p>คาดการณ์และปรับปรุงผลการเรียนของนักเรียน</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>🎯 AI Insights - ข้อมูลเชิงลึก</h2>
+            <div class="insight-box">
+                <h3>💡 การคาดการณ์</h3>
+                <p><strong>นักเรียนที่มีแนวโน้มสอบตก:</strong> 3 คน (6%)</p>
+                <p><strong>นักเรียนที่ต้องการความช่วยเหลือพิเศษ:</strong> 8 คน (16%)</p>
+                <p><strong>นักเรียนที่มีศักยภาพสูง:</strong> 12 คน (24%)</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 การวิเคราะห์ความสนใจในชั่วโมงเรียน</h2>
+            <div class="chart-container">
+                <canvas id="attentionChart"></canvas>
+            </div>
+            <div class="insight-box">
+                <h3>📌 สรุป:</h3>
+                <p>• ช่วง 08:00-10:00 น. นักเรียนมีสมาธิสูงสุด (85%)</p>
+                <p>• ช่วง 13:00-14:00 น. นักเรียนมีสมาธิต่ำสุด (45%) - หลังรับประทานอาหารกลางวัน</p>
+                <p>• แนะนำ: จัดวิชายากในช่วงเช้า วิชาง่ายในช่วงบ่าย</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎓 คำแนะนำเฉพาะบุคคล (Personalized Learning)</h2>
+            <div class="recommendation">
+                <h3>สมชาย ใจดี (STD001)</h3>
+                <p><strong>จุดแข็ง:</strong> คณิตศาสตร์, วิทยาศาสตร์</p>
+                <p><strong>จุดอ่อน:</strong> ภาษาอังกฤษ</p>
+                <p><strong>รูปแบบการเรียนรู้:</strong> Visual Learner (เรียนรู้ผ่านภาพ)</p>
+                <p><strong>คำแนะนำ:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>ใช้ Infographic และ Video ในการสอนภาษาอังกฤษ</li>
+                    <li>แนะนำแอป Duolingo สำหรับฝึกฝน</li>
+                    <li>จับคู่กับเพื่อนที่เก่งภาษาอังกฤษ</li>
+                </ul>
+            </div>
+            <div class="recommendation">
+                <h3>สมหญิง รักเรียน (STD002)</h3>
+                <p><strong>จุดแข็ง:</strong> ภาษาไทย, สังคมศึกษา</p>
+                <p><strong>จุดอ่อน:</strong> คณิตศาสตร์</p>
+                <p><strong>รูปแบบการเรียนรู้:</strong> Auditory Learner (เรียนรู้ผ่านการฟัง)</p>
+                <p><strong>คำแนะนำ:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>ใช้การอธิบายด้วยวาจาในการสอนคณิตศาสตร์</li>
+                    <li>แนะนำ Podcast คณิตศาสตร์</li>
+                    <li>ให้อ่านโจทย์ออกเสียง</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔮 การคาดการณ์ผลการเรียน</h2>
+            <div class="chart-container">
+                <canvas id="predictionChart"></canvas>
+            </div>
+            <div class="insight-box">
+                <h3>📌 การแทรกแซงที่แนะนำ:</h3>
+                <p>• นักเรียน 3 คน ต้องการติวเสริมด่วน</p>
+                <p>• นักเรียน 5 คน ควรได้รับการดูแลเป็นพิเศษ</p>
+                <p>• นักเรียน 12 คน สามารถเรียนเนื้อหาเพิ่มเติมได้</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 Learning Style Distribution</h2>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                <div style="background: #e8f5e9; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h3 style="font-size: 48px; color: #4CAF50;">45%</h3>
+                    <p>Visual Learners</p>
+                    <small>เรียนรู้ผ่านภาพ</small>
+                </div>
+                <div style="background: #e3f2fd; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h3 style="font-size: 48px; color: #2196F3;">30%</h3>
+                    <p>Auditory Learners</p>
+                    <small>เรียนรู้ผ่านการฟัง</small>
+                </div>
+                <div style="background: #fff3e0; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h3 style="font-size: 48px; color: #FF9800;">25%</h3>
+                    <p>Kinesthetic Learners</p>
+                    <small>เรียนรู้ผ่านการลงมือทำ</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Attention Chart
+        const ctx1 = document.getElementById('attentionChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'],
+                datasets: [{
+                    label: 'ระดับความสนใจ (%)',
+                    data: [85, 88, 82, 75, 65, 45, 55, 70],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: true } }
+            }
+        });
+
+        // Prediction Chart
+        const ctx2 = document.getElementById('predictionChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['เกรด A', 'เกรด B', 'เกรด C', 'เกรด D', 'เกรด F'],
+                datasets: [{
+                    label: 'จำนวนนักเรียน (คาดการณ์)',
+                    data: [12, 18, 15, 3, 2],
+                    backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#FF9800', '#f44336']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+    </script>
+</body>
+</html>

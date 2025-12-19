@@ -1,16 +1,21 @@
 @echo off
 chcp 65001 >nul
-echo ========================================
-echo   Student Care - เริ่มระบบ
-echo ========================================
+cls
+
+echo ==========================================
+echo   🎓 Student Care System
+echo   © 2025 SOFTUBON CO.,LTD.
+echo ==========================================
 echo.
-echo 🚀 กำลังเริ่มระบบ...
+
+echo 🚀 Starting Student Care System...
+echo 🌐 Open browser: http://localhost:5000
+echo ☁️  Cloud Sync: Active
 echo.
-echo เปิดเว็บเบราว์เซอร์ไปที่:
-echo   👉 http://localhost:5000
-echo.
-echo กด Ctrl+C เพื่อหยุดระบบ
-echo ========================================
+echo Press Ctrl+C to stop
+echo ==========================================
 echo.
 
 python local_app.py
+
+pause

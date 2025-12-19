@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard ผู้ปกครอง - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; margin-bottom: 30px; }
+        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-links a:hover { background: #667eea; color: white; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 20px 40px; }
+        .header { text-align: center; padding: 40px 20px; color: white; }
+        .header h1 { font-size: 48px; margin-bottom: 20px; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .stat-card h3 { font-size: 48px; color: #667eea; margin: 10px 0; }
+        .student-profile { display: flex; align-items: center; gap: 30px; background: #f8f9fa; padding: 30px; border-radius: 15px; margin-bottom: 30px; }
+        .student-img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid #667eea; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .status-present { color: #4CAF50; font-weight: 600; }
+        .status-absent { color: #f44336; font-weight: 600; }
+        .behavior-good { background: #d4edda; color: #155724; padding: 5px 15px; border-radius: 20px; }
+        .behavior-warning { background: #fff3cd; color: #856404; padding: 5px 15px; border-radius: 20px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 50px; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care - ผู้ปกครอง</div>
+            <div class="nav-links">
+                <a href="/">🏠 หน้าหลัก</a>
+                <a href="/features">📋 ฟีเจอร์ระบบ</a>
+                <a href="/parent_dashboard">👨‍👩‍👧 Dashboard ผู้ปกครอง</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>👨‍👩‍👧 Dashboard ผู้ปกครอง</h1>
+        <p>ติดตามการเรียนและพฤติกรรมของบุตรหลาน</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>ข้อมูลนักเรียน</h2>
+            <div class="student-profile">
+                <img src="/student_image/STD001" class="student-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22150%22 height=%22150%22%3E%3Ccircle cx=%2275%22 cy=%2275%22 r=%2275%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2260%22%3E👤%3C/text%3E%3C/svg%3E'">
+                <div>
+                    <h2 id="studentName">กำลังโหลด...</h2>
+                    <p style="font-size: 18px; color: #666; margin: 10px 0;">รหัส: <span id="studentId">-</span></p>
+                    <p style="font-size: 18px; color: #666;">ห้อง: <span id="studentClass">-</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <p>📅 เข้าเรียนเดือนนี้</p>
+                <h3 id="monthAttendance">0</h3>
+                <p style="color: #666;">จาก 20 วัน</p>
+            </div>
+            <div class="stat-card">
+                <p>📊 เปอร์เซ็นต์การเข้าเรียน</p>
+                <h3 id="attendancePercent">0%</h3>
+            </div>
+            <div class="stat-card">
+                <p>⭐ คะแนนความประพฤติ</p>
+                <h3 id="behaviorScore">100</h3>
+                <p style="color: #666;">คะแนนเต็ม 100</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 ประวัติการเข้าเรียน (7 วันล่าสุด)</h2>
+            <table id="attendanceTable">
+                <thead>
+                    <tr>
+                        <th>วันที่</th>
+                        <th>เวลาเข้าเรียน</th>
+                        <th>สถานะ</th>
+                        <th>หมายเหตุ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4" style="text-align: center;">กำลังโหลด...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>👁️ บันทึกพฤติกรรม (7 วันล่าสุด)</h2>
+            <table id="behaviorTable">
+                <thead>
+                    <tr>
+                        <th>วันที่</th>
+                        <th>เวลา</th>
+                        <th>พฤติกรรม</th>
+                        <th>ระดับ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4" style="text-align: center;">กำลังโหลด...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📧 ตั้งค่าการแจ้งเตือน</h2>
+            <p style="margin-bottom: 20px;">รับการแจ้งเตือนเมื่อบุตรหลานเข้าเรียนหรือมีพฤติกรรมผิดปกติ</p>
+            <label><input type="checkbox" checked> แจ้งเตือนการเข้าเรียน</label><br>
+            <label><input type="checkbox" checked> แจ้งเตือนพฤติกรรมผิดปกติ</label><br>
+            <label><input type="checkbox"> แจ้งเตือนรายวัน (สรุปประจำวัน)</label><br><br>
+            <button class="btn">💾 บันทึกการตั้งค่า</button>
+        </div>
+    </div>
+
+    <script>
+        const STUDENT_ID = 'STD001'; // Demo
+
+        async function loadData() {
+            try {
+                // Load student info
+                const studentRes = await fetch(`http://43.210.87.220:8080/api/students/${STUDENT_ID}`);
+                if (studentRes.ok) {
+                    const student = await studentRes.json();
+                    document.getElementById('studentName').textContent = student.name;
+                    document.getElementById('studentId').textContent = student.student_id;
+                    document.getElementById('studentClass').textContent = student.class_name || '-';
+                }
+
+                // Load attendance
+                const attendanceRes = await fetch(`http://43.210.87.220:8080/api/attendance/student/${STUDENT_ID}`);
+                if (attendanceRes.ok) {
+                    const attendance = await attendanceRes.json();
+                    document.getElementById('monthAttendance').textContent = attendance.length;
+                    document.getElementById('attendancePercent').textContent = Math.round((attendance.length / 20) * 100) + '%';
+                    
+                    const tbody = document.querySelector('#attendanceTable tbody');
+                    if (attendance.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">ยังไม่มีข้อมูล</td></tr>';
+                    } else {
+                        tbody.innerHTML = attendance.slice(0, 7).map(a => `
+                            <tr>
+                                <td>${new Date(a.timestamp).toLocaleDateString('th-TH')}</td>
+                                <td>${new Date(a.timestamp).toLocaleTimeString('th-TH')}</td>
+                                <td><span class="status-present">✅ ${a.status}</span></td>
+                                <td>${a.camera_type === 'classroom' ? 'เข้าห้องเรียน' : 'ทั่วไป'}</td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+
+                // Load behavior
+                const behaviorRes = await fetch(`http://43.210.87.220:8080/api/behavior/student/${STUDENT_ID}`);
+                if (behaviorRes.ok) {
+                    const behaviors = await behaviorRes.json();
+                    const tbody = document.querySelector('#behaviorTable tbody');
+                    if (behaviors.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">ไม่มีบันทึกพฤติกรรม</td></tr>';
+                    } else {
+                        tbody.innerHTML = behaviors.slice(0, 7).map(b => `
+                            <tr>
+                                <td>${new Date(b.timestamp).toLocaleDateString('th-TH')}</td>
+                                <td>${new Date(b.timestamp).toLocaleTimeString('th-TH')}</td>
+                                <td>${b.behavior}</td>
+                                <td><span class="${b.severity === 'warning' ? 'behavior-warning' : 'behavior-good'}">${b.severity === 'warning' ? '⚠️ ต้องติดตาม' : '✅ ปกติ'}</span></td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        loadData();
+        setInterval(loadData, 60000);
+    </script>
+</body>
+</html>
