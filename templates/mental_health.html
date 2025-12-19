@@ -52,73 +52,70 @@
     </div>
 
     <div class="container">
+        {% if high_risk > 0 or medium_risk > 0 %}
         <div class="card">
             <h2>⚠️ แจ้งเตือนเร่งด่วน</h2>
+            {% if high_risk > 0 %}
             <div class="alert-box alert-danger">
-                <strong>🚨 ความเสี่ยงสูง:</strong> พบนักเรียน 2 คน มีสัญญาณเครียดหนัก ต้องติดตามด่วน
+                <strong>🚨 ความเสี่ยงสูง:</strong> พบนักเรียน {{ high_risk }} คน มีสัญญาณเครียดหนัก ต้องติดตามด่วน
             </div>
+            {% endif %}
+            {% if medium_risk > 0 %}
             <div class="alert-box alert-warning">
-                <strong>⚠️ ความเสี่ยงปานกลาง:</strong> พบนักเรียน 5 คน มีอารมณ์เศร้าบ่อยครั้ง
+                <strong>⚠️ ความเสี่ยงปานกลาง:</strong> พบนักเรียน {{ medium_risk }} คน มีอารมณ์เศร้าบ่อยครั้ง
             </div>
+            {% endif %}
         </div>
+        {% endif %}
 
         <div class="stats-grid">
             <div class="stat-box" style="border-left: 5px solid #f44336;">
                 <p>🚨 เสี่ยงสูง</p>
-                <h3 style="color: #f44336;">2</h3>
+                <h3 style="color: #f44336;">{{ high_risk }}</h3>
             </div>
             <div class="stat-box" style="border-left: 5px solid #FFC107;">
                 <p>⚠️ เสี่ยงปานกลาง</p>
-                <h3 style="color: #FFC107;">5</h3>
+                <h3 style="color: #FFC107;">{{ medium_risk }}</h3>
             </div>
             <div class="stat-box" style="border-left: 5px solid #4CAF50;">
                 <p>✅ ปกติ</p>
-                <h3 style="color: #4CAF50;">43</h3>
+                <h3 style="color: #4CAF50;">{{ normal }}</h3>
             </div>
             <div class="stat-box" style="border-left: 5px solid #2196F3;">
-                <p>📞 ติดตามแล้ว</p>
-                <h3 style="color: #2196F3;">12</h3>
+                <p>📊 นักเรียนทั้งหมด</p>
+                <h3 style="color: #2196F3;">{{ total_students }}</h3>
             </div>
         </div>
 
         <div class="card">
             <h2>👥 นักเรียนที่ต้องติดตาม</h2>
+            {% if risk_students|length > 0 %}
             <div class="student-list">
-                <div class="student-card risk-high">
-                    <h3>สมชาย ใจดี (STD001)</h3>
-                    <p><strong>ระดับความเสี่ยง:</strong> 🚨 สูง</p>
+                {% for item in risk_students %}
+                <div class="student-card risk-{{ item.risk_level }}">
+                    <h3>{{ item.student.name }} ({{ item.student.student_id }})</h3>
+                    <p><strong>ห้อง:</strong> {{ item.student.class_name or '-' }}</p>
+                    <p><strong>ระดับความเสี่ยง:</strong> {{ item.risk_label }}</p>
                     <p><strong>สัญญาณ:</strong></p>
                     <ul style="margin: 10px 0; padding-left: 20px;">
-                        <li>เศร้า 8 ครั้ง/สัปดาห์</li>
-                        <li>ขาดเรียน 3 วัน</li>
-                        <li>ไม่พูดคุยกับเพื่อน</li>
+                        {% if item.sad_count > 0 %}<li>เศร้า {{ item.sad_count }} ครั้ง</li>{% endif %}
+                        {% if item.angry_count > 0 %}<li>โกรธ {{ item.angry_count }} ครั้ง</li>{% endif %}
+                        {% if item.stress_count > 0 %}<li>เครียด {{ item.stress_count }} ครั้ง</li>{% endif %}
+                        {% if item.absent_count > 0 %}<li>ขาดเรียน {{ item.absent_count }} วัน</li>{% endif %}
                     </ul>
-                    <button class="btn" onclick="contactParent('STD001')">📞 ติดต่อผู้ปกครอง</button>
-                    <button class="btn" style="background: #4CAF50;" onclick="counseling('STD001')">💬 นัดพบนักจิตวิทยา</button>
+                    <button class="btn" onclick="contactParent('{{ item.student.student_id }}', '{{ item.student.name }}')">📞 ติดต่อผู้ปกครอง</button>
+                    <button class="btn" style="background: #4CAF50;" onclick="counseling('{{ item.student.student_id }}', '{{ item.student.name }}')">💬 นัดพบนักจิตวิทยา</button>
+                    {% if item.risk_level == 'medium' %}
+                    <button class="btn" onclick="followUp('{{ item.student.student_id }}', '{{ item.student.name }}')">👁️ ติดตามต่อ</button>
+                    {% endif %}
                 </div>
-                <div class="student-card risk-high">
-                    <h3>สมหญิง รักเรียน (STD002)</h3>
-                    <p><strong>ระดับความเสี่ยง:</strong> 🚨 สูง</p>
-                    <p><strong>สัญญาณ:</strong></p>
-                    <ul style="margin: 10px 0; padding-left: 20px;">
-                        <li>โกรธง่าย 6 ครั้ง/สัปดาห์</li>
-                        <li>คะแนนลดลงมาก</li>
-                        <li>ง่วงนอนตลอดเวลา</li>
-                    </ul>
-                    <button class="btn" onclick="contactParent('STD002')">📞 ติดต่อผู้ปกครอง</button>
-                    <button class="btn" style="background: #4CAF50;" onclick="counseling('STD002')">💬 นัดพบนักจิตวิทยา</button>
-                </div>
-                <div class="student-card risk-medium">
-                    <h3>สมศักดิ์ ขยัน (STD003)</h3>
-                    <p><strong>ระดับความเสี่ยง:</strong> ⚠️ ปานกลาง</p>
-                    <p><strong>สัญญาณ:</strong></p>
-                    <ul style="margin: 10px 0; padding-left: 20px;">
-                        <li>เครียด 4 ครั้ง/สัปดาห์</li>
-                        <li>เข้าเรียนสาย</li>
-                    </ul>
-                    <button class="btn" onclick="followUp('STD003')">👁️ ติดตามต่อ</button>
-                </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <div class="alert-box alert-success">
+                <strong>✅ ยอดเยี่ยม!</strong> ไม่พบนักเรียนที่มีความเสี่ยงทางจิตใจในขณะนี้
+            </div>
+            {% endif %}
         </div>
 
         <div class="card">
@@ -153,16 +150,52 @@
     </div>
 
     <script>
-        function contactParent(studentId) {
-            alert(`📞 กำลังติดต่อผู้ปกครอง...\n\nนักเรียน: ${studentId}\nส่ง SMS และ Email แจ้งเตือนแล้ว\nนัดพบผู้ปกครอง: พรุ่งนี้ 14:00 น.`);
+        function contactParent(studentId, studentName) {
+            if(confirm(`📞 ต้องการติดต่อผู้ปกครองของ ${studentName} หรือไม่?`)) {
+                fetch('/api/mental_health/contact_parent', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({student_id: studentId, student_name: studentName})
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.success) {
+                        alert(`✅ ${data.message}`);
+                    }
+                });
+            }
         }
 
-        function counseling(studentId) {
-            alert(`💬 นัดพบนักจิตวิทยา\n\nนักเรียน: ${studentId}\nวันที่: พรุ่งนี้ 10:00 น.\nสถานที่: ห้องให้คำปรึกษา\n\nส่งการแจ้งเตือนไปยังผู้ปกครองแล้ว`);
+        function counseling(studentId, studentName) {
+            if(confirm(`💬 ต้องการนัดพบนักจิตวิทยาสำหรับ ${studentName} หรือไม่?`)) {
+                fetch('/api/mental_health/counseling', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({student_id: studentId, student_name: studentName})
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.success) {
+                        alert(`✅ ${data.message}`);
+                    }
+                });
+            }
         }
 
-        function followUp(studentId) {
-            alert(`👁️ ติดตามนักเรียน ${studentId}\n\nบันทึกเข้าระบบติดตามแล้ว\nจะแจ้งเตือนอีกครั้งใน 3 วัน`);
+        function followUp(studentId, studentName) {
+            if(confirm(`👁️ ต้องการติดตาม ${studentName} ต่อหรือไม่?`)) {
+                fetch('/api/mental_health/follow_up', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({student_id: studentId, student_name: studentName})
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.success) {
+                        alert(`✅ ${data.message}`);
+                    }
+                });
+            }
         }
     </script>
 </body>

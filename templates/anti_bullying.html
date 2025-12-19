@@ -47,13 +47,14 @@
     </div>
 
     <div class="container">
+        {% if incidents|length > 0 %}
         <div class="card">
             <div class="alert-box">
-                <h3>🚨 แจ้งเตือนเร่งด่วน</h3>
-                <p><strong>พบเหตุการณ์ต้องสงสัย:</strong> นักเรียน 1 คน ถูกแยกตัวจากกลุ่มเพื่อนอย่างต่อเนื่อง 5 วัน</p>
-                <button class="btn" style="width: auto; margin-top: 15px;" onclick="investigate()">🔍 สอบสวนเพิ่มเติม</button>
+                <h3>🚨 แจ้วเตือนเร่งด่วน</h3>
+                <p><strong>พบเหตุการณ์กลั่นแกล้ง:</strong> {{ incidents|length }} รายการ</p>
             </div>
         </div>
+        {% endif %}
 
         <div class="card">
             <h2>📝 แบบฟอร์มแจ้งเหตุ (ไม่ระบุชื่อได้)</h2>
@@ -110,24 +111,21 @@
 
         <div class="card">
             <h2>📋 เหตุการณ์ที่รายงาน</h2>
+            {% if incidents|length > 0 %}
             <div class="incident-list">
+                {% for incident in incidents %}
                 <div class="incident-card">
-                    <h3>เหตุการณ์ #001</h3>
-                    <p><strong>ประเภท:</strong> การกลั่นแกล้งทางวาจา</p>
-                    <p><strong>สถานะ:</strong> 🔄 กำลังสอบสวน</p>
-                    <p><strong>วันที่:</strong> 15/01/2025</p>
-                    <p><strong>ผู้รับผิดชอบ:</strong> ครูแนะแนว</p>
-                    <button class="btn" style="width: auto; margin-top: 10px; background: #4CAF50;">✅ ดำเนินการแล้ว</button>
+                    <h3>เหตุการณ์ #{{ loop.index }}</h3>
+                    <p><strong>นักเรียน:</strong> {{ incident.student_name }} ({{ incident.student_id }})</p>
+                    <p><strong>รายละเอียด:</strong> {{ incident.behavior }}</p>
+                    <p><strong>วันที่:</strong> {{ incident.timestamp[:10] }}</p>
+                    <p><strong>ระดับ:</strong> <span style="color: {% if incident.severity == 'danger' %}#f44336{% else %}#FFC107{% endif %}; font-weight: 700;">{{ incident.severity }}</span></p>
                 </div>
-                <div class="incident-card">
-                    <h3>เหตุการณ์ #002</h3>
-                    <p><strong>ประเภท:</strong> การแยกตัวจากกลุ่ม</p>
-                    <p><strong>สถานะ:</strong> ⏳ รอดำเนินการ</p>
-                    <p><strong>วันที่:</strong> 14/01/2025</p>
-                    <p><strong>ผู้รับผิดชอบ:</strong> -</p>
-                    <button class="btn" style="width: auto; margin-top: 10px;">📞 รับเรื่อง</button>
-                </div>
+                {% endfor %}
             </div>
+            {% else %}
+            <p style="text-align: center; color: #999; padding: 40px;">✅ ไม่มีรายงานการกลั่นแกล้ง</p>
+            {% endif %}
         </div>
 
         <div class="card">
@@ -150,12 +148,26 @@
     <script>
         function submitReport(e) {
             e.preventDefault();
-            alert('✅ ส่งรายงานสำเร็จ!\n\nเลขที่รายงาน: #003\nสถานะ: รอดำเนินการ\n\nทีมงานจะตรวจสอบและดำเนินการภายใน 24 ชั่วโมง\n\nข้อมูลของคุณจะถูกเก็บเป็นความลับ');
-            e.target.reset();
-        }
-
-        function investigate() {
-            alert('🔍 เริ่มการสอบสวน\n\n1. สัมภาษณ์นักเรียนที่เกี่ยวข้อง\n2. ตรวจสอบภาพจากกล้อง\n3. พูดคุยกับครูประจำชั้น\n4. ติดต่อผู้ปกครอง\n\nกำหนดเสร็จ: 2 วัน');
+            const formData = new FormData(e.target);
+            const data = {
+                victim_id: 'unknown',
+                victim_name: 'ไม่ระบุชื่อ',
+                description: formData.get('description') || e.target.querySelector('textarea').value
+            };
+            
+            fetch('/api/anti_bullying/report', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(result => {
+                if(result.success) {
+                    alert('✅ ' + result.message);
+                    e.target.reset();
+                    location.reload();
+                }
+            });
         }
     </script>
 </body>

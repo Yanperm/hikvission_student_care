@@ -4,62 +4,37 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
 venv/
+env/
 ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# Environment
-.env
-.venv
-
-# Data
-data/
+# Database
 *.db
-*.sqlite
 *.sqlite3
+data/database.db
+
+# Student Images
+data/students/*.jpg
+data/students/*.png
 
 # Logs
 *.log
-logs/
+student-care.log
+
+# Environment
+.env
+*.pem
+*.ppk
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Uploads
-uploads/
-data/students/*.jpg
-data/students/*.png
-data/students/*.jpeg
-
-# Temporary
-tmp/
-temp/
-*.tmp
-
-# Security
-*.pem
-*.key
-secrets/
+# Elastic Beanstalk
+.elasticbeanstalk/

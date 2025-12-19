@@ -33,19 +33,19 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <p>👥 นักเรียนในห้อง</p>
-                <h3 id="totalStudents">0</h3>
+                <h3 id="totalStudents">{{ total_students }}</h3>
             </div>
             <div class="stat-card">
                 <p>✅ เข้าเรียนวันนี้</p>
-                <h3 id="todayAttendance">0</h3>
+                <h3 id="todayAttendance">{{ today_attendance }}</h3>
             </div>
             <div class="stat-card">
                 <p>📊 อัตราเข้าเรียน</p>
-                <h3 id="attendanceRate">0%</h3>
+                <h3 id="attendanceRate">{{ attendance_rate }}%</h3>
             </div>
             <div class="stat-card">
                 <p>⚠️ ต้องติดตาม</p>
-                <h3 id="alerts">0</h3>
+                <h3 id="alerts">{{ alerts }}</h3>
             </div>
         </div>
 
@@ -63,7 +63,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="5" style="text-align: center;">กำลังโหลด...</td></tr>
+                    {% if students|length > 0 %}
+                        {% for s in students %}
+                        <tr>
+                            <td>{{ s.student_id }}</td>
+                            <td><strong>{{ s.name }}</strong></td>
+                            <td>-</td>
+                            <td>100</td>
+                            <td><button class="btn" onclick="location.href='/student/{{ s.student_id }}'">ดู</button></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="5" style="text-align: center;">ไม่มีนักเรียน</td></tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
@@ -80,31 +92,23 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="4" style="text-align: center;">กำลังโหลด...</td></tr>
+                    {% if recent_attendance|length > 0 %}
+                        {% for a in recent_attendance %}
+                        <tr>
+                            <td>{{ a.timestamp[11:16] }}</td>
+                            <td>{{ a.student_id }}</td>
+                            <td><strong>{{ a.student_name }}</strong></td>
+                            <td>{{ a.camera_type }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="4" style="text-align: center;">ยังไม่มีการเข้าเรียน</td></tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
     </div>
 
-    <script>
-        async function loadData() {
-            const res = await fetch('/api/students');
-            const data = await res.json();
-            if (data.success) {
-                document.getElementById('totalStudents').textContent = data.students.length;
-                const tbody = document.querySelector('#studentsTable tbody');
-                tbody.innerHTML = data.students.map(s => `
-                    <tr>
-                        <td>${s.student_id}</td>
-                        <td><strong>${s.name}</strong></td>
-                        <td>-</td>
-                        <td>100</td>
-                        <td><button class="btn" onclick="location.href='/student/${s.student_id}'">ดู</button></td>
-                    </tr>
-                `).join('');
-            }
-        }
-        loadData();
-    </script>
+
 </body>
 </html>

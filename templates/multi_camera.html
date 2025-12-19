@@ -56,84 +56,44 @@
             <div class="summary-grid">
                 <div class="summary-item">
                     <p>📹 กล้องทั้งหมด</p>
-                    <h3>4</h3>
+                    <h3>{{ cameras|length }}</h3>
                 </div>
                 <div class="summary-item">
                     <p>✅ กล้องออนไลน์</p>
-                    <h3 id="onlineCameras">4</h3>
+                    <h3 id="onlineCameras">{{ online_cameras }}</h3>
                 </div>
                 <div class="summary-item">
-                    <p>👥 ตรวจพบใบหน้า</p>
-                    <h3 id="totalFaces">0</h3>
+                    <p>👥 ตรวจพบวันนี้</p>
+                    <h3 id="totalFaces">{{ total_faces }}</h3>
                 </div>
                 <div class="summary-item">
-                    <p>⚠️ แจ้งเตือน</p>
-                    <h3 id="totalAlerts">0</h3>
+                    <p>📊 กล้องที่ใช้งาน</p>
+                    <h3 id="totalAlerts">{{ cameras|length }}</h3>
                 </div>
             </div>
         </div>
 
         <div class="camera-grid">
+            {% for camera in cameras %}
             <div class="camera-card">
                 <div class="camera-header">
-                    <h3>📚 ห้อง ม.1/1</h3>
+                    <h3>📚 {{ camera.name }}</h3>
                     <span class="status-badge status-active">🟢 ออนไลน์</span>
                 </div>
-                <video id="camera1" autoplay></video>
+                <video id="camera{{ camera.id }}" autoplay></video>
                 <div class="detection-info">
-                    <p>👥 ตรวจพบ: <span id="faces1">0</span> คน</p>
-                    <p>✅ เช็คชื่อแล้ว: <span id="checked1">0</span> คน</p>
-                    <p>⏰ อัพเดทล่าสุด: <span id="time1">-</span></p>
+                    <p>👥 ตรวจพบ: <span id="faces{{ camera.id }}">0</span> คน</p>
+                    <p>✅ เช็คชื่อแล้ว: <span id="checked{{ camera.id }}">0</span> คน</p>
+                    <p>⏰ อัพเดทล่าสุด: <span id="time{{ camera.id }}">-</span></p>
                 </div>
-                <button class="btn" onclick="toggleCamera(1)" style="margin-top: 10px;">⏸️ หยุดชั่วคราว</button>
+                <button class="btn" onclick="toggleCamera({{ camera.id }})" style="margin-top: 10px;">⏸️ หยุดชั่วคราว</button>
             </div>
-
-            <div class="camera-card">
-                <div class="camera-header">
-                    <h3>📚 ห้อง ม.1/2</h3>
-                    <span class="status-badge status-active">🟢 ออนไลน์</span>
-                </div>
-                <video id="camera2" autoplay></video>
-                <div class="detection-info">
-                    <p>👥 ตรวจพบ: <span id="faces2">0</span> คน</p>
-                    <p>✅ เช็คชื่อแล้ว: <span id="checked2">0</span> คน</p>
-                    <p>⏰ อัพเดทล่าสุด: <span id="time2">-</span></p>
-                </div>
-                <button class="btn" onclick="toggleCamera(2)" style="margin-top: 10px;">⏸️ หยุดชั่วคราว</button>
-            </div>
-
-            <div class="camera-card">
-                <div class="camera-header">
-                    <h3>📚 ห้อง ม.2/1</h3>
-                    <span class="status-badge status-active">🟢 ออนไลน์</span>
-                </div>
-                <video id="camera3" autoplay></video>
-                <div class="detection-info">
-                    <p>👥 ตรวจพบ: <span id="faces3">0</span> คน</p>
-                    <p>✅ เช็คชื่อแล้ว: <span id="checked3">0</span> คน</p>
-                    <p>⏰ อัพเดทล่าสุด: <span id="time3">-</span></p>
-                </div>
-                <button class="btn" onclick="toggleCamera(3)" style="margin-top: 10px;">⏸️ หยุดชั่วคราว</button>
-            </div>
-
-            <div class="camera-card">
-                <div class="camera-header">
-                    <h3>📚 ห้อง ม.2/2</h3>
-                    <span class="status-badge status-active">🟢 ออนไลน์</span>
-                </div>
-                <video id="camera4" autoplay></video>
-                <div class="detection-info">
-                    <p>👥 ตรวจพบ: <span id="faces4">0</span> คน</p>
-                    <p>✅ เช็คชื่อแล้ว: <span id="checked4">0</span> คน</p>
-                    <p>⏰ อัพเดทล่าสุด: <span id="time4">-</span></p>
-                </div>
-                <button class="btn" onclick="toggleCamera(4)" style="margin-top: 10px;">⏸️ หยุดชั่วคราว</button>
-            </div>
+            {% endfor %}
         </div>
     </div>
 
     <script>
-        const cameras = [1, 2, 3, 4];
+        const cameras = [{% for camera in cameras %}{{ camera.id }}{% if not loop.last %}, {% endif %}{% endfor %}];
         const cameraStreams = {};
         const cameraActive = {};
 

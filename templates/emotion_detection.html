@@ -74,32 +74,32 @@
                     <div class="emotion-item">
                         <div style="font-size: 40px;">😊</div>
                         <p>มีความสุข</p>
-                        <h3 id="happyCount">0</h3>
+                        <h3 id="happyCount">{{ emotion_counts.happy }}</h3>
                     </div>
                     <div class="emotion-item">
                         <div style="font-size: 40px;">😢</div>
                         <p>เศร้า</p>
-                        <h3 id="sadCount">0</h3>
+                        <h3 id="sadCount">{{ emotion_counts.sad }}</h3>
                     </div>
                     <div class="emotion-item">
                         <div style="font-size: 40px;">😠</div>
                         <p>โกรธ</p>
-                        <h3 id="angryCount">0</h3>
+                        <h3 id="angryCount">{{ emotion_counts.angry }}</h3>
                     </div>
                     <div class="emotion-item">
                         <div style="font-size: 40px;">😰</div>
                         <p>เครียด</p>
-                        <h3 id="stressCount">0</h3>
+                        <h3 id="stressCount">{{ emotion_counts.stress }}</h3>
                     </div>
                     <div class="emotion-item">
                         <div style="font-size: 40px;">😐</div>
                         <p>เฉยๆ</p>
-                        <h3 id="neutralCount">0</h3>
+                        <h3 id="neutralCount">{{ emotion_counts.neutral }}</h3>
                     </div>
                     <div class="emotion-item">
                         <div style="font-size: 40px;">😴</div>
                         <p>เบื่อ/ง่วง</p>
-                        <h3 id="boredCount">0</h3>
+                        <h3 id="boredCount">{{ emotion_counts.bored }}</h3>
                     </div>
                 </div>
 
@@ -135,12 +135,12 @@
         };
 
         let emotionCounts = {
-            happy: 0,
-            sad: 0,
-            angry: 0,
-            stress: 0,
-            neutral: 0,
-            bored: 0
+            happy: {{ emotion_counts.happy }},
+            sad: {{ emotion_counts.sad }},
+            angry: {{ emotion_counts.angry }},
+            stress: {{ emotion_counts.stress }},
+            neutral: {{ emotion_counts.neutral }},
+            bored: {{ emotion_counts.bored }}
         };
 
         async function startCamera() {

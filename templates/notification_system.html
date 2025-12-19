@@ -93,27 +93,19 @@
         <div class="card">
             <h2>📬 การแจ้งเตือนล่าสุด</h2>
             <div id="notifications">
-                <div class="notification-item success">
-                    <div>
-                        <strong>✅ เข้าเรียนสำเร็จ</strong><br>
-                        <small>นักเรียน สมชาย ใจดี เข้าเรียนเวลา 08:15 น.</small>
+                {% if notifications|length > 0 %}
+                    {% for notif in notifications %}
+                    <div class="notification-item {% if notif.type in ['mental_health', 'bullying'] %}danger{% elif notif.type == 'behavior' %}warning{% else %}success{% endif %}">
+                        <div>
+                            <strong>{{ notif.title }}</strong><br>
+                            <small>{{ notif.message }}</small>
+                        </div>
+                        <small>{{ notif.timestamp[11:16] }}</small>
                     </div>
-                    <small>5 นาทีที่แล้ว</small>
-                </div>
-                <div class="notification-item warning">
-                    <div>
-                        <strong>⚠️ พฤติกรรมผิดปกติ</strong><br>
-                        <small>ตรวจพบนักเรียนง่วงนอนในชั่วโมงเรียน</small>
-                    </div>
-                    <small>15 นาทีที่แล้ว</small>
-                </div>
-                <div class="notification-item success">
-                    <div>
-                        <strong>✅ เข้าเรียนสำเร็จ</strong><br>
-                        <small>นักเรียน สมหญิง รักเรียน เข้าเรียนเวลา 08:10 น.</small>
-                    </div>
-                    <small>30 นาทีที่แล้ว</small>
-                </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #999; padding: 40px;">ไม่มีการแจ้งเตือน</p>
+                {% endif %}
             </div>
         </div>
 
@@ -121,15 +113,15 @@
             <h2>📊 สถิติการแจ้งเตือน</h2>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;">
                 <div style="background: #d4edda; padding: 30px; border-radius: 15px; text-align: center;">
-                    <h3 style="font-size: 48px; color: #155724;">24</h3>
+                    <h3 style="font-size: 48px; color: #155724;">{{ today_count }}</h3>
                     <p>แจ้งเตือนวันนี้</p>
                 </div>
                 <div style="background: #fff3cd; padding: 30px; border-radius: 15px; text-align: center;">
-                    <h3 style="font-size: 48px; color: #856404;">3</h3>
+                    <h3 style="font-size: 48px; color: #856404;">{{ warning_count }}</h3>
                     <p>เตือนพฤติกรรม</p>
                 </div>
                 <div style="background: #d1ecf1; padding: 30px; border-radius: 15px; text-align: center;">
-                    <h3 style="font-size: 48px; color: #0c5460;">156</h3>
+                    <h3 style="font-size: 48px; color: #0c5460;">{{ month_count }}</h3>
                     <p>แจ้งเตือนเดือนนี้</p>
                 </div>
             </div>

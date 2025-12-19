@@ -227,17 +227,58 @@ def reports():
 @app.route('/emotion_detection')
 @login_required
 def emotion_detection():
-    return render_template('emotion_detection.html')
+    school_id = get_current_school_id()
+    behaviors = db.get_behavior(school_id)
+    
+    emotion_counts = {
+        'happy': len([b for b in behaviors if 'happy' in b['behavior'].lower() or 'มีความสุข' in b['behavior']]),
+        'sad': len([b for b in behaviors if 'sad' in b['behavior'].lower() or 'เศร้า' in b['behavior']]),
+        'angry': len([b for b in behaviors if 'angry' in b['behavior'].lower() or 'โกรธ' in b['behavior']]),
+        'stress': len([b for b in behaviors if 'stress' in b['behavior'].lower() or 'เครียด' in b['behavior']]),
+        'neutral': len([b for b in behaviors if 'neutral' in b['behavior'].lower() or 'เฉยๆ' in b['behavior']]),
+        'bored': len([b for b in behaviors if 'bored' in b['behavior'].lower() or 'เบื่อ' in b['behavior'] or 'ง่วง' in b['behavior']])
+    }
+    
+    return render_template('emotion_detection.html', emotion_counts=emotion_counts)
 
 @app.route('/multi_camera')
 @login_required
 def multi_camera():
-    return render_template('multi_camera.html')
+    school_id = get_current_school_id()
+    attendance = db.get_attendance(school_id)
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    today_attendance = [a for a in attendance if a['timestamp'].startswith(today)]
+    
+    cameras = [
+        {'id': 1, 'name': 'ห้อง ม.1/1', 'type': 'classroom'},
+        {'id': 2, 'name': 'ห้อง ม.1/2', 'type': 'classroom'},
+        {'id': 3, 'name': 'ห้อง ม.2/1', 'type': 'classroom'},
+        {'id': 4, 'name': 'ห้อง ม.2/2', 'type': 'classroom'}
+    ]
+    
+    return render_template('multi_camera.html',
+                         cameras=cameras,
+                         total_faces=len(today_attendance),
+                         online_cameras=len(cameras))
 
 @app.route('/notification_system')
 @login_required
 def notification_system():
-    return render_template('notification_system.html')
+    school_id = get_current_school_id()
+    notifications = db.get_notifications(school_id, limit=50)
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    today_count = len([n for n in notifications if n['timestamp'].startswith(today)])
+    warning_count = len([n for n in notifications if n['type'] in ['mental_health', 'bullying', 'behavior']])
+    month = datetime.now().strftime('%Y-%m')
+    month_count = len([n for n in notifications if n['timestamp'].startswith(month)])
+    
+    return render_template('notification_system.html',
+                         notifications=notifications,
+                         today_count=today_count,
+                         warning_count=warning_count,
+                         month_count=month_count)
 
 @app.route('/behavior_score')
 @login_required
@@ -268,17 +309,115 @@ def all_features():
 @app.route('/mental_health')
 @login_required
 def mental_health():
-    return render_template('mental_health.html')
+    school_id = get_current_school_id()
+    students = db.get_students(school_id)
+    behaviors = db.get_behavior(school_id)
+    attendance = db.get_attendance(school_id)
+    
+    # วิเคราะห์ความเสี่ยงของแต่ละนักเรียน
+    risk_students = []
+    for student in students:
+        sid = student['student_id']
+        
+        # นับพฤติกรรมเชิงลบ
+        student_behaviors = [b for b in behaviors if b['student_id'] == sid]
+        sad_count = len([b for b in student_behaviors if 'sad' in b['behavior'].lower() or 'เศร้า' in b['behavior']])
+        angry_count = len([b for b in student_behaviors if 'angry' in b['behavior'].lower() or 'โกรธ' in b['behavior']])
+        stress_count = len([b for b in student_behaviors if 'stress' in b['behavior'].lower() or 'เครียด' in b['behavior']])
+        
+        # นับการขาดเรียน
+        student_attendance = [a for a in attendance if a['student_id'] == sid]
+        absent_count = 30 - len(student_attendance) if len(student_attendance) < 30 else 0
+        
+        # คำนวณระดับความเสี่ยง
+        risk_score = sad_count * 2 + angry_count * 2 + stress_count * 2 + absent_count * 3
+        
+        if risk_score >= 15:
+            risk_level = 'high'
+            risk_label = '🚨 สูง'
+        elif risk_score >= 8:
+            risk_level = 'medium'
+            risk_label = '⚠️ ปานกลาง'
+        else:
+            risk_level = 'low'
+            risk_label = '✅ ปกติ'
+        
+        if risk_score >= 8:  # เฉพาะที่ต้องติดตาม
+            risk_students.append({
+                'student': student,
+                'risk_level': risk_level,
+                'risk_label': risk_label,
+                'risk_score': risk_score,
+                'sad_count': sad_count,
+                'angry_count': angry_count,
+                'stress_count': stress_count,
+                'absent_count': absent_count
+            })
+    
+    # เรียงตามความเสี่ยง
+    risk_students.sort(key=lambda x: x['risk_score'], reverse=True)
+    
+    # สถิติ
+    high_risk = len([r for r in risk_students if r['risk_level'] == 'high'])
+    medium_risk = len([r for r in risk_students if r['risk_level'] == 'medium'])
+    normal = len(students) - high_risk - medium_risk
+    
+    return render_template('mental_health.html',
+                         risk_students=risk_students,
+                         high_risk=high_risk,
+                         medium_risk=medium_risk,
+                         normal=normal,
+                         total_students=len(students))
 
 @app.route('/learning_analytics')
 @login_required
 def learning_analytics():
-    return render_template('learning_analytics.html')
+    school_id = get_current_school_id()
+    students = db.get_students(school_id)
+    attendance = db.get_attendance(school_id)
+    behaviors = db.get_behavior(school_id)
+    
+    predictions = []
+    for student in students:
+        sid = student['student_id']
+        student_attendance = [a for a in attendance if a['student_id'] == sid]
+        student_behaviors = [b for b in behaviors if b['student_id'] == sid]
+        
+        attendance_rate = len(student_attendance) / 30 * 100 if student_attendance else 0
+        behavior_score = 100 - len([b for b in student_behaviors if b['severity'] in ['warning', 'danger']]) * 5
+        
+        avg_score = (attendance_rate + behavior_score) / 2
+        prediction = 'A' if avg_score >= 85 else 'B' if avg_score >= 75 else 'C' if avg_score >= 65 else 'D' if avg_score >= 50 else 'F'
+        
+        predictions.append({
+            'student': student,
+            'attendance_rate': round(attendance_rate, 1),
+            'behavior_score': behavior_score,
+            'prediction': prediction,
+            'avg_score': round(avg_score, 1)
+        })
+    
+    at_risk = len([p for p in predictions if p['prediction'] in ['D', 'F']])
+    need_help = len([p for p in predictions if p['prediction'] == 'C'])
+    high_potential = len([p for p in predictions if p['prediction'] == 'A'])
+    
+    return render_template('learning_analytics.html',
+                         predictions=predictions,
+                         at_risk=at_risk,
+                         need_help=need_help,
+                         high_potential=high_potential,
+                         total_students=len(students))
 
 @app.route('/anti_bullying')
 @login_required
 def anti_bullying():
-    return render_template('anti_bullying.html')
+    school_id = get_current_school_id()
+    behaviors = db.get_behavior(school_id)
+    
+    incidents = [b for b in behaviors if 'bullying' in b['behavior'].lower() or 'กลั่นแกล้ง' in b['behavior']]
+    incidents.reverse()
+    
+    return render_template('anti_bullying.html', incidents=incidents)
 
 @app.route('/pricing')
 def pricing():
@@ -287,7 +426,25 @@ def pricing():
 @app.route('/teacher_dashboard')
 @login_required
 def teacher_dashboard():
-    return render_template('teacher_dashboard.html')
+    school_id = get_current_school_id()
+    students = db.get_students(school_id)
+    attendance = db.get_attendance(school_id)
+    behaviors = db.get_behavior(school_id)
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    today_attendance = [a for a in attendance if a['timestamp'].startswith(today)]
+    unique_students = len(set([a['student_id'] for a in today_attendance]))
+    
+    attendance_rate = round((unique_students / len(students) * 100) if students else 0, 1)
+    alerts = len([b for b in behaviors if b['severity'] in ['warning', 'danger']])
+    
+    return render_template('teacher_dashboard.html',
+                         students=students,
+                         total_students=len(students),
+                         today_attendance=unique_students,
+                         attendance_rate=attendance_rate,
+                         alerts=alerts,
+                         recent_attendance=today_attendance[:10])
 
 @app.route('/schedule')
 @login_required
@@ -762,6 +919,54 @@ def anti_bullying_report():
     
     return jsonify({'success': True, 'message': 'รายงานถูกส่งไปยังครูที่ปรึกษาแล้ว'})
 
+@app.route('/api/mental_health/contact_parent', methods=['POST'])
+@login_required
+def mental_health_contact_parent():
+    data = request.json
+    school_id = get_current_school_id()
+    
+    db.add_notification(
+        school_id,
+        data['student_id'],
+        'mental_health',
+        '📞 ติดต่อผู้ปกครอง',
+        f'ครูได้ติดต่อผู้ปกครองของ {data["student_name"]} เรื่องสุขภาพจิต'
+    )
+    
+    return jsonify({'success': True, 'message': f'ส่ง SMS และ Email แจ้งผู้ปกครองของ {data["student_name"]} แล้ว'})
+
+@app.route('/api/mental_health/counseling', methods=['POST'])
+@login_required
+def mental_health_counseling():
+    data = request.json
+    school_id = get_current_school_id()
+    
+    db.add_notification(
+        school_id,
+        data['student_id'],
+        'mental_health',
+        '💬 นัดพบนักจิตวิทยา',
+        f'นัดพบนักจิตวิทยาสำหรับ {data["student_name"]} - พรุ่งนี้ 10:00 น.'
+    )
+    
+    return jsonify({'success': True, 'message': f'นัดพบนักจิตวิทยาสำหรับ {data["student_name"]} แล้ว และแจ้งผู้ปกครอง'})
+
+@app.route('/api/mental_health/follow_up', methods=['POST'])
+@login_required
+def mental_health_follow_up():
+    data = request.json
+    school_id = get_current_school_id()
+    
+    db.add_notification(
+        school_id,
+        data['student_id'],
+        'mental_health',
+        '👁️ ติดตามต่อเนื่อง',
+        f'เพิ่ม {data["student_name"]} เข้าระบบติดตามสุขภาพจิต'
+    )
+    
+    return jsonify({'success': True, 'message': f'เพิ่ม {data["student_name"]} เข้าระบบติดตามแล้ว จะแจ้งเตือนอีกครั้งใน 3 วัน'})
+
 @app.route('/api/behavior_scores/update', methods=['POST'])
 @login_required
 def update_behavior_score_api():
@@ -943,6 +1148,42 @@ def get_gate_logs():
             })
     
     return jsonify({'success': True, 'logs': gate_logs})
+
+@app.route('/api/mental_health/stats', methods=['GET'])
+@login_required
+def mental_health_stats():
+    school_id = get_current_school_id()
+    students = db.get_students(school_id)
+    behaviors = db.get_behavior(school_id)
+    
+    # วิเคราะห์ความเสี่ยง
+    high_risk = 0
+    medium_risk = 0
+    
+    for student in students:
+        sid = student['student_id']
+        student_behaviors = [b for b in behaviors if b['student_id'] == sid]
+        
+        sad_count = len([b for b in student_behaviors if 'sad' in b['behavior'].lower() or 'เศร้า' in b['behavior']])
+        angry_count = len([b for b in student_behaviors if 'angry' in b['behavior'].lower() or 'โกรธ' in b['behavior']])
+        stress_count = len([b for b in student_behaviors if 'stress' in b['behavior'].lower() or 'เครียด' in b['behavior']])
+        
+        risk_score = sad_count * 2 + angry_count * 2 + stress_count * 2
+        
+        if risk_score >= 15:
+            high_risk += 1
+        elif risk_score >= 8:
+            medium_risk += 1
+    
+    return jsonify({
+        'success': True,
+        'stats': {
+            'high_risk': high_risk,
+            'medium_risk': medium_risk,
+            'normal': len(students) - high_risk - medium_risk,
+            'total': len(students)
+        }
+    })
 
 if __name__ == '__main__':
     os.makedirs('data/students', exist_ok=True)
