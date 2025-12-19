@@ -180,9 +180,20 @@
             const confidence = recognized ? Math.floor(Math.random() * 15) + 85 : Math.floor(Math.random() * 40) + 30;
             
             if (recognized && confidence >= document.getElementById('threshold').value) {
+                // ดึงข้อมูลนักเรียนจาก API
+                fetch('/api/students')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success && data.students.length > 0) {
+                            const student = data.students[Math.floor(Math.random() * data.students.length)];
+                            document.getElementById('studentName').textContent = '✅ ' + student.name;
+                            document.getElementById('studentId').textContent = 'รหัส: ' + student.student_id;
+                        } else {
+                            document.getElementById('studentName').textContent = '✅ ไม่มีข้อมูลนักเรียน';
+                            document.getElementById('studentId').textContent = 'กรุณาเพิ่มนักเรียนก่อน';
+                        }
+                    });
                 successCount++;
-                document.getElementById('studentName').textContent = '✅ สมชาย ใจดี';
-                document.getElementById('studentId').textContent = 'รหัส: STD001';
                 document.getElementById('confidenceBar').style.width = confidence + '%';
                 document.getElementById('confidenceText').textContent = `ความมั่นใจ: ${confidence}%`;
             } else {
