@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คะแนนความประพฤติ - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 40px; }
+        .header h1 { font-size: 48px; margin-bottom: 10px; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 600; }
+        .score-excellent { color: #4CAF50; font-weight: 700; font-size: 20px; }
+        .score-good { color: #2196F3; font-weight: 700; font-size: 20px; }
+        .score-warning { color: #FF9800; font-weight: 700; font-size: 20px; }
+        .score-danger { color: #f44336; font-weight: 700; font-size: 20px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎓 คะแนนความประพฤติ</h1>
+        <p style="font-size: 20px;">ติดตามและประเมินพฤติกรรมนักเรียน</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2>📊 คะแนนความประพฤติรายบุคคล</h2>
+            <p style="color: #666; margin: 10px 0;">คะแนนเต็ม 100 คะแนน | อัปเดตทุกเดือน</p>
+            
+            <table id="scoresTable">
+                <thead>
+                    <tr>
+                        <th>รหัสนักเรียน</th>
+                        <th>ชื่อ-นามสกุล</th>
+                        <th>ห้อง</th>
+                        <th>คะแนนความประพฤติ</th>
+                        <th>ระดับ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="6" style="text-align: center;">กำลังโหลด...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>📈 สถิติภาพรวม</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="background: #e8f5e9; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h3 style="font-size: 48px; color: #4CAF50;" id="excellentCount">0</h3>
+                    <p>ดีเยี่ยม (90-100)</p>
+                </div>
+                <div style="background: #e3f2fd; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h3 style="font-size: 48px; color: #2196F3;" id="goodCount">0</h3>
+                    <p>ดี (70-89)</p>
+                </div>
+                <div style="background: #fff3e0; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h3 style="font-size: 48px; color: #FF9800;" id="warningCount">0</h3>
+                    <p>ต้องปรับปรุง (50-69)</p>
+                </div>
+                <div style="background: #ffebee; padding: 25px; border-radius: 15px; text-align: center;">
+                    <h3 style="font-size: 48px; color: #f44336;" id="dangerCount">0</h3>
+                    <p>ต้องติดตาม (<50)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadScores() {
+            try {
+                const res = await fetch('/api/students');
+                const data = await res.json();
+                
+                if (data.success && data.students.length > 0) {
+                    let excellent = 0, good = 0, warning = 0, danger = 0;
+                    
+                    const tbody = document.querySelector('#scoresTable tbody');
+                    tbody.innerHTML = data.students.map(student => {
+                        const score = 100; // Default score
+                        let level = '', scoreClass = '';
+                        
+                        if (score >= 90) { level = 'ดีเยี่ยม'; scoreClass = 'score-excellent'; excellent++; }
+                        else if (score >= 70) { level = 'ดี'; scoreClass = 'score-good'; good++; }
+                        else if (score >= 50) { level = 'ต้องปรับปรุง'; scoreClass = 'score-warning'; warning++; }
+                        else { level = 'ต้องติดตาม'; scoreClass = 'score-danger'; danger++; }
+                        
+                        return `
+                            <tr>
+                                <td>${student.student_id}</td>
+                                <td><strong>${student.name}</strong></td>
+                                <td>${student.class_name || '-'}</td>
+                                <td class="${scoreClass}">${score}</td>
+                                <td>${level}</td>
+                                <td><button class="btn" onclick="viewDetail('${student.student_id}')">ดูรายละเอียด</button></td>
+                            </tr>
+                        `;
+                    }).join('');
+                    
+                    document.getElementById('excellentCount').textContent = excellent;
+                    document.getElementById('goodCount').textContent = good;
+                    document.getElementById('warningCount').textContent = warning;
+                    document.getElementById('dangerCount').textContent = danger;
+                } else {
+                    document.querySelector('#scoresTable tbody').innerHTML = '<tr><td colspan="6" style="text-align: center;">ยังไม่มีข้อมูลนักเรียน</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.querySelector('#scoresTable tbody').innerHTML = '<tr><td colspan="6" style="text-align: center;">เกิดข้อผิดพลาด</td></tr>';
+            }
+        }
+        
+        function viewDetail(studentId) {
+            location.href = '/student/' + studentId;
+        }
+        
+        loadScores();
+    </script>
+</body>
+</html>
