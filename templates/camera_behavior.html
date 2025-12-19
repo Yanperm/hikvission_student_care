@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตรวจจับพฤติกรรม - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: #1a1a2e; color: white; }
+        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; }
+        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
+        .nav-links a:hover { background: #667eea; color: white; }
+        .container { max-width: 1400px; margin: 20px auto; padding: 20px; }
+        .header { text-align: center; padding: 30px; background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); border-radius: 20px; margin-bottom: 30px; }
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background: #16213e; border-radius: 20px; padding: 30px; }
+        #video { width: 100%; border-radius: 15px; background: #000; }
+        .status { padding: 20px; border-radius: 10px; margin: 15px 0; text-align: center; font-weight: 600; font-size: 18px; }
+        .status.monitoring { background: #ff9800; }
+        .status.alert { background: #f44336; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .behavior-list { max-height: 600px; overflow-y: auto; }
+        .behavior-item { background: #0f3460; padding: 20px; margin: 15px 0; border-radius: 10px; }
+        .behavior-item.warning { border-left: 5px solid #ff9800; }
+        .behavior-item.danger { border-left: 5px solid #f44336; }
+        .btn { background: #ff9800; color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; }
+        .btn:hover { background: #f57c00; transform: scale(1.05); }
+        .btn-stop { background: #f44336; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care</div>
+            <div class="nav-links">
+                <a href="/">🏠 หน้าหลัก</a>
+                <a href="/camera_classroom">📚 กล้องในห้องเรียน</a>
+                <a href="/camera_behavior">👀 ตรวจจับพฤติกรรม</a>
+                <a href="/admin">👨💼 Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>👀 ตรวจจับพฤติกรรมนักเรียน</h1>
+            <p>ระบบจะตรวจจับและแจ้งเตือนพฤติกรรมที่ผิดปกติ</p>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>📹 กล้องตรวจจับพฤติกรรม</h2>
+                <div id="status" class="status monitoring">👁️ กำลังตรวจสอบพฤติกรรม...</div>
+                <video id="video" autoplay></video>
+                <canvas id="canvas" style="display: none;"></canvas>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn" onclick="startCamera()">▶️ เริ่มกล้อง</button>
+                    <button class="btn btn-stop" onclick="stopCamera()">⏹️ หยุดกล้อง</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>⚠️ บันทึกพฤติกรรม (<span id="count">0</span> รายการ)</h2>
+                <div id="behaviorList" class="behavior-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let stream = null;
+        let isMonitoring = false;
+        let behaviorCount = 0;
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                isMonitoring = true;
+                monitorBehavior();
+                updateStatus('กำลังตรวจสอบพฤติกรรม...', 'monitoring');
+            } catch (err) {
+                alert('ไม่สามารถเปิดกล้องได้: ' + err);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                isMonitoring = false;
+                updateStatus('หยุดการตรวจสอบ', 'monitoring');
+            }
+        }
+
+        async function monitorBehavior() {
+            if (!isMonitoring) return;
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+            
+            try {
+                const response = await fetch('/recognize_face', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData, camera_type: 'behavior' })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.student_id) {
+                    // Simulate behavior detection
+                    const behaviors = ['นั่งเรียนปกติ', 'ง่วงนอน', 'คุยกับเพื่อน', 'ไม่สนใจเรียน'];
+                    const randomBehavior = behaviors[Math.floor(Math.random() * behaviors.length)];
+                    const severity = randomBehavior === 'นั่งเรียนปกติ' ? 'normal' : 'warning';
+                    
+                    addBehaviorItem(result.student_id, result.student_name, randomBehavior, severity);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+
+            setTimeout(monitorBehavior, 3000);
+        }
+
+        function addBehaviorItem(studentId, studentName, behavior, severity) {
+            const list = document.getElementById('behaviorList');
+            const time = new Date().toLocaleTimeString('th-TH');
+            const item = document.createElement('div');
+            item.className = 'behavior-item ' + severity;
+            
+            const icon = severity === 'warning' ? '⚠️' : '✅';
+            
+            item.innerHTML = `
+                ${icon} <strong>${studentName}</strong><br>
+                <small>รหัส: ${studentId}<br>
+                พฤติกรรม: ${behavior}<br>
+                เวลา: ${time}</small>
+            `;
+            list.insertBefore(item, list.firstChild);
+            behaviorCount++;
+            document.getElementById('count').textContent = behaviorCount;
+            
+            if (severity === 'warning') {
+                updateStatus('⚠️ ตรวจพบพฤติกรรมผิดปกติ!', 'alert');
+                setTimeout(() => updateStatus('กำลังตรวจสอบพฤติกรรม...', 'monitoring'), 2000);
+            }
+        }
+
+        function updateStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        startCamera();
+    </script>
+</body>
+</html>

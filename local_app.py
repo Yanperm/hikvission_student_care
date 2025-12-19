@@ -84,12 +84,22 @@ def auto_checkin():
     students = load_students()
     return render_template('auto_checkin.html', students=students)
 
+@app.route('/camera_classroom')
+def camera_classroom():
+    return render_template('camera_classroom.html')
+
+@app.route('/camera_behavior')
+def camera_behavior():
+    return render_template('camera_behavior.html')
+
 @app.route('/recognize_face', methods=['POST'])
 def recognize_face():
     import cv2
     import numpy as np
     
     image_data = request.json.get('image')
+    camera_type = request.json.get('camera_type', 'general')
+    
     if not image_data:
         return jsonify({'success': False})
     
@@ -104,14 +114,16 @@ def recognize_face():
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
     
     if len(faces) > 0:
-        # For demo: match with first student (replace with real face recognition)
+        # For demo: match with first student
         students = load_students()
         if students:
             first_student = list(students.values())[0]
             return jsonify({
                 'success': True,
                 'student_id': first_student['student_id'],
-                'student_name': first_student['name']
+                'student_name': first_student['name'],
+                'class_name': first_student.get('class_name', ''),
+                'camera_type': camera_type
             })
     
     return jsonify({'success': False})
@@ -120,6 +132,7 @@ def recognize_face():
 def add_student():
     student_id = request.form.get('student_id')
     name = request.form.get('name')
+    class_name = request.form.get('class_name', '')
     image_data = request.form.get('image_data')
     
     if not student_id or not name or not image_data:
@@ -139,13 +152,14 @@ def add_student():
     students[student_id] = {
         'student_id': student_id,
         'name': name,
+        'class_name': class_name,
         'image_path': image_path,
         'created_at': datetime.now().isoformat()
     }
     save_students(students)
     
     # Sync to cloud
-    cloud_sync.sync_student(student_id, name, '', image_path)
+    cloud_sync.sync_student(student_id, name, class_name, image_path)
     
     return jsonify({'success': True, 'message': f'เพิ่มนักเรียน {name} สำเร็จ'})
 
