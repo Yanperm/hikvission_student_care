@@ -1,0 +1,13 @@
+[Unit]
+Description=Hikvision Student Care
+After=network.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/hikvission_student_care
+Environment="PATH=/home/ubuntu/.local/bin"
+ExecStart=/usr/bin/python3 main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
