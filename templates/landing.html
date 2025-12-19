@@ -25,6 +25,8 @@
         
         .hero-content { position: relative; z-index: 1; max-width: 1200px; padding: 60px 40px; }
         .hero h1 { font-size: 80px; font-weight: 900; margin-bottom: 30px; text-shadow: 3px 3px 6px rgba(0,0,0,0.3); line-height: 1.2; animation: fadeInUp 1s; }
+        .hero h1 .highlight { background: linear-gradient(90deg, #fff, #ffd700, #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 3s infinite; }
+        @keyframes shimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } background-size: 200% auto; }
         .hero .subtitle { font-size: 32px; margin-bottom: 20px; opacity: 0.95; animation: fadeInUp 1.2s; }
         .hero .description { font-size: 22px; margin-bottom: 50px; opacity: 0.9; animation: fadeInUp 1.4s; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -95,7 +97,7 @@
 
     <section class="hero">
         <div class="hero-content">
-            <h1>🎓 Student Care</h1>
+            <h1>🎓 <span class="highlight">Student Care</span></h1>
             <div class="subtitle">ระบบดูแลนักเรียนอัจฉริยะด้วย AI</div>
             <div class="description">ดูแลนักเรียนทั้งด้านการเรียน สุขภาพจิต และความปลอดภัย<br>ด้วยเทคโนโลยี Face Recognition และ Cloud Computing</div>
             <div class="hero-buttons">
