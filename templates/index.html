@@ -220,7 +220,9 @@
             formData.append('student_id', studentId);
             formData.append('name', name);
             formData.append('class_name', className);
-            formData.append('image_data', capturedImage);
+            // ส่งเฉพาะ base64 string (ตัด data:image/jpeg;base64, ออก)
+            const base64Data = capturedImage.split(',')[1];
+            formData.append('image_data', base64Data);
             
             const response = await fetch('/add_student', {
                 method: 'POST',
