@@ -130,6 +130,25 @@ class Database:
             )
         ''')
         
+        # Cameras table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS cameras (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                school_id TEXT,
+                name TEXT NOT NULL,
+                location TEXT NOT NULL,
+                type TEXT NOT NULL,
+                ip TEXT NOT NULL,
+                port TEXT DEFAULT '80',
+                username TEXT,
+                password TEXT,
+                rtsp_url TEXT,
+                status TEXT DEFAULT 'offline',
+                created_at TEXT,
+                updated_at TEXT
+            )
+        ''')
+        
         # Insert only super admin if not exists
         cursor.execute("SELECT COUNT(*) FROM users WHERE role='super_admin'")
         if cursor.fetchone()[0] == 0:
@@ -447,6 +466,88 @@ class Database:
         students = [dict(row) for row in cursor.fetchall()]
         conn.close()
         return students
+    
+    # Camera Management
+    def add_camera(self, school_id, data):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO cameras (school_id, name, location, type, ip, port, username, password, rtsp_url, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            school_id,
+            data['name'],
+            data['location'],
+            data['type'],
+            data['ip'],
+            data.get('port', '80'),
+            data.get('username'),
+            data.get('password'),
+            data.get('rtsp_url'),
+            datetime.now().isoformat(),
+            datetime.now().isoformat()
+        ))
+        camera_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return camera_id
+    
+    def get_cameras(self, school_id=None):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        if school_id:
+            cursor.execute('SELECT * FROM cameras WHERE school_id = ? ORDER BY created_at DESC', (school_id,))
+        else:
+            cursor.execute('SELECT * FROM cameras ORDER BY created_at DESC')
+        cameras = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return cameras
+    
+    def get_camera(self, camera_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM cameras WHERE id = ?', (camera_id,))
+        camera = cursor.fetchone()
+        conn.close()
+        return dict(camera) if camera else None
+    
+    def update_camera(self, camera_id, data):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE cameras 
+            SET name = ?, location = ?, type = ?, ip = ?, port = ?, 
+                username = ?, password = ?, rtsp_url = ?, updated_at = ?
+            WHERE id = ?
+        ''', (
+            data['name'],
+            data['location'],
+            data['type'],
+            data['ip'],
+            data.get('port', '80'),
+            data.get('username'),
+            data.get('password'),
+            data.get('rtsp_url'),
+            datetime.now().isoformat(),
+            camera_id
+        ))
+        conn.commit()
+        conn.close()
+    
+    def delete_camera(self, camera_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM cameras WHERE id = ?', (camera_id,))
+        conn.commit()
+        conn.close()
+    
+    def update_camera_status(self, camera_id, status):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE cameras SET status = ?, updated_at = ? WHERE id = ?', 
+                      (status, datetime.now().isoformat(), camera_id))
+        conn.commit()
+        conn.close()
 
 # Initialize database
 db = Database()

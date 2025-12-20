@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>นำเข้าข้อมูลนักเรียน - Student Care System</title>
+    <link rel="stylesheet" href="/static/responsive.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .import-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .method-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .method-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+
+        .method-card.active {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .method-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .method-title {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .method-desc {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .import-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: none;
+        }
+
+        .import-section.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .file-upload {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            background: #f8f9ff;
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .preview-table th,
+        .preview-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .preview-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .code-example {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .code-example pre {
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .import-methods {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-brand">🎓 Student Care System</div>
+        <a href="/admin" class="back-btn">← กลับหน้าหลัก</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📥 นำเข้าข้อมูลนักเรียน</h1>
+            <p style="color: #666; margin-top: 10px;">เลือกวิธีการนำเข้าข้อมูลที่เหมาะสมกับระบบของคุณ</p>
+        </div>
+
+        <!-- Import Methods -->
+        <div class="import-methods">
+            <div class="method-card" onclick="selectMethod('excel')">
+                <div class="method-icon">📊</div>
+                <div class="method-title">Excel / CSV</div>
+                <div class="method-desc">นำเข้าจากไฟล์ Excel หรือ CSV (แนะนำ)</div>
+            </div>
+
+            <div class="method-card" onclick="selectMethod('api')">
+                <div class="method-icon">🔌</div>
+                <div class="method-title">API Integration</div>
+                <div class="method-desc">เชื่อมต่อกับระบบอื่นผ่าน REST API</div>
+            </div>
+
+            <div class="method-card" onclick="selectMethod('database')">
+                <div class="method-icon">🗄️</div>
+                <div class="method-title">Database</div>
+                <div class="method-desc">เชื่อมต่อกับฐานข้อมูลภายนอก</div>
+            </div>
+
+            <div class="method-card" onclick="selectMethod('manual')">
+                <div class="method-icon">✍️</div>
+                <div class="method-title">Manual Entry</div>
+                <div class="method-desc">กรอกข้อมูลทีละคน (มีรูปภาพ)</div>
+            </div>
+        </div>
+
+        <!-- Excel/CSV Import -->
+        <div id="excel-section" class="import-section">
+            <h2 style="margin-bottom: 20px;">📊 นำเข้าจาก Excel / CSV</h2>
+            
+            <div class="alert alert-info">
+                <strong>📋 รูปแบบไฟล์:</strong> ไฟล์ต้องมีคอลัมน์ student_id, name, class_name<br>
+                <a href="/api/download_template" style="color: #0c5460; text-decoration: underline;">ดาวน์โหลดไฟล์ตัวอย่าง</a>
+            </div>
+
+            <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFileUpload(event)">
+                <div style="font-size: 3em; margin-bottom: 10px;">📁</div>
+                <div style="font-size: 1.2em; color: #667eea; font-weight: bold;">คลิกเพื่อเลือกไฟล์</div>
+                <div style="color: #666; margin-top: 10px;">รองรับ: .xlsx, .xls, .csv</div>
+            </div>
+
+            <div id="previewSection" style="display: none; margin-top: 30px;">
+                <h3>ตัวอย่างข้อมูล</h3>
+                <div style="overflow-x: auto;">
+                    <table class="preview-table" id="previewTable"></table>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="importExcelData()">✅ นำเข้าข้อมูล</button>
+                    <button class="btn btn-secondary" onclick="cancelImport()">❌ ยกเลิก</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Integration -->
+        <div id="api-section" class="import-section">
+            <h2 style="margin-bottom: 20px;">🔌 API Integration</h2>
+            
+            <div class="alert alert-info">
+                <strong>ℹ️ วิธีใช้งาน:</strong> ส่งข้อมูลนักเรียนมาที่ API Endpoint ของเรา
+            </div>
+
+            <div class="form-group">
+                <label>API Endpoint</label>
+                <input type="text" class="form-control" value="http://localhost:5000/api/import/students" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Method</label>
+                <input type="text" class="form-control" value="POST" readonly>
+            </div>
+
+            <div class="form-group">
+                <label>Request Body (JSON)</label>
+                <div class="code-example">
+                    <pre>{
+  "students": [
+    {
+      "student_id": "STD001",
+      "name": "สมชาย ใจดี",
+      "class_name": "ม.1/1",
+      "image_base64": "optional_base64_string"
+    }
+  ]
+}</pre>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ตัวอย่างการเรียกใช้ (cURL)</label>
+                <div class="code-example">
+                    <pre>curl -X POST http://localhost:5000/api/import/students \
+  -H "Content-Type: application/json" \
+  -d '{"students": [...]}'</pre>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>ทดสอบ API</label>
+                <textarea class="form-control" id="apiTestData" rows="10" placeholder='{"students": [{"student_id": "STD001", "name": "ทดสอบ", "class_name": "ม.1/1"}]}'></textarea>
+            </div>
+
+            <button class="btn" onclick="testApiImport()">🧪 ทดสอบ API</button>
+        </div>
+
+        <!-- Database Connection -->
+        <div id="database-section" class="import-section">
+            <h2 style="margin-bottom: 20px;">🗄️ เชื่อมต่อฐานข้อมูล</h2>
+            
+            <div class="alert alert-info">
+                <strong>ℹ️ รองรับ:</strong> MySQL, PostgreSQL, SQL Server, Oracle
+            </div>
+
+            <div class="form-group">
+                <label>ประเภทฐานข้อมูล</label>
+                <select class="form-control" id="dbType">
+                    <option value="mysql">MySQL</option>
+                    <option value="postgresql">PostgreSQL</option>
+                    <option value="sqlserver">SQL Server</option>
+                    <option value="oracle">Oracle</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Host</label>
+                <input type="text" class="form-control" id="dbHost" placeholder="localhost">
+            </div>
+
+            <div class="form-group">
+                <label>Port</label>
+                <input type="text" class="form-control" id="dbPort" placeholder="3306">
+            </div>
+
+            <div class="form-group">
+                <label>Database Name</label>
+                <input type="text" class="form-control" id="dbName" placeholder="school_db">
+            </div>
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="form-control" id="dbUser" placeholder="root">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" id="dbPassword">
+            </div>
+
+            <div class="form-group">
+                <label>SQL Query</label>
+                <textarea class="form-control" id="dbQuery" rows="5" placeholder="SELECT student_id, name, class_name FROM students"></textarea>
+            </div>
+
+            <button class="btn" onclick="testDbConnection()">🔗 ทดสอบการเชื่อมต่อ</button>
+            <button class="btn" onclick="importFromDb()">📥 นำเข้าข้อมูล</button>
+        </div>
+
+        <!-- Manual Entry -->
+        <div id="manual-section" class="import-section">
+            <h2 style="margin-bottom: 20px;">✍️ กรอกข้อมูลด้วยตนเอง</h2>
+            
+            <div class="alert alert-info">
+                <strong>ℹ️ หมายเหตุ:</strong> สำหรับเพิ่มนักเรียนทีละคนพร้อมถ่ายรูป
+            </div>
+
+            <div style="text-align: center; padding: 40px;">
+                <div style="font-size: 3em; margin-bottom: 20px;">📸</div>
+                <p style="font-size: 1.2em; color: #666; margin-bottom: 20px;">
+                    ใช้หน้าลงทะเบียนนักเรียนแบบปกติ
+                </p>
+                <a href="/register" class="btn">ไปที่หน้าลงทะเบียน →</a>
+            </div>
+        </div>
+
+        <div id="resultMessage"></div>
+    </div>
+
+    <script>
+        let currentMethod = null;
+        let importData = [];
+
+        function selectMethod(method) {
+            // Remove active class from all cards
+            document.querySelectorAll('.method-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Hide all sections
+            document.querySelectorAll('.import-section').forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Activate selected method
+            event.target.closest('.method-card').classList.add('active');
+            document.getElementById(method + '-section').classList.add('active');
+            currentMethod = method;
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showMessage('กำลังอ่านไฟล์...', 'info');
+
+            fetch('/api/import/preview', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    importData = data.students;
+                    displayPreview(data.students);
+                    showMessage(`พบข้อมูล ${data.students.length} คน`, 'success');
+                } else {
+                    showMessage('เกิดข้อผิดพลาด: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            });
+        }
+
+        function displayPreview(students) {
+            const table = document.getElementById('previewTable');
+            let html = '<thead><tr><th>รหัสนักเรียน</th><th>ชื่อ-นามสกุล</th><th>ห้อง</th></tr></thead><tbody>';
+            
+            students.slice(0, 10).forEach(student => {
+                html += `<tr>
+                    <td>${student.student_id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.class_name || '-'}</td>
+                </tr>`;
+            });
+            
+            if (students.length > 10) {
+                html += `<tr><td colspan="3" style="text-align: center; color: #666;">... และอีก ${students.length - 10} คน</td></tr>`;
+            }
+            
+            html += '</tbody>';
+            table.innerHTML = html;
+            document.getElementById('previewSection').style.display = 'block';
+        }
+
+        function importExcelData() {
+            if (importData.length === 0) {
+                showMessage('ไม่มีข้อมูลให้นำเข้า', 'error');
+                return;
+            }
+
+            showMessage('กำลังนำเข้าข้อมูล...', 'info');
+
+            fetch('/api/import/students', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({students: importData})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(`✅ นำเข้าสำเร็จ ${data.imported} คน`, 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin';
+                    }, 2000);
+                } else {
+                    showMessage('เกิดข้อผิดพลาด: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            });
+        }
+
+        function cancelImport() {
+            document.getElementById('previewSection').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+            importData = [];
+        }
+
+        function testApiImport() {
+            const data = document.getElementById('apiTestData').value;
+            
+            try {
+                JSON.parse(data);
+            } catch (e) {
+                showMessage('JSON ไม่ถูกต้อง', 'error');
+                return;
+            }
+
+            showMessage('กำลังทดสอบ API...', 'info');
+
+            fetch('/api/import/students', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: data
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(`✅ ทดสอบสำเร็จ นำเข้า ${data.imported} คน`, 'success');
+                } else {
+                    showMessage('เกิดข้อผิดพลาด: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            });
+        }
+
+        function testDbConnection() {
+            const config = {
+                type: document.getElementById('dbType').value,
+                host: document.getElementById('dbHost').value,
+                port: document.getElementById('dbPort').value,
+                database: document.getElementById('dbName').value,
+                user: document.getElementById('dbUser').value,
+                password: document.getElementById('dbPassword').value
+            };
+
+            showMessage('กำลังทดสอบการเชื่อมต่อ...', 'info');
+
+            fetch('/api/import/test_db', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(config)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('✅ เชื่อมต่อสำเร็จ', 'success');
+                } else {
+                    showMessage('❌ เชื่อมต่อไม่สำเร็จ: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            });
+        }
+
+        function importFromDb() {
+            const config = {
+                type: document.getElementById('dbType').value,
+                host: document.getElementById('dbHost').value,
+                port: document.getElementById('dbPort').value,
+                database: document.getElementById('dbName').value,
+                user: document.getElementById('dbUser').value,
+                password: document.getElementById('dbPassword').value,
+                query: document.getElementById('dbQuery').value
+            };
+
+            showMessage('กำลังนำเข้าข้อมูล...', 'info');
+
+            fetch('/api/import/from_db', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(config)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(`✅ นำเข้าสำเร็จ ${data.imported} คน`, 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin';
+                    }, 2000);
+                } else {
+                    showMessage('เกิดข้อผิดพลาด: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            });
+        }
+
+        function showMessage(message, type) {
+            const resultDiv = document.getElementById('resultMessage');
+            resultDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                if (type !== 'info') {
+                    resultDiv.innerHTML = '';
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

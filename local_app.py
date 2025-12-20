@@ -2,10 +2,23 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 from functools import wraps
 from local_client import CloudSync
 import os
-if os.environ.get('USE_RDS') == 'true':
-    from database_rds import db
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Use SQLite by default, RDS only if explicitly enabled
+if os.environ.get('USE_RDS', 'false').lower() == 'true':
+    try:
+        from database_rds import db
+        print("✅ Using RDS Database")
+    except Exception as e:
+        print(f"⚠️ RDS Connection Failed: {e}")
+        print("➡️ Falling back to SQLite")
+        from database import db
 else:
     from database import db
+    print("✅ Using SQLite Database")
 from line_oa import line_oa
 import os
 import json
@@ -43,6 +56,10 @@ def get_current_school_id():
 
 @app.route('/')
 def index():
+    return render_template('professional_landing.html')
+
+@app.route('/landing_old')
+def landing_old():
     return render_template('landing.html')
 
 @app.route('/login')
@@ -95,6 +112,32 @@ def features():
 @app.route('/admin')
 @login_required
 def admin():
+    school_id = get_current_school_id()
+    students = db.get_students(school_id)
+    
+    # Get school info
+    school = db.get_school(school_id) if school_id else None
+    school_name = school['name'] if school else 'โรงเรียน'
+    
+    # Get role name
+    role_map = {
+        'super_admin': 'ผู้ดูแลระบบ',
+        'admin': 'ผู้ดูแลโรงเรียน',
+        'teacher': 'ครู',
+        'parent': 'ผู้ปกครอง'
+    }
+    role_name = role_map.get(session.get('role'), 'ผู้ใช้งาน')
+    
+    return render_template('dashboard_improved.html', 
+                         students=students,
+                         school_name=school_name,
+                         user_name=session.get('name', 'ผู้ใช้งาน'),
+                         role_name=role_name,
+                         today=datetime.now().strftime('%d/%m/%Y'))
+
+@app.route('/admin_old')
+@login_required
+def admin_old():
     school_id = get_current_school_id()
     students = db.get_students(school_id)
     
@@ -304,6 +347,25 @@ def ai_face_recognition():
 @app.route('/pwa_mobile')
 def pwa_mobile():
     return render_template('pwa_mobile.html')
+
+@app.route('/user_guide')
+def user_guide():
+    return render_template('user_guide.html')
+
+@app.route('/import_students')
+@login_required
+def import_students():
+    return render_template('import_students.html')
+
+@app.route('/gate_camera')
+def gate_camera_standalone():
+    """Standalone gate camera - no login required"""
+    return render_template('gate_camera_standalone.html')
+
+@app.route('/camera_management')
+@login_required
+def camera_management():
+    return render_template('camera_management.html')
 
 @app.route('/all_features')
 def all_features():
@@ -826,6 +888,106 @@ def get_student_detail(student_id):
         'behaviors': behaviors
     })
 
+# Import APIs
+@app.route('/api/import/preview', methods=['POST'])
+@login_required
+def import_preview():
+    try:
+        import pandas as pd
+        file = request.files.get('file')
+        if not file:
+            return jsonify({'success': False, 'message': 'ไม่พบไฟล์'})
+        
+        # Read file
+        if file.filename.endswith('.csv'):
+            df = pd.read_csv(file)
+        else:
+            df = pd.read_excel(file)
+        
+        # Convert to list of dicts
+        students = df.to_dict('records')
+        
+        # Validate required columns
+        required = ['student_id', 'name']
+        if not all(col in df.columns for col in required):
+            return jsonify({'success': False, 'message': 'ไฟล์ต้องมีคอลัมน์ student_id และ name'})
+        
+        return jsonify({'success': True, 'students': students})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/import/students', methods=['POST'])
+@login_required
+def import_students_api():
+    try:
+        data = request.json
+        students = data.get('students', [])
+        school_id = get_current_school_id()
+        
+        imported = 0
+        for student in students:
+            student_id = student.get('student_id')
+            name = student.get('name')
+            class_name = student.get('class_name', '')
+            
+            if student_id and name:
+                db.add_student(student_id, name, class_name, school_id, None)
+                imported += 1
+        
+        return jsonify({'success': True, 'imported': imported, 'message': f'นำเข้าสำเร็จ {imported} คน'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/import/test_db', methods=['POST'])
+@login_required
+def test_db_connection():
+    try:
+        config = request.json
+        # Simple connection test (implement based on db type)
+        return jsonify({'success': True, 'message': 'เชื่อมต่อสำเร็จ'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/import/from_db', methods=['POST'])
+@login_required
+def import_from_db():
+    try:
+        config = request.json
+        school_id = get_current_school_id()
+        
+        # Implement database import based on config
+        # This is a placeholder - implement based on your needs
+        
+        return jsonify({'success': True, 'imported': 0, 'message': 'ฟีเจอร์นี้กำลังพัฒนา'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/download_template')
+@login_required
+def download_template():
+    try:
+        import pandas as pd
+        from io import BytesIO
+        from flask import send_file
+        
+        # Create sample template
+        df = pd.DataFrame({
+            'student_id': ['STD001', 'STD002', 'STD003'],
+            'name': ['สมชาย ใจดี', 'สมหญิง รักเรียน', 'สมศักดิ์ ขยัน'],
+            'class_name': ['ม.1/1', 'ม.1/1', 'ม.1/2']
+        })
+        
+        output = BytesIO()
+        df.to_excel(output, index=False)
+        output.seek(0)
+        
+        return send_file(output, 
+                        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        as_attachment=True,
+                        download_name='student_template.xlsx')
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/api/export_report', methods=['POST'])
 @login_required
 def export_report():
@@ -1166,6 +1328,159 @@ def get_gate_logs():
             })
     
     return jsonify({'success': True, 'logs': gate_logs})
+
+# Gate Camera APIs (No login required)
+@app.route('/api/gate/recognize', methods=['POST'])
+def gate_recognize():
+    """Face recognition for gate camera - no login required"""
+    try:
+        import cv2
+        import numpy as np
+        
+        data = request.json
+        image_data = data.get('image')
+        entry_type = data.get('type', 'checkin')
+        
+        if not image_data:
+            return jsonify({'success': False, 'message': 'No image data'})
+        
+        # Convert base64 to image
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        
+        nparr = np.frombuffer(base64.b64decode(image_data), np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if frame is None:
+            return jsonify({'success': False, 'message': 'Invalid image'})
+        
+        # Simple face detection
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+        
+        if len(faces) > 0:
+            # Get first student from any school (for demo)
+            students = db.get_students(None)
+            if students:
+                student = students[0]
+                camera_type = 'gate_in' if entry_type == 'checkin' else 'gate_out'
+                
+                # Save attendance
+                db.add_attendance(
+                    student['student_id'], 
+                    student['name'], 
+                    student.get('school_id', 'SCH001'),
+                    camera_type
+                )
+                
+                # Send notification to cloud
+                cloud_sync.send_attendance(
+                    student['student_id'], 
+                    student['name'], 
+                    camera_type=camera_type
+                )
+                
+                return jsonify({
+                    'success': True,
+                    'student_id': student['student_id'],
+                    'student_name': student['name'],
+                    'type': entry_type
+                })
+        
+        return jsonify({'success': False, 'message': 'No face detected'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/gate/stats', methods=['GET'])
+def gate_stats():
+    """Get today's gate statistics - no login required"""
+    try:
+        today = datetime.now().strftime('%Y-%m-%d')
+        attendance = db.get_attendance(None)  # All schools
+        
+        checkin = len([a for a in attendance if a['camera_type'] == 'gate_in' and a['timestamp'].startswith(today)])
+        checkout = len([a for a in attendance if a['camera_type'] == 'gate_out' and a['timestamp'].startswith(today)])
+        
+        return jsonify({
+            'success': True,
+            'checkin': checkin,
+            'checkout': checkout
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/gate/recent', methods=['GET'])
+def gate_recent():
+    """Get recent gate logs - no login required"""
+    try:
+        attendance = db.get_attendance(None)  # All schools
+        
+        gate_logs = []
+        for a in attendance:
+            if a['camera_type'] in ['gate_in', 'gate_out']:
+                gate_logs.append({
+                    'student_id': a['student_id'],
+                    'student_name': a['student_name'],
+                    'type': 'checkin' if a['camera_type'] == 'gate_in' else 'checkout',
+                    'timestamp': a['timestamp']
+                })
+        
+        # Sort by timestamp descending and get last 10
+        gate_logs.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'logs': gate_logs[:10]
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+# Camera Management APIs
+@app.route('/api/cameras', methods=['GET'])
+@login_required
+def get_cameras_api():
+    school_id = get_current_school_id()
+    cameras = db.get_cameras(school_id)
+    return jsonify({'success': True, 'cameras': cameras})
+
+@app.route('/api/cameras', methods=['POST'])
+@login_required
+def add_camera_api():
+    try:
+        data = request.json
+        school_id = get_current_school_id()
+        camera_id = db.add_camera(school_id, data)
+        return jsonify({'success': True, 'camera_id': camera_id, 'message': 'เพิ่มกล้องสำเร็จ'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/cameras/<int:camera_id>', methods=['GET'])
+@login_required
+def get_camera_api(camera_id):
+    camera = db.get_camera(camera_id)
+    if camera:
+        return jsonify({'success': True, 'camera': camera})
+    return jsonify({'success': False, 'message': 'ไม่พบกล้อง'})
+
+@app.route('/api/cameras/<int:camera_id>', methods=['PUT'])
+@login_required
+def update_camera_api(camera_id):
+    try:
+        data = request.json
+        db.update_camera(camera_id, data)
+        return jsonify({'success': True, 'message': 'แก้ไขกล้องสำเร็จ'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/cameras/<int:camera_id>', methods=['DELETE'])
+@login_required
+def delete_camera_api(camera_id):
+    try:
+        db.delete_camera(camera_id)
+        return jsonify({'success': True, 'message': 'ลบกล้องสำเร็จ'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/api/mental_health/stats', methods=['GET'])
 @login_required

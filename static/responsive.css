@@ -1,0 +1,282 @@
+/* Global Responsive Styles for Student Care System */
+/* © 2025 SOFTUBON CO.,LTD. */
+
+/* Mobile First Approach */
+* {
+    box-sizing: border-box;
+}
+
+/* Base Styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Container */
+.container {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+/* Navbar Responsive */
+.navbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    gap: 10px;
+}
+
+.navbar-brand {
+    font-size: 1.2em;
+}
+
+.navbar-user {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Grid Responsive */
+.stats-grid,
+.feature-grid,
+.camera-grid,
+.role-section {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1fr;
+}
+
+/* Buttons */
+.btn {
+    padding: 12px 20px;
+    font-size: 1em;
+    white-space: nowrap;
+    min-width: 100px;
+}
+
+/* Forms */
+.form-control {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+}
+
+/* Tables */
+.preview-table,
+table {
+    width: 100%;
+    overflow-x: auto;
+    display: block;
+}
+
+.preview-table thead,
+.preview-table tbody,
+.preview-table tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* Images */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Video */
+video {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Modal */
+.modal-content {
+    width: 95%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* Hide on Mobile */
+.hide-mobile {
+    display: none;
+}
+
+/* Show on Mobile */
+.show-mobile {
+    display: block;
+}
+
+/* Tablet (768px and up) */
+@media (min-width: 768px) {
+    .container {
+        padding: 30px;
+    }
+
+    .navbar-brand {
+        font-size: 1.5em;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .feature-grid,
+    .camera-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .role-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hide-mobile {
+        display: block;
+    }
+
+    .show-mobile {
+        display: none;
+    }
+}
+
+/* Desktop (1024px and up) */
+@media (min-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .feature-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .camera-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .role-section {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Large Desktop (1440px and up) */
+@media (min-width: 1440px) {
+    .feature-grid,
+    .camera-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    .btn,
+    button,
+    a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Remove hover effects */
+    .feature-card:hover,
+    .camera-card:hover,
+    .stat-card:hover {
+        transform: none;
+    }
+
+    /* Larger form inputs */
+    .form-control,
+    input,
+    select,
+    textarea {
+        font-size: 16px;
+        padding: 14px;
+    }
+}
+
+/* Landscape Mobile */
+@media (max-width: 767px) and (orientation: landscape) {
+    .navbar {
+        padding: 10px 15px;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+    }
+
+    .modal-content {
+        max-height: 80vh;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .navbar,
+    .btn,
+    .camera-controls,
+    .modal {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+    }
+
+    .container {
+        max-width: 100%;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    /* Optional: Add dark mode styles if needed */
+}
+
+/* Small Mobile (320px - 480px) */
+@media (max-width: 480px) {
+    .navbar-brand {
+        font-size: 1em;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+    }
+
+    .stat-value {
+        font-size: 2em;
+    }
+
+    .feature-title,
+    .camera-name {
+        font-size: 1.1em;
+    }
+
+    .btn {
+        padding: 10px 15px;
+        font-size: 0.9em;
+    }
+
+    .camera-actions {
+        flex-direction: column;
+    }
+
+    .camera-actions button {
+        width: 100%;
+    }
+}

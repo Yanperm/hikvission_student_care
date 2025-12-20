@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>จัดการกล้อง Hikvision - Student Care System</title>
+    <link rel="stylesheet" href="/static/responsive.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #333;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .camera-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .camera-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+
+        .camera-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .camera-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .camera-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .camera-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .camera-location {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .camera-type {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .type-gate {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .type-classroom {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .type-behavior {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .camera-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .camera-info div {
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .camera-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4caf50;
+        }
+
+        .status-dot.offline {
+            background: #f44336;
+        }
+
+        .camera-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .camera-actions button {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.9em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .camera-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-brand">🎓 Student Care System</div>
+        <a href="/admin" class="back-btn">← กลับหน้าหลัก</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📹 จัดการกล้อง Hikvision</h1>
+                <p style="color: #666; margin-top: 10px;">จัดการกล้องทั้งหมดในโรงเรียน</p>
+            </div>
+            <button class="btn" onclick="openAddModal()">➕ เพิ่มกล้อง</button>
+        </div>
+
+        <div id="alertMessage"></div>
+
+        <div class="camera-grid" id="cameraGrid">
+            <!-- Cameras will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Add/Edit Camera Modal -->
+    <div class="modal" id="cameraModal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalTitle">เพิ่มกล้องใหม่</div>
+            
+            <div class="form-group">
+                <label>ชื่อกล้อง *</label>
+                <input type="text" class="form-control" id="cameraName" placeholder="เช่น กล้องประตูหน้า">
+            </div>
+
+            <div class="form-group">
+                <label>ตำแหน่งติดตั้ง *</label>
+                <input type="text" class="form-control" id="cameraLocation" placeholder="เช่น ประตูทางเข้าหลัก">
+            </div>
+
+            <div class="form-group">
+                <label>ประเภทกล้อง *</label>
+                <select class="form-control" id="cameraType">
+                    <option value="gate">🚪 กล้องประตู (เข้า-ออกโรงเรียน)</option>
+                    <option value="classroom">🎓 กล้องห้องเรียน (เช็คชื่อ)</option>
+                    <option value="behavior">👁️ กล้องตรวจจับพฤติกรรม</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>IP Address *</label>
+                <input type="text" class="form-control" id="cameraIp" placeholder="192.168.1.100">
+            </div>
+
+            <div class="form-group">
+                <label>Port</label>
+                <input type="text" class="form-control" id="cameraPort" placeholder="80" value="80">
+            </div>
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="form-control" id="cameraUsername" placeholder="admin">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" class="form-control" id="cameraPassword">
+            </div>
+
+            <div class="form-group">
+                <label>RTSP URL (Optional)</label>
+                <input type="text" class="form-control" id="cameraRtsp" placeholder="rtsp://192.168.1.100:554/Streaming/Channels/101">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeModal()">ยกเลิก</button>
+                <button class="btn" onclick="saveCamera()">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cameras = [];
+        let editingCameraId = null;
+
+        // Load cameras
+        async function loadCameras() {
+            try {
+                const response = await fetch('/api/cameras');
+                const data = await response.json();
+                
+                if (data.success) {
+                    cameras = data.cameras;
+                    renderCameras();
+                }
+            } catch (error) {
+                console.error('Load cameras error:', error);
+            }
+        }
+
+        // Render cameras
+        function renderCameras() {
+            const grid = document.getElementById('cameraGrid');
+            
+            if (cameras.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
+                        <div style="font-size: 4em; margin-bottom: 20px;">📹</div>
+                        <div style="font-size: 1.3em;">ยังไม่มีกล้องในระบบ</div>
+                        <div style="margin-top: 10px;">คลิก "เพิ่มกล้อง" เพื่อเริ่มต้น</div>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = cameras.map(camera => {
+                const typeInfo = {
+                    gate: { icon: '🚪', label: 'กล้องประตู', class: 'type-gate' },
+                    classroom: { icon: '🎓', label: 'กล้องห้องเรียน', class: 'type-classroom' },
+                    behavior: { icon: '👁️', label: 'ตรวจจับพฤติกรรม', class: 'type-behavior' }
+                };
+                
+                const info = typeInfo[camera.type] || typeInfo.gate;
+                const isOnline = camera.status === 'online';
+
+                return `
+                    <div class="camera-card">
+                        <div class="camera-header">
+                            <div>
+                                <div class="camera-icon">${info.icon}</div>
+                                <div class="camera-name">${camera.name}</div>
+                                <div class="camera-location">📍 ${camera.location}</div>
+                            </div>
+                        </div>
+                        
+                        <span class="camera-type ${info.class}">${info.label}</span>
+                        
+                        <div class="camera-status">
+                            <div class="status-dot ${isOnline ? '' : 'offline'}"></div>
+                            <span>${isOnline ? '🟢 ออนไลน์' : '🔴 ออฟไลน์'}</span>
+                        </div>
+                        
+                        <div class="camera-info">
+                            <div><strong>IP:</strong> ${camera.ip}:${camera.port}</div>
+                            <div><strong>Username:</strong> ${camera.username || '-'}</div>
+                            ${camera.rtsp_url ? `<div><strong>RTSP:</strong> ${camera.rtsp_url}</div>` : ''}
+                        </div>
+                        
+                        <div class="camera-actions">
+                            <button class="btn btn-success" onclick="openCamera(${camera.id})">📺 เปิดดู</button>
+                            <button class="btn btn-secondary" onclick="editCamera(${camera.id})">✏️ แก้ไข</button>
+                            <button class="btn btn-danger" onclick="deleteCamera(${camera.id})">🗑️ ลบ</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Open add modal
+        function openAddModal() {
+            editingCameraId = null;
+            document.getElementById('modalTitle').textContent = 'เพิ่มกล้องใหม่';
+            document.getElementById('cameraName').value = '';
+            document.getElementById('cameraLocation').value = '';
+            document.getElementById('cameraType').value = 'gate';
+            document.getElementById('cameraIp').value = '';
+            document.getElementById('cameraPort').value = '80';
+            document.getElementById('cameraUsername').value = '';
+            document.getElementById('cameraPassword').value = '';
+            document.getElementById('cameraRtsp').value = '';
+            document.getElementById('cameraModal').classList.add('active');
+        }
+
+        // Edit camera
+        function editCamera(id) {
+            const camera = cameras.find(c => c.id === id);
+            if (!camera) return;
+
+            editingCameraId = id;
+            document.getElementById('modalTitle').textContent = 'แก้ไขกล้อง';
+            document.getElementById('cameraName').value = camera.name;
+            document.getElementById('cameraLocation').value = camera.location;
+            document.getElementById('cameraType').value = camera.type;
+            document.getElementById('cameraIp').value = camera.ip;
+            document.getElementById('cameraPort').value = camera.port;
+            document.getElementById('cameraUsername').value = camera.username || '';
+            document.getElementById('cameraPassword').value = '';
+            document.getElementById('cameraRtsp').value = camera.rtsp_url || '';
+            document.getElementById('cameraModal').classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('cameraModal').classList.remove('active');
+        }
+
+        // Save camera
+        async function saveCamera() {
+            const data = {
+                name: document.getElementById('cameraName').value,
+                location: document.getElementById('cameraLocation').value,
+                type: document.getElementById('cameraType').value,
+                ip: document.getElementById('cameraIp').value,
+                port: document.getElementById('cameraPort').value,
+                username: document.getElementById('cameraUsername').value,
+                password: document.getElementById('cameraPassword').value,
+                rtsp_url: document.getElementById('cameraRtsp').value
+            };
+
+            if (!data.name || !data.location || !data.ip) {
+                showAlert('กรุณากรอกข้อมูลที่จำเป็น', 'error');
+                return;
+            }
+
+            try {
+                const url = editingCameraId ? `/api/cameras/${editingCameraId}` : '/api/cameras';
+                const method = editingCameraId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(editingCameraId ? 'แก้ไขกล้องสำเร็จ' : 'เพิ่มกล้องสำเร็จ', 'success');
+                    closeModal();
+                    loadCameras();
+                } else {
+                    showAlert('เกิดข้อผิดพลาด: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        // Delete camera
+        async function deleteCamera(id) {
+            if (!confirm('ต้องการลบกล้องนี้หรือไม่?')) return;
+
+            try {
+                const response = await fetch(`/api/cameras/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('ลบกล้องสำเร็จ', 'success');
+                    loadCameras();
+                } else {
+                    showAlert('เกิดข้อผิดพลาด: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        // Open camera view
+        function openCamera(id) {
+            const camera = cameras.find(c => c.id === id);
+            if (!camera) return;
+
+            // Open appropriate camera page based on type
+            if (camera.type === 'gate') {
+                window.open('/gate_camera?camera_id=' + id, '_blank');
+            } else if (camera.type === 'classroom') {
+                window.open('/camera_classroom?camera_id=' + id, '_blank');
+            } else if (camera.type === 'behavior') {
+                window.open('/camera_behavior?camera_id=' + id, '_blank');
+            }
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                alertDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        // Load cameras on page load
+        loadCameras();
+    </script>
+</body>
+</html>
