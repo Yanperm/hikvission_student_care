@@ -157,6 +157,43 @@ class Database:
                 VALUES (?, ?, ?, ?, ?, ?)
             ''', ('superadmin@softubon.com', 'Softubon@2025', 'Super Admin', 'super_admin', None, datetime.now().isoformat()))
         
+        # Insert demo users for testing
+        demo_users = [
+            ('superadmin', 'admin123', 'Super Admin Demo', 'super_admin', None),
+            ('admin', 'admin123', 'Admin Demo', 'admin', 'SCH001'),
+            ('teacher1', 'teacher123', 'Teacher Demo', 'teacher', 'SCH001'),
+            ('parent1', 'parent123', 'Parent Demo', 'parent', 'SCH001')
+        ]
+        
+        for username, password, name, role, school_id in demo_users:
+            cursor.execute("SELECT COUNT(*) FROM users WHERE username = ?", (username,))
+            if cursor.fetchone()[0] == 0:
+                cursor.execute('''
+                    INSERT INTO users (username, password, name, role, school_id, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (username, password, name, role, school_id, datetime.now().isoformat()))
+        
+        # Insert demo school if not exists
+        cursor.execute("SELECT COUNT(*) FROM schools WHERE school_id = 'SCH001'")
+        if cursor.fetchone()[0] == 0:
+            cursor.execute('''
+                INSERT INTO schools (school_id, name, province, address, package, max_students, 
+                                   expire_date, status, features, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                'SCH001',
+                'โรงเรียนสาธิต',
+                'กรุงเทพมหานคร',
+                '123 ถนนสุขุมวิท',
+                'premium',
+                1000,
+                '2025-12-31',
+                'active',
+                json.dumps(['face_recognition', 'behavior_detection', 'mental_health']),
+                datetime.now().isoformat(),
+                datetime.now().isoformat()
+            ))
+        
         conn.commit()
         conn.close()
     
