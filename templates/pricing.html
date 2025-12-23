@@ -64,8 +64,9 @@
         <h1>💰 แพ็คเก็จและราคา</h1>
         <p>เลือกแพ็คเก็จที่เหมาะกับขนาดโรงเรียนของคุณ</p>
         <div class="pricing-toggle">
-            <button class="toggle-btn active" onclick="showMonthly()">📅 เช่ารายเดือน</button>
-            <button class="toggle-btn" onclick="showLifetime()">🛡️ ขายขาด (ประหยัด 30%)</button>
+            <button class="toggle-btn active" onclick="showPricing('monthly')">📅 รายเดือน</button>
+            <button class="toggle-btn" onclick="showPricing('yearly')">📆 รายปี (ประหยัด 17%)</button>
+            <button class="toggle-btn" onclick="showPricing('lifetime')">🛡️ ขายขาด (ประหยัด 30%)</button>
         </div>
     </div>
 
@@ -77,11 +78,13 @@
                 <div class="package-students">โรงเรียนขนาดเล็ก<br>1-100 คน</div>
                 <div class="package-price">
                     <span class="monthly-price">฿990<span>/เดือน</span></span>
+                    <span class="yearly-price" style="display:none;">฿9,900<span>/ปี</span></span>
                     <span class="lifetime-price" style="display:none;">฿84,000<span> (ขายขาด)</span></span>
                 </div>
                 <p style="font-size: 14px; color: #999; margin-top: -10px;">
-                    <span class="monthly-price">หรือ ฿9,900/ปี (ประหยัด 17%)</span>
-                    <span class="lifetime-price" style="display:none;">ประหยัด 30% จาก ฿120,000</span>
+                    <span class="monthly-price">฿11,880/ปี หรือ ฿84,000 ขายขาด</span>
+                    <span class="yearly-price" style="display:none;">ประหยัด 17% จากรายเดือน</span>
+                    <span class="lifetime-price" style="display:none;">ประหยัด 30% จากรายปี</span>
                 </p>
                 <ul class="features-list">
                     <li>✅ ฟีเจอร์หลัก 6 อย่าง</li>
@@ -105,11 +108,13 @@
                 <div class="package-students">โรงเรียนขนาดกลาง<br>101-500 คน</div>
                 <div class="package-price">
                     <span class="monthly-price">฿2,990<span>/เดือน</span></span>
+                    <span class="yearly-price" style="display:none;">฿29,900<span>/ปี</span></span>
                     <span class="lifetime-price" style="display:none;">฿251,000<span> (ขายขาด)</span></span>
                 </div>
                 <p style="font-size: 14px; color: #333; margin-top: -10px;">
-                    <span class="monthly-price">หรือ ฿29,900/ปี (ประหยัด 17%)</span>
-                    <span class="lifetime-price" style="display:none;">ประหยัด 30% จาก ฿359,000</span>
+                    <span class="monthly-price">฿35,880/ปี หรือ ฿251,000 ขายขาด</span>
+                    <span class="yearly-price" style="display:none;">ประหยัด 17% จากรายเดือน</span>
+                    <span class="lifetime-price" style="display:none;">ประหยัด 30% จากรายปี</span>
                 </p>
                 <ul class="features-list">
                     <li>✅ ฟีเจอร์ทั้งหมด 21 อย่าง</li>
@@ -132,11 +137,13 @@
                 <div class="package-students">โรงเรียนขนาดใหญ่<br>501-2,000 คน</div>
                 <div class="package-price">
                     <span class="monthly-price">฿7,990<span>/เดือน</span></span>
+                    <span class="yearly-price" style="display:none;">฿79,900<span>/ปี</span></span>
                     <span class="lifetime-price" style="display:none;">฿671,000<span> (ขายขาด)</span></span>
                 </div>
                 <p style="font-size: 14px; color: #999; margin-top: -10px;">
-                    <span class="monthly-price">หรือ ฿79,900/ปี (ประหยัด 17%)</span>
-                    <span class="lifetime-price" style="display:none;">ประหยัด 30% จาก ฿959,000</span>
+                    <span class="monthly-price">฿95,880/ปี หรือ ฿671,000 ขายขาด</span>
+                    <span class="yearly-price" style="display:none;">ประหยัด 17% จากรายเดือน</span>
+                    <span class="lifetime-price" style="display:none;">ประหยัด 30% จากรายปี</span>
                 </p>
                 <ul class="features-list">
                     <li>✅ ฟีเจอร์ทั้งหมด 21 อย่าง</li>
@@ -172,6 +179,139 @@
                 </ul>
                 <button class="btn-select" onclick="contactSales()">ติดต่อฝ่ายขาย</button>
             </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); padding: 60px 40px; border-radius: 20px; margin: 40px 0; color: white;">
+            <h2 style="text-align: center; margin-bottom: 20px; font-size: 42px;">🤝 Reseller / Partner License</h2>
+            <p style="text-align: center; font-size: 20px; opacity: 0.95; margin-bottom: 40px;">สำหรับผู้ที่ต้องการซื้อไปขายต่อให้โรงเรียน หรือเป็น Partner</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 30px; border-radius: 15px; border: 2px solid rgba(255,255,255,0.3);">
+                    <div style="font-size: 48px; margin-bottom: 15px;">💼</div>
+                    <h3 style="font-size: 28px; margin-bottom: 15px;">Reseller Basic</h3>
+                    <div style="font-size: 36px; font-weight: 800; margin: 20px 0;">฿450,000</div>
+                    <p style="opacity: 0.9; margin-bottom: 20px;">ขายขาด (ครั้งเดียว)</p>
+                    <ul style="text-align: left; line-height: 2.2; font-size: 16px;">
+                        <li>✅ ขายได้ <strong>10 โรงเรียน</strong></li>
+                        <li>✅ ทุกแพ็คเก็จ (Starter-Business)</li>
+                        <li>✅ กำไร 40-60% ต่อโรงเรียน</li>
+                        <li>✅ White Label (ใส่โลโก้ได้)</li>
+                        <li>✅ Training & Support 1 ปี</li>
+                        <li>✅ Marketing Materials</li>
+                        <li>✅ Commission 15% ต่อปี</li>
+                    </ul>
+                    <button class="btn-select" style="background: white; color: #FF6B6B; margin-top: 20px;" onclick="selectReseller('Basic')">สนใจแพ็คเก็จนี้</button>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); padding: 30px; border-radius: 15px; border: 3px solid #FFD700; position: relative;">
+                    <div style="position: absolute; top: -15px; right: 20px; background: #FFD700; color: #333; padding: 8px 20px; border-radius: 20px; font-weight: 700;">⭐ แนะนำ</div>
+                    <div style="font-size: 48px; margin-bottom: 15px;">🏆</div>
+                    <h3 style="font-size: 28px; margin-bottom: 15px;">Reseller Pro</h3>
+                    <div style="font-size: 36px; font-weight: 800; margin: 20px 0;">฿850,000</div>
+                    <p style="opacity: 0.9; margin-bottom: 20px;">ขายขาด (ครั้งเดียว)</p>
+                    <ul style="text-align: left; line-height: 2.2; font-size: 16px;">
+                        <li>✅ ขายได้ <strong>25 โรงเรียน</strong></li>
+                        <li>✅ ทุกแพ็คเก็จ + Enterprise</li>
+                        <li>✅ กำไร 50-70% ต่อโรงเรียน</li>
+                        <li>✅ White Label + Custom Brand</li>
+                        <li>✅ Training & Support 3 ปี</li>
+                        <li>✅ Marketing + Sales Tools</li>
+                        <li>✅ Commission 20% ต่อปี</li>
+                        <li>✅ Priority Support</li>
+                    </ul>
+                    <button class="btn-select" style="background: #FFD700; color: #333; margin-top: 20px;" onclick="selectReseller('Pro')">สนใจแพ็คเก็จนี้</button>
+                </div>
+
+                <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 30px; border-radius: 15px; border: 2px solid rgba(255,255,255,0.3);">
+                    <div style="font-size: 48px; margin-bottom: 15px;">👑</div>
+                    <h3 style="font-size: 28px; margin-bottom: 15px;">Master Partner</h3>
+                    <div style="font-size: 36px; font-weight: 800; margin: 20px 0;">฿1,500,000</div>
+                    <p style="opacity: 0.9; margin-bottom: 20px;">ขายขาด (ครั้งเดียว)</p>
+                    <ul style="text-align: left; line-height: 2.2; font-size: 16px;">
+                        <li>✅ ขายได้ <strong>ไม่จำกัด</strong></li>
+                        <li>✅ ทุกแพ็คเก็จ + Custom Dev</li>
+                        <li>✅ กำไร 60-80% ต่อโรงเรียน</li>
+                        <li>✅ Full White Label + Source Code</li>
+                        <li>✅ Training & Support ตลอดชีพ</li>
+                        <li>✅ Exclusive Territory</li>
+                        <li>✅ Commission 25% ต่อปี</li>
+                        <li>✅ Dedicated Account Manager</li>
+                    </ul>
+                    <button class="btn-select" style="background: white; color: #FF6B6B; margin-top: 20px;" onclick="selectReseller('Master')">สนใจแพ็คเก็จนี้</button>
+                </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); padding: 40px; border-radius: 15px; margin-top: 40px;">
+                <h3 style="font-size: 28px; margin-bottom: 25px; text-align: center;">💰 คำนวณกำไร Reseller (ROI Calculator)</h3>
+                
+                <div style="max-width: 700px; margin: 0 auto;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 10px; font-weight: 600;">เลือกแพ็คเก็จ Reseller:</label>
+                            <select id="resellerPackage" onchange="calculateResellerROI()" style="width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-family: 'Kanit', sans-serif;">
+                                <option value="450000,10,50">Reseller Basic (฿450K)</option>
+                                <option value="850000,25,60" selected>Reseller Pro (฿850K)</option>
+                                <option value="1500000,999,70">Master Partner (฿1.5M)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 10px; font-weight: 600;">ขายให้โรงเรียน:</label>
+                            <input type="number" id="schoolCount" value="15" min="1" max="999" onchange="calculateResellerROI()" style="width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-family: 'Kanit', sans-serif;">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600;">ราคาขายเฉลี่ย/โรงเรียน: ฿<span id="priceLabel">300,000</span></label>
+                        <input type="range" id="avgPrice" min="100000" max="800000" step="10000" value="300000" onchange="calculateResellerROI()" style="width: 100%;">
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; opacity: 0.9;">
+                            <span>฿100K</span>
+                            <span>฿400K</span>
+                            <span>฿800K</span>
+                        </div>
+                    </div>
+
+                    <div style="background: white; color: #333; padding: 35px; border-radius: 15px; margin-top: 30px;">
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 25px; margin-bottom: 25px;">
+                            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">💼 ต้นทุน Reseller</div>
+                                <div style="font-size: 32px; font-weight: 800; color: #f44336;" id="resellerCost">฿850,000</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">💵 รายได้รวม</div>
+                                <div style="font-size: 32px; font-weight: 800; color: #4CAF50;" id="totalRevenue">฿4,500,000</div>
+                            </div>
+                        </div>
+                        
+                        <div style="border-top: 3px solid #e0e0e0; padding-top: 25px; text-align: center;">
+                            <div style="font-size: 16px; color: #666; margin-bottom: 8px;">💰 กำไรสุทธิ</div>
+                            <div style="font-size: 56px; font-weight: 900; color: #4CAF50; margin-bottom: 10px;" id="netProfit">฿3,650,000</div>
+                            <div style="font-size: 20px; color: #666;" id="profitMargin">(กำไร 429%)</div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 25px; padding-top: 25px; border-top: 2px solid #e0e0e0;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 13px; color: #666;">📊 กำไร/โรงเรียน</div>
+                                <div style="font-size: 22px; font-weight: 700; color: #667eea;" id="profitPerSchool">฿243,333</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 13px; color: #666;">⏱️ Break-even</div>
+                                <div style="font-size: 22px; font-weight: 700; color: #667eea;" id="breakEvenSchools">3 โรงเรียน</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 13px; color: #666;">🎯 ROI</div>
+                                <div style="font-size: 22px; font-weight: 700; color: #4CAF50;" id="roiPercent">429%</div>
+                            </div>
+                        </div>
+
+                        <div id="resellerWarning" style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center; font-size: 15px;">
+                            ⚠️ คำเตือน: ต้องขายอย่างน้อย 3 โรงเรียนเพื่อคุ้มทุน
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pricing-grid">
         </div>
 
         <div class="comparison">
@@ -402,23 +542,89 @@
         // Initialize on load
         calculateROI();
 
-        function showMonthly() {
-            document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            document.querySelectorAll('.monthly-price').forEach(el => el.style.display = 'inline');
-            document.querySelectorAll('.lifetime-price').forEach(el => el.style.display = 'none');
+        function calculateResellerROI() {
+            const packageSelect = document.getElementById('resellerPackage');
+            const schoolCount = parseInt(document.getElementById('schoolCount').value);
+            const avgPrice = parseInt(document.getElementById('avgPrice').value);
+            
+            const [cost, maxSchools, suggestedMargin] = packageSelect.value.split(',').map(Number);
+            
+            // Update labels
+            document.getElementById('priceLabel').textContent = avgPrice.toLocaleString();
+            
+            // Validate school count
+            const actualSchools = Math.min(schoolCount, maxSchools === 999 ? schoolCount : maxSchools);
+            
+            // Calculate revenue and profit
+            const totalRevenue = avgPrice * actualSchools;
+            const netProfit = totalRevenue - cost;
+            const profitMargin = ((netProfit / cost) * 100).toFixed(0);
+            const profitPerSchool = (netProfit / actualSchools).toFixed(0);
+            const breakEvenSchools = Math.ceil(cost / avgPrice);
+            
+            // Update display
+            document.getElementById('resellerCost').textContent = '฿' + cost.toLocaleString();
+            document.getElementById('totalRevenue').textContent = '฿' + totalRevenue.toLocaleString();
+            document.getElementById('netProfit').textContent = '฿' + netProfit.toLocaleString();
+            document.getElementById('profitMargin').textContent = '(กำไร ' + profitMargin + '%)';
+            document.getElementById('profitPerSchool').textContent = '฿' + parseInt(profitPerSchool).toLocaleString();
+            document.getElementById('breakEvenSchools').textContent = breakEvenSchools + ' โรงเรียน';
+            document.getElementById('roiPercent').textContent = profitMargin + '%';
+            
+            // Update colors based on profit
+            const profitElement = document.getElementById('netProfit');
+            const marginElement = document.getElementById('profitMargin');
+            if (netProfit > 0) {
+                profitElement.style.color = '#4CAF50';
+                marginElement.style.color = '#4CAF50';
+            } else {
+                profitElement.style.color = '#f44336';
+                marginElement.style.color = '#f44336';
+            }
+            
+            // Warning message
+            const warningDiv = document.getElementById('resellerWarning');
+            if (actualSchools < breakEvenSchools) {
+                warningDiv.innerHTML = '⚠️ คำเตือน: ต้องขายอย่างน้อย ' + breakEvenSchools + ' โรงเรียนเพื่อคุ้มทุน';
+                warningDiv.style.background = '#fff3cd';
+                warningDiv.style.color = '#856404';
+            } else if (actualSchools >= breakEvenSchools && netProfit > cost) {
+                warningDiv.innerHTML = '✅ ยอดเยี่ยม! คุณจะได้กำไร ' + profitMargin + '% และคุ้มทุนแล้ว';
+                warningDiv.style.background = '#d4edda';
+                warningDiv.style.color = '#155724';
+            } else {
+                warningDiv.innerHTML = '✅ คุ้มทุนแล้ว! ขายเพิ่มเพื่อเพิ่มกำไร';
+                warningDiv.style.background = '#d1ecf1';
+                warningDiv.style.color = '#0c5460';
+            }
+            
+            // Check max schools limit
+            if (maxSchools !== 999 && schoolCount > maxSchools) {
+                document.getElementById('schoolCount').value = maxSchools;
+                alert('⚠️ แพ็คเก็จนี้ขายได้สูงสุด ' + maxSchools + ' โรงเรียน\nกรุณาเลือก Master Partner สำหรับไม่จำกัด');
+            }
+        }
+        
+        // Initialize reseller calculator
+        calculateResellerROI();
+
+        function selectReseller(type) {
+            alert(`✅ สนใจแพ็คเก็จ Reseller ${type}\n\n📋 ขั้นตอนต่อไป:\n1. ติดต่อฝ่ายขาย\n2. นัดหมายพูดคุยรายละเอียด\n3. ลงนามสัญญา Partner\n4. รับ Training & Materials\n5. เริ่มขายได้เลย!\n\n📞 ติดต่อ:\nEmail: partner@softubon.com\nTel: 02-xxx-xxxx\nLine: @softubon-partner`);
         }
 
-        function showLifetime() {
+        function showPricing(type) {
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
-            document.querySelectorAll('.monthly-price').forEach(el => el.style.display = 'none');
-            document.querySelectorAll('.lifetime-price').forEach(el => el.style.display = 'inline');
+            
+            document.querySelectorAll('.monthly-price').forEach(el => el.style.display = type === 'monthly' ? 'inline' : 'none');
+            document.querySelectorAll('.yearly-price').forEach(el => el.style.display = type === 'yearly' ? 'inline' : 'none');
+            document.querySelectorAll('.lifetime-price').forEach(el => el.style.display = type === 'lifetime' ? 'inline' : 'none');
         }
 
         function selectPackage(packageName) {
-            const isLifetime = document.querySelectorAll('.lifetime-price')[0].style.display !== 'none';
-            const type = isLifetime ? 'ขายขาด' : 'เช่ารายเดือน';
+            let type = 'รายเดือน';
+            if (document.querySelectorAll('.yearly-price')[0].style.display !== 'none') type = 'รายปี';
+            if (document.querySelectorAll('.lifetime-price')[0].style.display !== 'none') type = 'ขายขาด';
             alert(`✅ คุณเลือกแพ็คเก็จ: ${packageName} (${type})\n\nทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง\n\nEmail: sales@softubon.com\nTel: 02-xxx-xxxx`);
         }
 
