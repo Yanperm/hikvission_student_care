@@ -310,19 +310,98 @@
                 </div>
             </div>
 
-            <div style="background: white; padding: 30px; border-radius: 15px; margin-top: 30px; text-align: center;">
-                <h3 style="font-size: 24px; margin-bottom: 15px;">📊 คำนวณค่าใช้จ่าย (ROI)</h3>
-                <p style="font-size: 18px; color: #666; line-height: 1.8;">
-                    <strong>ตัวอย่าง:</strong> Professional Package<br>
-                    📅 รายเดือน: ฿2,990 x 36 เดือน = <strong style="color: #f44336;">฿107,640</strong><br>
-                    🛡️ ขายขาด: <strong style="color: #4CAF50;">฿251,000</strong> (ครั้งเดียว ใช้ตลอดชีพ)<br><br>
-                    💰 <strong style="color: #4CAF50; font-size: 22px;">ประหยัดได้ถึง ฿143,360 ใน 3 ปี!</strong>
-                </p>
+            <div style="background: white; padding: 30px; border-radius: 15px; margin-top: 30px;">
+                <h3 style="font-size: 24px; margin-bottom: 25px; text-align: center;">📊 คำนวณค่าใช้จ่าย (ROI Calculator)</h3>
+                
+                <div style="max-width: 600px; margin: 0 auto;">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600;">เลือกแพ็คเก็จ:</label>
+                        <select id="roiPackage" onchange="calculateROI()" style="width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; font-family: 'Kanit', sans-serif;">
+                            <option value="990,84000">Starter (฿990/เดือน)</option>
+                            <option value="2990,251000" selected>Professional (฿2,990/เดือน)</option>
+                            <option value="7990,671000">Business (฿7,990/เดือน)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: 600;">ระยะเวลาการใช้งาน: <span id="yearLabel">3</span> ปี</label>
+                        <input type="range" id="roiYears" min="1" max="10" value="3" onchange="calculateROI()" style="width: 100%;">
+                        <div style="display: flex; justify-content: space-between; font-size: 14px; color: #666;">
+                            <span>1 ปี</span>
+                            <span>5 ปี</span>
+                            <span>10 ปี</span>
+                        </div>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 15px; color: white; margin-top: 30px;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                            <div>
+                                <div style="font-size: 14px; opacity: 0.9;">📅 รายเดือน (<span id="resultYears">3</span> ปี)</div>
+                                <div style="font-size: 32px; font-weight: 800; margin-top: 5px;" id="monthlyTotal">฿107,640</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 14px; opacity: 0.9;">🛡️ ขายขาด (ครั้งเดียว)</div>
+                                <div style="font-size: 32px; font-weight: 800; margin-top: 5px;" id="lifetimeTotal">฿251,000</div>
+                            </div>
+                        </div>
+                        
+                        <div style="border-top: 2px solid rgba(255,255,255,0.3); padding-top: 20px; text-align: center;">
+                            <div style="font-size: 16px; opacity: 0.9; margin-bottom: 5px;">💰 ประหยัดได้จากขายขาด</div>
+                            <div style="font-size: 48px; font-weight: 900;" id="savings">฿143,360</div>
+                            <div style="font-size: 18px; opacity: 0.9; margin-top: 5px;" id="savingsPercent">(ประหยัด 57%)</div>
+                        </div>
+
+                        <div id="breakEven" style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center; font-size: 16px;">
+                            ✅ ขายขาดคุ้มกว่าหลังจาก 2.3 ปี
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        function calculateROI() {
+            const packageSelect = document.getElementById('roiPackage');
+            const yearsSlider = document.getElementById('roiYears');
+            
+            const [monthlyPrice, lifetimePrice] = packageSelect.value.split(',').map(Number);
+            const years = parseInt(yearsSlider.value);
+            
+            // Update year label
+            document.getElementById('yearLabel').textContent = years;
+            document.getElementById('resultYears').textContent = years;
+            
+            // Calculate monthly total
+            const monthlyTotal = monthlyPrice * 12 * years;
+            
+            // Calculate savings
+            const savings = monthlyTotal - lifetimePrice;
+            const savingsPercent = ((savings / monthlyTotal) * 100).toFixed(0);
+            
+            // Calculate break-even point
+            const breakEvenYears = (lifetimePrice / (monthlyPrice * 12)).toFixed(1);
+            
+            // Update display
+            document.getElementById('monthlyTotal').textContent = '฿' + monthlyTotal.toLocaleString();
+            document.getElementById('lifetimeTotal').textContent = '฿' + lifetimePrice.toLocaleString();
+            
+            if (savings > 0) {
+                document.getElementById('savings').textContent = '฿' + savings.toLocaleString();
+                document.getElementById('savingsPercent').textContent = '(ประหยัด ' + savingsPercent + '%)';
+                document.getElementById('savings').style.color = '#4CAF50';
+                document.getElementById('breakEven').innerHTML = '✅ ขายขาดคุ้มกว่าหลังจาก ' + breakEvenYears + ' ปี';
+            } else {
+                document.getElementById('savings').textContent = '฿' + Math.abs(savings).toLocaleString();
+                document.getElementById('savingsPercent').textContent = '(รายเดือนถูกกว่า)';
+                document.getElementById('savings').style.color = '#f44336';
+                document.getElementById('breakEven').innerHTML = '⚠️ ระยะเวลาสั้นเกินไป แนะนำเช่ารายเดือน';
+            }
+        }
+        
+        // Initialize on load
+        calculateROI();
+
         function showMonthly() {
             document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
