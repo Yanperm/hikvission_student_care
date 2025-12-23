@@ -12,14 +12,14 @@ load_dotenv()
 if os.environ.get('USE_RDS', 'false').lower() == 'true':
     try:
         from database_rds import db
-        print("✅ Using RDS Database")
+        print("Using RDS Database")
     except Exception as e:
-        print(f"⚠️ RDS Connection Failed: {e}")
-        print("➡️ Falling back to SQLite")
+        print(f"RDS Connection Failed: {str(e)}")
+        print("Falling back to SQLite")
         from database import db
 else:
     from database import db
-    print("✅ Using SQLite Database")
+    print("Using SQLite Database")
 from line_oa import line_oa
 import os
 import json
