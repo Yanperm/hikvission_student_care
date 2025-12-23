@@ -82,7 +82,7 @@ def api_login():
         session['school_id'] = user.get('school_id')
         
         redirect_map = {
-            'super_admin': '/super_admin',
+            'super_admin': '/super_admin_complete',
             'reseller': '/reseller_dashboard',
             'admin': '/admin',
             'teacher': '/admin',
