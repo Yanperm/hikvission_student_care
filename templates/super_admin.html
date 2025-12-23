@@ -21,6 +21,23 @@
         .badge { padding: 5px 15px; border-radius: 20px; font-size: 14px; font-weight: 600; }
         .badge-active { background: #d4edda; color: #155724; }
         .badge-expired { background: #f8d7da; color: #721c24; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { background: white; width: 90%; max-width: 800px; margin: 50px auto; border-radius: 20px; padding: 40px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .close-btn { font-size: 32px; cursor: pointer; color: #999; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Kanit', sans-serif; font-size: 16px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+        .package-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 10px; }
+        .package-card { border: 3px solid #e0e0e0; padding: 20px; border-radius: 12px; cursor: pointer; text-align: center; transition: all 0.3s; }
+        .package-card:hover { border-color: #667eea; transform: translateY(-5px); }
+        .package-card.selected { border-color: #667eea; background: #f0f4ff; }
+        .package-card h4 { color: #667eea; margin-bottom: 10px; font-size: 20px; }
+        .package-card .price { font-size: 24px; font-weight: 700; color: #333; margin: 10px 0; }
+        .package-card .capacity { color: #666; font-size: 14px; }
+        .full-width { grid-column: 1 / -1; }
+        .tab-buttons { display: flex; gap: 15px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -36,23 +53,32 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <p>🏫 โรงเรียนทั้งหมด</p>
-                <h3 id="totalSchools">{{ stats.total_schools or 0 }}</h3>
+                <h3>{{ stats.total_schools or 0 }}</h3>
+            </div>
+            <div class="stat-card">
+                <p>🤝 Reseller/Partner</p>
+                <h3>{{ stats.total_resellers or 0 }}</h3>
             </div>
             <div class="stat-card">
                 <p>👥 นักเรียนทั้งหมด</p>
-                <h3 id="totalCapacity">{{ stats.total_capacity or 0 }}</h3>
+                <h3>{{ stats.total_capacity or 0 }}</h3>
             </div>
             <div class="stat-card">
                 <p>⚠️ ใกล้หมดอายุ</p>
-                <h3 id="expiringSoon">{{ stats.expiring_soon or 0 }}</h3>
+                <h3>{{ stats.expiring_soon or 0 }}</h3>
             </div>
         </div>
 
-        <div class="card">
+        <div class="tab-buttons">
+            <button class="btn" id="btnSchools" onclick="showTab('schools')">🏫 จัดการโรงเรียน</button>
+            <button class="btn" id="btnResellers" onclick="showTab('resellers')" style="background: #6c757d;">🤝 จัดการ Reseller</button>
+        </div>
+
+        <div id="schoolsTab" class="card">
             <h2>🏫 จัดการโรงเรียน</h2>
             <button class="btn" onclick="openAddSchoolModal()">➕ เพิ่มโรงเรียนใหม่</button>
             
-            <table id="schoolsTable">
+            <table>
                 <thead>
                     <tr>
                         <th>รหัส</th>
@@ -80,9 +106,7 @@
                                     {{ 'ใช้งาน' if school.status == 'active' else 'หมดอายุ' }}
                                 </span>
                             </td>
-                            <td>
-                                <button class="btn" onclick="editSchool('{{ school.school_id }}')">แก้ไข</button>
-                            </td>
+                            <td><button class="btn" onclick="editSchool('{{ school.school_id }}')">แก้ไข</button></td>
                         </tr>
                         {% endfor %}
                     {% else %}
@@ -91,39 +115,378 @@
                 </tbody>
             </table>
         </div>
+
+        <div id="resellersTab" class="card" style="display: none;">
+            <h2>🤝 จัดการ Reseller / Partner</h2>
+            <button class="btn" onclick="openAddResellerModal()">➕ เพิ่ม Reseller ใหม่</button>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>รหัส</th>
+                        <th>ชื่อบริษัท/บุคคล</th>
+                        <th>แพ็คเก็จ</th>
+                        <th>ขายได้/ใช้แล้ว</th>
+                        <th>ราคา</th>
+                        <th>วันหมดอายุ</th>
+                        <th>สถานะ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="8" style="text-align: center;">ยังไม่มี Reseller</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal เพิ่มโรงเรียน -->
+    <div id="addSchoolModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ เพิ่มโรงเรียนใหม่</h2>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <form id="addSchoolForm" onsubmit="submitSchool(event)">
+                <div class="form-group full-width">
+                    <label>📦 เลือกแพ็คเก็จ *</label>
+                    <div class="package-cards">
+                        <div class="package-card" onclick="selectPackage('Starter', 100, 990, 9900, 84000)">
+                            <div style="font-size: 36px;">🏫</div>
+                            <h4>Starter</h4>
+                            <div class="capacity">1-100 คน</div>
+                            <div class="price">฿990/เดือน</div>
+                            <div style="font-size: 12px; color: #999;">฿9,900/ปี | ฿84,000 ขาด</div>
+                        </div>
+                        <div class="package-card" onclick="selectPackage('Professional', 500, 2990, 29900, 251000)">
+                            <div style="font-size: 36px;">🏫</div>
+                            <h4>Professional</h4>
+                            <div class="capacity">101-500 คน</div>
+                            <div class="price">฿2,990/เดือน</div>
+                            <div style="font-size: 12px; color: #999;">฿29,900/ปี | ฿251,000 ขาด</div>
+                        </div>
+                        <div class="package-card" onclick="selectPackage('Business', 2000, 7990, 79900, 671000)">
+                            <div style="font-size: 36px;">🏫</div>
+                            <h4>Business</h4>
+                            <div class="capacity">501-2,000 คน</div>
+                            <div class="price">฿7,990/เดือน</div>
+                            <div style="font-size: 12px; color: #999;">฿79,900/ปี | ฿671,000 ขาด</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="package" name="package" required>
+                    <input type="hidden" id="maxStudents" name="max_students" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>💳 ประเภทการชำระเงิน *</label>
+                    <select id="paymentType" onchange="updatePricing()" required>
+                        <option value="">-- เลือกประเภท --</option>
+                        <option value="monthly">รายเดือน</option>
+                        <option value="yearly">รายปี (ประหยัด 17%)</option>
+                        <option value="lifetime">ขายขาด (ประหยัด 30%)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>💰 ราคา (บาท)</label>
+                    <input type="number" id="price" readonly style="background: #f8f9fa;">
+                </div>
+
+                <div class="form-group">
+                    <label>📅 วันหมดอายุ *</label>
+                    <input type="date" id="expireDate" name="expire_date" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>🏫 ชื่อโรงเรียน *</label>
+                    <input type="text" id="schoolName" name="name" placeholder="เช่น โรงเรียนอนุบาลบ้านสวน" required>
+                </div>
+
+                <div class="form-group">
+                    <label>📍 จังหวัด *</label>
+                    <input type="text" id="province" name="province" placeholder="เช่น กรุงเทพมหานคร" required>
+                </div>
+
+                <div class="form-group">
+                    <label>📞 เบอร์โทร</label>
+                    <input type="tel" id="phone" name="phone" placeholder="02-xxx-xxxx">
+                </div>
+
+                <div class="form-group">
+                    <label>📧 อีเมล</label>
+                    <input type="email" id="email" name="email" placeholder="school@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>🌐 เว็บไซต์</label>
+                    <input type="url" id="website" name="website" placeholder="https://school.ac.th">
+                </div>
+
+                <div class="form-group full-width">
+                    <label>📝 หมายเหตุ</label>
+                    <input type="text" id="notes" name="notes" placeholder="ข้อมูลเพิ่มเติม">
+                </div>
+
+                <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+                <h3 style="margin-bottom: 20px;">👤 ข้อมูล Admin โรงเรียน</h3>
+
+                <div class="form-group">
+                    <label>👤 Username *</label>
+                    <input type="text" id="adminUsername" name="admin_username" placeholder="admin" required>
+                </div>
+
+                <div class="form-group">
+                    <label>🔒 Password *</label>
+                    <input type="password" id="adminPassword" name="admin_password" placeholder="********" required>
+                </div>
+
+                <div class="form-group full-width" style="margin-top: 30px;">
+                    <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 18px;">✅ สร้างโรงเรียน</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal เพิ่ม Reseller -->
+    <div id="addResellerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>➕ เพิ่ม Reseller / Partner ใหม่</h2>
+                <span class="close-btn" onclick="closeResellerModal()">&times;</span>
+            </div>
+            
+            <form id="addResellerForm" onsubmit="submitReseller(event)">
+                <div class="form-group full-width">
+                    <label>📦 เลือกแพ็คเก็จ Reseller *</label>
+                    <div class="package-cards">
+                        <div class="package-card" onclick="selectResellerPackage('Basic', 10, 450000)">
+                            <div style="font-size: 36px;">💼</div>
+                            <h4>Reseller Basic</h4>
+                            <div class="capacity">ขายได้ 10 โรงเรียน</div>
+                            <div class="price">฿450,000</div>
+                            <div style="font-size: 12px; color: #666;">กำไร 40-60%</div>
+                        </div>
+                        <div class="package-card" onclick="selectResellerPackage('Pro', 25, 850000)">
+                            <div style="font-size: 36px;">🏆</div>
+                            <h4>Reseller Pro</h4>
+                            <div class="capacity">ขายได้ 25 โรงเรียน</div>
+                            <div class="price">฿850,000</div>
+                            <div style="font-size: 12px; color: #666;">กำไร 50-70%</div>
+                        </div>
+                        <div class="package-card" onclick="selectResellerPackage('Master', 999, 1500000)">
+                            <div style="font-size: 36px;">👑</div>
+                            <h4>Master Partner</h4>
+                            <div class="capacity">ไม่จำกัด</div>
+                            <div class="price">฿1,500,000</div>
+                            <div style="font-size: 12px; color: #666;">กำไร 60-80%</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="resellerPackage" name="package" required>
+                    <input type="hidden" id="resellerMaxSchools" name="max_schools" required>
+                    <input type="hidden" id="resellerPrice" name="price" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>🏢 ชื่อบริษัท/บุคคล *</label>
+                    <input type="text" id="resellerName" name="name" placeholder="เช่น SOFTUBON CO.,LTD." required>
+                </div>
+
+                <div class="form-group">
+                    <label>👤 ชื่อผู้ติดต่อ *</label>
+                    <input type="text" id="contactName" name="contact_name" placeholder="คุณสมชาย" required>
+                </div>
+
+                <div class="form-group">
+                    <label>📞 เบอร์โทร *</label>
+                    <input type="tel" id="resellerPhone" name="phone" placeholder="02-xxx-xxxx" required>
+                </div>
+
+                <div class="form-group">
+                    <label>📧 อีเมล *</label>
+                    <input type="email" id="resellerEmail" name="email" placeholder="contact@company.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label>📍 จังหวัด/เขต</label>
+                    <input type="text" id="resellerRegion" name="region" placeholder="กรุงเทพมหานคร">
+                </div>
+
+                <div class="form-group">
+                    <label>📅 วันหมดอายุ *</label>
+                    <input type="date" id="resellerExpireDate" name="expire_date" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label>📝 หมายเหตุ</label>
+                    <input type="text" id="resellerNotes" name="notes" placeholder="ข้อมูลเพิ่มเติม">
+                </div>
+
+                <hr style="margin: 30px 0; border: none; border-top: 2px solid #e0e0e0;">
+                <h3 style="margin-bottom: 20px;">🔑 ข้อมูลเข้าสู่ระบบ</h3>
+
+                <div class="form-group">
+                    <label>👤 Username *</label>
+                    <input type="text" id="resellerUsername" name="username" placeholder="reseller01" required>
+                </div>
+
+                <div class="form-group">
+                    <label>🔒 Password *</label>
+                    <input type="password" id="resellerPassword" name="password" placeholder="********" required>
+                </div>
+
+                <div class="form-group full-width" style="margin-top: 30px;">
+                    <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 18px;">✅ สร้าง Reseller</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        function openAddSchoolModal() {
-            const name = prompt('ชื่อโรงเรียน:');
-            if (!name) return;
+        let selectedPackageData = {};
+
+        function showTab(tab) {
+            if (tab === 'schools') {
+                document.getElementById('schoolsTab').style.display = 'block';
+                document.getElementById('resellersTab').style.display = 'none';
+                document.getElementById('btnSchools').style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                document.getElementById('btnResellers').style.background = '#6c757d';
+            } else {
+                document.getElementById('schoolsTab').style.display = 'none';
+                document.getElementById('resellersTab').style.display = 'block';
+                document.getElementById('btnSchools').style.background = '#6c757d';
+                document.getElementById('btnResellers').style.background = 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)';
+            }
+        }
+
+        function selectPackage(name, capacity, monthly, yearly, lifetime) {
+            document.querySelectorAll('#addSchoolModal .package-card').forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
             
-            const province = prompt('จังหวัด:');
-            const package = prompt('แพ็คเก็จ (STARTER/PROFESSIONAL/ENTERPRISE):');
-            const maxStudents = prompt('จำนวนนักเรียนสูงสุด:');
-            const expireDate = prompt('วันหมดอายุ (YYYY-MM-DD):');
-            const adminUsername = prompt('Admin Username:');
-            const adminPassword = prompt('Admin Password:');
+            document.getElementById('package').value = name;
+            document.getElementById('maxStudents').value = capacity;
+            
+            selectedPackageData = { name, monthly, yearly, lifetime };
+            updatePricing();
+            
+            const expireDate = new Date();
+            expireDate.setFullYear(expireDate.getFullYear() + 1);
+            document.getElementById('expireDate').value = expireDate.toISOString().split('T')[0];
+        }
+
+        function updatePricing() {
+            const paymentType = document.getElementById('paymentType').value;
+            const priceInput = document.getElementById('price');
+            
+            if (!selectedPackageData.name || !paymentType) {
+                priceInput.value = '';
+                return;
+            }
+            
+            const prices = {
+                monthly: selectedPackageData.monthly,
+                yearly: selectedPackageData.yearly,
+                lifetime: selectedPackageData.lifetime
+            };
+            
+            priceInput.value = prices[paymentType] || '';
+        }
+
+        function openAddSchoolModal() {
+            document.getElementById('addSchoolModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('addSchoolModal').style.display = 'none';
+            document.getElementById('addSchoolForm').reset();
+            document.querySelectorAll('#addSchoolModal .package-card').forEach(card => card.classList.remove('selected'));
+            selectedPackageData = {};
+        }
+
+        function submitSchool(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            data.max_students = parseInt(data.max_students);
+            data.payment_type = document.getElementById('paymentType').value;
+            data.price = parseInt(document.getElementById('price').value);
             
             fetch('/api/schools', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name, province, package,
-                    max_students: parseInt(maxStudents),
-                    expire_date: expireDate,
-                    admin_username: adminUsername,
-                    admin_password: adminPassword
-                })
+                body: JSON.stringify(data)
             })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    alert('✅ สร้างโรงเรียนสำเร็จ!');
+                    alert('✅ สร้างโรงเรียนสำเร็จ!\n\nรหัสโรงเรียน: ' + data.school_id + '\nUsername: ' + data.admin_username);
+                    closeModal();
                     location.reload();
                 } else {
-                    alert('❌ ' + data.message);
+                    alert('❌ เกิดข้อผิดพลาด: ' + data.message);
                 }
+            })
+            .catch(err => {
+                alert('❌ เกิดข้อผิดพลาด: ' + err.message);
+            });
+        }
+
+        // Reseller Functions
+        let selectedResellerData = {};
+
+        function selectResellerPackage(name, maxSchools, price) {
+            document.querySelectorAll('#addResellerModal .package-card').forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            document.getElementById('resellerPackage').value = name;
+            document.getElementById('resellerMaxSchools').value = maxSchools;
+            document.getElementById('resellerPrice').value = price;
+            
+            selectedResellerData = { name, maxSchools, price };
+            
+            const expireDate = new Date();
+            expireDate.setFullYear(expireDate.getFullYear() + 3);
+            document.getElementById('resellerExpireDate').value = expireDate.toISOString().split('T')[0];
+        }
+
+        function openAddResellerModal() {
+            document.getElementById('addResellerModal').style.display = 'block';
+        }
+
+        function closeResellerModal() {
+            document.getElementById('addResellerModal').style.display = 'none';
+            document.getElementById('addResellerForm').reset();
+            document.querySelectorAll('#addResellerModal .package-card').forEach(card => card.classList.remove('selected'));
+            selectedResellerData = {};
+        }
+
+        function submitReseller(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            data.max_schools = parseInt(data.max_schools);
+            data.price = parseInt(data.price);
+            data.schools_used = 0;
+            
+            fetch('/api/resellers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ สร้าง Reseller สำเร็จ!\n\nรหัส: ' + data.reseller_id + '\nUsername: ' + data.username + '\nขายได้: ' + data.max_schools + ' โรงเรียน');
+                    closeResellerModal();
+                    location.reload();
+                } else {
+                    alert('❌ เกิดข้อผิดพลาด: ' + data.message);
+                }
+            })
+            .catch(err => {
+                alert('❌ เกิดข้อผิดพลาด: ' + err.message);
             });
         }
         

@@ -3,6 +3,7 @@ from functools import wraps
 from local_client import CloudSync
 import os
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 
 # Load environment variables
 load_dotenv()
@@ -82,6 +83,7 @@ def api_login():
         
         redirect_map = {
             'super_admin': '/super_admin',
+            'reseller': '/reseller_dashboard',
             'admin': '/admin',
             'teacher': '/admin',
             'parent': '/parent_dashboard'
@@ -568,6 +570,11 @@ def super_admin():
     stats = db.get_stats()
     return render_template('super_admin.html', schools=schools, stats=stats)
 
+@app.route('/super_admin_complete')
+@super_admin_required
+def super_admin_complete():
+    return render_template('super_admin_complete.html')
+
 @app.route('/api/schools', methods=['GET'])
 @super_admin_required
 def get_schools():
@@ -588,9 +595,13 @@ def create_school():
     
     return jsonify({'success': True, 'school_id': school_id, 'message': 'สร้างโรงเรียนสำเร็จ!'})
 
-@app.route('/api/schools/<school_id>', methods=['PUT'])
+@app.route('/api/schools/<school_id>', methods=['GET'])
 @super_admin_required
-def update_school_api(school_id):
+def get_school_detail(school_id):
+    school = db.get_school(school_id)
+    if school:
+        return jsonify({'success': True, 'school': school})
+    return jsonify({'success': False, 'message': 'ไม่พบโรงเรียน'})
     data = request.json
     db.update_school(school_id, data)
     return jsonify({'success': True, 'message': 'อัพเดทข้อมูลสำเร็จ!'})
@@ -1517,6 +1528,222 @@ def mental_health_stats():
             'total': len(students)
         }
     })
+
+# ============================================
+# SUPER ADMIN API ENDPOINTS
+# ============================================
+
+@app.route('/api/super_admin/dashboard', methods=['GET'])
+@super_admin_required
+def get_super_admin_dashboard():
+    try:
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT COUNT(*) FROM schools')
+        total_schools = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM resellers')
+        total_resellers = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM students')
+        total_students = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM schools WHERE status = "active"')
+        active_schools = cursor.fetchone()[0]
+        
+        today = datetime.now().date()
+        days_30 = (today + timedelta(days=30)).isoformat()
+        cursor.execute('SELECT COUNT(*) FROM schools WHERE expire_date <= ? AND status = "active"', (days_30,))
+        expiring_soon = cursor.fetchone()[0]
+        
+        conn.close()
+        
+        monthly_revenue = db.get_revenue('month')
+        
+        stats = {
+            'total_schools': total_schools,
+            'total_resellers': total_resellers,
+            'total_students': total_students,
+            'monthly_revenue': monthly_revenue,
+            'expiring_soon': expiring_soon,
+            'active_rate': round((active_schools / total_schools * 100) if total_schools > 0 else 0, 1)
+        }
+        return jsonify({'success': True, 'stats': stats})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/resellers', methods=['GET'])
+@super_admin_required
+def get_resellers():
+    resellers = db.get_all_resellers()
+    return jsonify({'success': True, 'resellers': resellers})
+
+@app.route('/api/resellers', methods=['POST'])
+@super_admin_required
+def create_reseller():
+    data = request.json
+    reseller_id = db.add_reseller(data)
+    return jsonify({
+        'success': True,
+        'reseller_id': reseller_id,
+        'username': data['username'],
+        'max_schools': data['max_schools']
+    })
+
+@app.route('/api/resellers/<reseller_id>', methods=['GET'])
+@super_admin_required
+def get_reseller(reseller_id):
+    reseller = db.get_reseller(reseller_id)
+    if reseller:
+        schools = db.get_reseller_schools(reseller_id)
+        commission = db.calculate_reseller_commission(reseller_id)
+        return jsonify({'success': True, 'reseller': reseller, 'schools': schools, 'commission': commission})
+    return jsonify({'success': False, 'message': 'ไม่พบ Reseller'})
+
+@app.route('/api/resellers/<reseller_id>', methods=['PUT'])
+@super_admin_required
+def update_reseller(reseller_id):
+    data = request.json
+    db.update_reseller(reseller_id, data)
+    return jsonify({'success': True, 'message': 'อัพเดทข้อมูลสำเร็จ'})
+
+@app.route('/api/resellers/<reseller_id>', methods=['DELETE'])
+@super_admin_required
+def delete_reseller(reseller_id):
+    db.delete_reseller(reseller_id)
+    return jsonify({'success': True, 'message': 'ลบ Reseller สำเร็จ'})
+
+@app.route('/api/super_admin/payments', methods=['GET'])
+@super_admin_required
+def get_payments():
+    payments = db.get_all_payments()
+    return jsonify({'success': True, 'payments': payments})
+
+@app.route('/api/super_admin/payments', methods=['POST'])
+@super_admin_required
+def add_payment():
+    data = request.json
+    payment_id = db.add_payment(data)
+    return jsonify({'success': True, 'payment_id': payment_id, 'message': 'บันทึกการชำระเงินสำเร็จ'})
+
+@app.route('/api/super_admin/revenue', methods=['GET'])
+@super_admin_required
+def get_revenue():
+    today = db.get_revenue('today')
+    month = db.get_revenue('month')
+    year = db.get_revenue('year')
+    pending = db.get_pending_payments()
+    return jsonify({
+        'success': True,
+        'revenue': {'today': today, 'month': month, 'year': year, 'pending': pending}
+    })
+
+@app.route('/api/super_admin/settings', methods=['GET'])
+@super_admin_required
+def get_settings():
+    settings = db.get_system_settings()
+    return jsonify({'success': True, 'settings': settings})
+
+@app.route('/api/super_admin/settings', methods=['POST'])
+@super_admin_required
+def update_settings():
+    data = request.json
+    db.update_system_settings(data)
+    return jsonify({'success': True, 'message': 'บันทึกการตั้งค่าสำเร็จ'})
+
+# Reseller Dashboard
+@app.route('/reseller_dashboard')
+@login_required
+def reseller_dashboard():
+    if session.get('role') != 'reseller':
+        return redirect(url_for('login'))
+    return render_template('reseller_dashboard.html')
+
+@app.route('/api/reseller/me', methods=['GET'])
+@login_required
+def get_reseller_me():
+    if session.get('role') != 'reseller':
+        return jsonify({'success': False, 'message': 'ไม่มีสิทธิ์เข้าถึง'})
+    
+    username = session.get('user')
+    
+    # ดึงข้อมูล reseller จาก username
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM resellers WHERE username = ?', (username,))
+    reseller = cursor.fetchone()
+    
+    if not reseller:
+        conn.close()
+        return jsonify({'success': False, 'message': 'ไม่พบข้อมูล Reseller'})
+    
+    reseller = dict(reseller)
+    reseller_id = reseller['reseller_id']
+    
+    # ดึงโรงเรียนที่ขาย
+    schools = db.get_reseller_schools(reseller_id)
+    
+    # คำนวณ commission
+    commission = db.calculate_reseller_commission(reseller_id)
+    
+    # อัพเดทจำนวนโรงเรียนที่ใช้แล้ว
+    cursor.execute('UPDATE resellers SET schools_used = ? WHERE reseller_id = ?', (len(schools), reseller_id))
+    conn.commit()
+    conn.close()
+    
+    reseller['schools_used'] = len(schools)
+    
+    return jsonify({
+        'success': True,
+        'reseller': reseller,
+        'schools': schools,
+        'commission': commission
+    })
+
+@app.route('/api/reseller/schools', methods=['POST'])
+@login_required
+def reseller_add_school():
+    if session.get('role') != 'reseller':
+        return jsonify({'success': False, 'message': 'ไม่มีสิทธิ์เข้าถึง'})
+    
+    username = session.get('user')
+    
+    # ดึงข้อมูล reseller
+    conn = db.get_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM resellers WHERE username = ?', (username,))
+    reseller = cursor.fetchone()
+    
+    if not reseller:
+        conn.close()
+        return jsonify({'success': False, 'message': 'ไม่พบข้อมูล Reseller'})
+    
+    reseller = dict(reseller)
+    reseller_id = reseller['reseller_id']
+    
+    # ตรวจสอบ Quota
+    cursor.execute('SELECT COUNT(*) FROM schools WHERE reseller_id = ?', (reseller_id,))
+    schools_used = cursor.fetchone()[0]
+    
+    if schools_used >= reseller['max_schools']:
+        conn.close()
+        return jsonify({'success': False, 'message': 'คุณใช้ Quota เต็มแล้ว! ติดต่อ Super Admin เพื่อเพิ่ม Quota'})
+    
+    conn.close()
+    
+    # เพิ่มโรงเรียน
+    data = request.json
+    data['reseller_id'] = reseller_id
+    school_id = db.add_school(data)
+    
+    # สร้าง admin user
+    admin_username = data.get('admin_username')
+    admin_password = data.get('admin_password')
+    if admin_username and admin_password:
+        db.add_user(admin_username, admin_password, f"Admin - {data['name']}", 'admin', school_id)
+    
+    return jsonify({'success': True, 'school_id': school_id, 'message': 'สร้างโรงเรียนสำเร็จ!'})
 
 if __name__ == '__main__':
     os.makedirs('data/students', exist_ok=True)
