@@ -369,6 +369,11 @@ def gate_camera_standalone():
 def camera_management():
     return render_template('camera_management.html')
 
+@app.route('/self_register')
+def self_register():
+    """Self registration for students - no login required"""
+    return render_template('self_register.html')
+
 @app.route('/all_features')
 def all_features():
     return render_template('all_features.html')
@@ -747,35 +752,74 @@ def add_student():
         name = request.form.get('name')
         class_name = request.form.get('class_name', '')
         image_data = request.form.get('image_data')
-        # ใช้ default school_id ถ้าไม่ได้ login
         school_id = session.get('school_id', 'SCH001')
         
         if not student_id or not name or not image_data:
             return jsonify({'success': False, 'message': 'กรุณากรอกข้อมูลให้ครบถ้วน'})
         
-        # Save image
         os.makedirs('data/students', exist_ok=True)
         image_path = f"data/students/{student_id}.jpg"
         
-        # Convert base64 to image
         if ',' in image_data:
             image_data = image_data.split(',')[1]
         
-        # Add padding if needed
         image_data += '=' * (4 - len(image_data) % 4)
         
         with open(image_path, 'wb') as f:
             f.write(base64.b64decode(image_data))
         
-        # Save to database
         db.add_student(student_id, name, class_name, school_id, image_path)
-        
-        # Sync to cloud
         cloud_sync.sync_student(student_id, name, class_name, image_path)
         
         return jsonify({'success': True, 'message': f'เพิ่มนักเรียน {name} สำเร็จ'})
     except Exception as e:
         return jsonify({'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'})
+
+@app.route('/api/self_register', methods=['POST'])
+def self_register_api():
+    try:
+        data = request.json
+        student_id = data.get('student_id')
+        name = data.get('name')
+        class_name = data.get('class_name', '')
+        image_data = data.get('image_data')
+        school_id = 'SCH001'
+        
+        if not student_id or not name or not image_data:
+            return jsonify({'success': False, 'message': 'กรุณากรอกข้อมูลให้ครบถ้วน'})
+        
+        students = db.get_students(school_id)
+        if any(s['student_id'] == student_id for s in students):
+            return jsonify({'success': False, 'message': 'รหัสนักเรียนนี้มีในระบบแล้ว'})
+        
+        os.makedirs('data/students', exist_ok=True)
+        image_path = f"data/students/{student_id}.jpg"
+        
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        image_data += '=' * (4 - len(image_data) % 4)
+        
+        with open(image_path, 'wb') as f:
+            f.write(base64.b64decode(image_data))
+        
+        db.add_student(student_id, name, class_name, school_id, image_path)
+        cloud_sync.sync_student(student_id, name, class_name, image_path)
+        
+        return jsonify({'success': True, 'message': f'ลงทะเบียน {name} สำเร็จ'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'})
+
+@app.route('/api/get_classes', methods=['GET'])
+def get_classes_api():
+    classes = [
+        'ป.1/1', 'ป.1/2', 'ป.1/3', 'ป.2/1', 'ป.2/2', 'ป.2/3',
+        'ป.3/1', 'ป.3/2', 'ป.3/3', 'ป.4/1', 'ป.4/2', 'ป.4/3',
+        'ป.5/1', 'ป.5/2', 'ป.5/3', 'ป.6/1', 'ป.6/2', 'ป.6/3',
+        'ม.1/1', 'ม.1/2', 'ม.1/3', 'ม.1/4', 'ม.2/1', 'ม.2/2', 'ม.2/3', 'ม.2/4',
+        'ม.3/1', 'ม.3/2', 'ม.3/3', 'ม.3/4', 'ม.4/1', 'ม.4/2', 'ม.4/3', 'ม.4/4',
+        'ม.5/1', 'ม.5/2', 'ม.5/3', 'ม.5/4', 'ม.6/1', 'ม.6/2', 'ม.6/3', 'ม.6/4',
+    ]
+    return jsonify({'success': True, 'classes': classes})
 
 # API Endpoints for Real Database Operations
 
