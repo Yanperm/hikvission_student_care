@@ -1023,8 +1023,30 @@ def import_preview():
         return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/api/import/students', methods=['POST'])
-@login_required
 def import_students_api():
+    """Public API - no login required"""
+    try:
+        data = request.json
+        students = data.get('students', [])
+        school_id = data.get('school_id', 'SCH001')
+        
+        imported = 0
+        for student in students:
+            student_id = student.get('student_id')
+            name = student.get('name')
+            class_name = student.get('class_name', '')
+            
+            if student_id and name:
+                db.add_student(student_id, name, class_name, school_id, None)
+                imported += 1
+        
+        return jsonify({'success': True, 'imported': imported, 'message': f'นำเข้าสำเร็จ {imported} คน'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/import/students_auth', methods=['POST'])
+@login_required
+def import_students_api_auth():
     try:
         data = request.json
         students = data.get('students', [])
