@@ -101,9 +101,9 @@
                             
                             <div style="margin-top: 15px;">
                                 <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📷 อัพโหลดรูป</button>
-                                <button type="button" class="btn btn-success" onclick="startCamera()">📹 ถ่ายด้วยกล้อง</button>
-                                <button type="button" class="btn btn-primary" onclick="capturePhoto()" id="captureBtn" style="display:none;">ถ่ายรูป</button>
-                                <button type="button" class="btn btn-warning" onclick="retakePhoto()">ลบรูป</button>
+                                <button type="button" class="btn btn-success" onclick="startCamera()" id="startCameraBtn">📹 เปิดกล้อง</button>
+                                <button type="button" class="btn btn-primary" onclick="capturePhoto()" id="captureBtn" style="display:none;">📸 ถ่ายรูป</button>
+                                <button type="button" class="btn btn-warning" onclick="retakePhoto()">🔄 ลบรูป</button>
                             </div>
                         </div>
                         
@@ -120,9 +120,14 @@
                             <strong>{{ student.name }}</strong>
                             รหัส: {{ student.student_id }}<br>
                             ห้อง: {{ student.class_name or '-' }}
-                            <button onclick="deleteStudent('{{ student.student_id }}')" class="btn" style="background: #dc3545; color: white; margin-top: 10px; width: 100%;">
-                                🗑️ ลบ
-                            </button>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button onclick="editStudent('{{ student.student_id }}', '{{ student.name }}', '{{ student.class_name or '' }}')" class="btn" style="background: #ff9800; color: white; flex: 1;">
+                                    ✏️ แก้ไข
+                                </button>
+                                <button onclick="deleteStudent('{{ student.student_id }}')" class="btn" style="background: #dc3545; color: white; flex: 1;">
+                                    🗑️ ลบ
+                                </button>
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
@@ -154,6 +159,7 @@
                     video.srcObject = stream;
                     video.style.display = 'block';
                     document.getElementById('captureBtn').style.display = 'inline-block';
+                    document.getElementById('startCameraBtn').style.display = 'none';
                 })
                 .catch(err => alert('ไม่สามารถเปิดกล้องได้ กรุณาอัพโหลดรูปแทน'));
         }
@@ -176,6 +182,19 @@
         function retakePhoto() {
             capturedImage = null;
             document.getElementById('preview').innerHTML = '';
+            video.style.display = 'none';
+            document.getElementById('captureBtn').style.display = 'none';
+            document.getElementById('startCameraBtn').style.display = 'inline-block';
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+        }
+        
+        function editStudent(studentId, name, className) {
+            document.getElementById('student_id').value = studentId;
+            document.getElementById('name').value = name;
+            document.getElementById('class_name').value = className;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         document.getElementById('studentForm').onsubmit = async (e) => {
