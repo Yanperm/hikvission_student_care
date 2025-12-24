@@ -1,0 +1,1 @@
+        return jsonify({'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}))
