@@ -817,7 +817,7 @@ def add_student():
         
         return jsonify({'success': True, 'message': message})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}))
+        return jsonify({'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'})
 
 @app.route('/api/self_register', methods=['POST'])
 def self_register_api():
@@ -2278,4 +2278,4 @@ if __name__ == '__main__':
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
     
     # Use socketio.run instead of app.run
-    socketio.run(app, host='0.0.0.0', port=port, debug=debug)
+    socketio.run(app, host='0.0.0.0', port=port, debug=debug, allow_unsafe_werkzeug=True)
