@@ -868,6 +868,13 @@ def get_classes_api():
 # API Endpoints for Real Database Operations
 
 @app.route('/api/students', methods=['GET'])
+def get_students_api_public():
+    """Public API - no login required"""
+    school_id = request.args.get('school_id', 'SCH001')
+    students = db.get_students(school_id)
+    return jsonify({'success': True, 'students': students})
+
+@app.route('/api/students_auth', methods=['GET'])
 @login_required
 def get_students_api():
     school_id = get_current_school_id()

@@ -101,23 +101,29 @@
             }
 
             try {
-                const response = await fetch('/api/student/' + studentId);
+                const response = await fetch('/api/students');
                 const result = await response.json();
 
                 if (result.success) {
-                    currentStudent = result.student;
+                    const student = result.students.find(s => s.student_id === studentId);
                     
-                    document.getElementById('studentName').textContent = currentStudent.name;
-                    document.getElementById('studentIdDisplay').textContent = currentStudent.student_id;
-                    document.getElementById('studentClass').textContent = currentStudent.class_name || '-';
-                    
-                    document.getElementById('searchSection').style.display = 'none';
-                    document.getElementById('studentInfo').style.display = 'block';
-                    document.getElementById('cameraSection').style.display = 'block';
-                    
-                    showAlert('✅ พบข้อมูลนักเรียน', 'success');
+                    if (student) {
+                        currentStudent = student;
+                        
+                        document.getElementById('studentName').textContent = currentStudent.name;
+                        document.getElementById('studentIdDisplay').textContent = currentStudent.student_id;
+                        document.getElementById('studentClass').textContent = currentStudent.class_name || '-';
+                        
+                        document.getElementById('searchSection').style.display = 'none';
+                        document.getElementById('studentInfo').style.display = 'block';
+                        document.getElementById('cameraSection').style.display = 'block';
+                        
+                        showAlert('✅ พบข้อมูลนักเรียน', 'success');
+                    } else {
+                        showAlert('❌ ไม่พบรหัสนักเรียน ' + studentId, 'error');
+                    }
                 } else {
-                    showAlert('❌ ไม่พบรหัสนักเรียน ' + studentId, 'error');
+                    showAlert('❌ ไม่สามารถดึงข้อมูลได้', 'error');
                 }
             } catch (error) {
                 showAlert('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
