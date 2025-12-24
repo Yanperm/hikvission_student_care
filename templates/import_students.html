@@ -399,7 +399,20 @@
 
             <div class="form-group">
                 <label>ทดสอบ API</label>
-                <textarea class="form-control" id="apiTestData" rows="10" placeholder='{"students": [{"student_id": "STD001", "name": "ทดสอบ", "class_name": "ม.1/1"}]}'></textarea>
+                <textarea class="form-control" id="apiTestData" rows="10">{
+  "students": [
+    {
+      "student_id": "STD001",
+      "name": "ทดสอบ 1",
+      "class_name": "ม.1/1"
+    },
+    {
+      "student_id": "STD002",
+      "name": "ทดสอบ 2",
+      "class_name": "ม.1/2"
+    }
+  ]
+}</textarea>
             </div>
 
             <button class="btn" onclick="testApiImport()">🧪 ทดสอบ API</button>
