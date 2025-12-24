@@ -3,170 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Care - ระบบเช็คชื่อนักเรียน</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>ลงทะเบียนนักเรียน - Student Care</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .navbar { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 15px 0; box-shadow: 0 2px 20px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 100; }
-        .navbar .container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
-        .logo { font-size: 24px; font-weight: 700; color: #667eea; display: flex; align-items: center; gap: 10px; }
-        .nav-links { display: flex; gap: 30px; }
-        .nav-links a { text-decoration: none; color: #333; font-weight: 500; transition: all 0.3s; padding: 8px 16px; border-radius: 8px; }
-        .nav-links a:hover { background: #667eea; color: white; }
-        .hero { text-align: center; padding: 60px 20px; color: white; }
-        .hero h1 { font-size: 48px; font-weight: 700; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
-        .hero p { font-size: 20px; opacity: 0.9; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin: 40px 0; }
-        .feature-card { background: white; border-radius: 20px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); transition: transform 0.3s; cursor: pointer; }
-        .feature-card:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
-        .feature-icon { font-size: 64px; margin-bottom: 20px; }
-        .feature-card h3 { font-size: 24px; color: #333; margin-bottom: 15px; }
-        .feature-card p { color: #666; line-height: 1.6; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; border: none; border-radius: 50px; font-size: 18px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s; }
-        .btn-primary:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
-        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 25px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: 280px; background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); color: white; position: fixed; height: 100vh; overflow-y: auto; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo { font-size: 1.5em; font-weight: bold; }
+        .menu-item { padding: 12px 20px; display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; transition: all 0.3s; }
+        .menu-item:hover { background: rgba(255,255,255,0.1); }
+        
+        /* Main */
+        .main-content { margin-left: 280px; flex: 1; }
+        .topbar { background: white; padding: 20px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .topbar-title { font-size: 1.8em; color: #333; }
+        .logout-btn { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; text-decoration: none; }
+        
+        /* Content */
+        .content { padding: 30px; }
+        .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-        input { width: 100%; padding: 15px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 16px; transition: all 0.3s; font-family: 'Kanit', sans-serif; }
-        input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
-        #video { width: 100%; max-width: 640px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        #canvas { display: none; }
-        .video-container { text-align: center; margin: 30px 0; background: #f8f9fa; padding: 30px; border-radius: 15px; }
-        .btn-capture { background: #2196F3; color: white; padding: 12px 30px; border: none; border-radius: 50px; margin: 10px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
-        .btn-capture:hover { background: #1976D2; transform: scale(1.05); }
-        .students-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .student-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 15px; border-left: 5px solid #667eea; transition: all 0.3s; }
-        .student-card:hover { transform: translateX(5px); box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .alert { padding: 20px; border-radius: 15px; margin-bottom: 25px; font-weight: 500; }
-        .alert-success { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); color: #155724; border-left: 5px solid #28a745; }
-        .alert-error { background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); color: #721c24; border-left: 5px solid #dc3545; }
-        .footer { text-align: center; padding: 30px; color: white; margin-top: 60px; }
+        input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
+        input:focus { outline: none; border-color: #667eea; }
+        
+        .video-container { text-align: center; padding: 20px; background: #f8f9fa; border-radius: 10px; margin: 20px 0; }
+        #video { max-width: 100%; border-radius: 10px; }
+        
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-success { background: #4CAF50; color: white; }
+        .btn-warning { background: #ff9800; color: white; }
+        
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-error { background: #f8d7da; color: #721c24; }
+        
+        .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .student-card { background: #f8f9fa; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea; }
+        .student-card strong { display: block; margin-bottom: 10px; font-size: 1.1em; }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container">
-            <div class="logo">🎓 Student Care</div>
-            <div class="nav-links">
-                <a href="/">🏠 หน้าหลัก</a>
-                <a href="/all_features">📋 ฟีเจอร์ทั้งหมด</a>
-                <a href="/features">📄 เอกสาร</a>
-                <a href="/camera_classroom">📚 กล้องในห้องเรียน</a>
-                <a href="/camera_behavior">👁️ ตรวจจับพฤติกรรม</a>
-                <a href="/checkin">✅ เช็คชื่อด้วยตนเอง</a>
-                <a href="/admin">👨‍💼 Admin</a>
+    <div class="layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">🎓 Student Care</div>
             </div>
+            <a href="/admin" class="menu-item"><span>📊</span> Dashboard</a>
+            <a href="/register" class="menu-item" style="background: rgba(255,255,255,0.2);"><span>📸</span> ลงทะเบียนนักเรียน</a>
+            <a href="/import_students" class="menu-item"><span>📥</span> นำเข้าข้อมูล</a>
+            <a href="/camera_classroom" class="menu-item"><span>🎥</span> กล้องห้องเรียน</a>
+            <a href="/checkin" class="menu-item"><span>✅</span> เช็คชื่อ</a>
+            <a href="/reports" class="menu-item"><span>📊</span> รายงาน</a>
         </div>
-    </nav>
 
-    <div class="hero">
-        <h1>ระบบเช็คชื่อนักเรียนอัจฉริยะ</h1>
-        <p>ด้วยเทคโนโลยี Face Recognition และ Cloud Computing</p>
-    </div>
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">📸 ลงทะเบียนนักเรียน</div>
+                <a href="/logout" class="logout-btn">ออกจากระบบ</a>
+            </div>
 
-    <div class="container">
-        <div class="features">
-            <div class="feature-card" onclick="location.href='/all_features'">
-                <div class="feature-icon">📋</div>
-                <h3>ฟีเจอร์ทั้งหมด</h3>
-                <p>เข้าถึงฟีเจอร์ครบทั้ง 18 ฟีเจอร์ในที่เดียว</p>
-                <a href="/all_features" class="btn-primary" style="margin-top: 20px;">ดูทั้งหมด</a>
-            </div>
-            <div class="feature-card" onclick="location.href='#add-student'">
-                <div class="feature-icon">➕</div>
-                <h3>เพิ่มนักเรียน</h3>
-                <p>ลงทะเบียนนักเรียนใหม่พร้อลงทะเบียนใบหน้าและถ่ายรูป</p>
-                <a href="#add-student" class="btn-primary" style="margin-top: 20px;">เริ่มเพิ่ม</a>
-            </div>
-            <div class="feature-card" onclick="location.href='/camera_classroom'">
-                <div class="feature-icon">📚</div>
-                <h3>กล้องในห้องเรียน</h3>
-                <p>เช็คชื่อเข้าเรียนอัตโนมัติด้วยกล้องหน้าห้องเรียน</p>
-                <a href="/camera_classroom" class="btn-primary" style="margin-top: 20px;">เริ่มใช้งาน</a>
-            </div>
-            <div class="feature-card" onclick="location.href='/camera_behavior'">
-                <div class="feature-icon">👁️</div>
-                <h3>ตรวจจับพฤติกรรม</h3>
-                <p>ตรวจสอบและบันทึกพฤติกรรมของนักเรียนในห้องเรียน</p>
-                <a href="/camera_behavior" class="btn-primary" style="margin-top: 20px;">เริ่มใช้งาน</a>
-            </div>
-            <div class="feature-card" onclick="location.href='/checkin'">
-                <div class="feature-icon">✅</div>
-                <h3>เช็คชื่อด้วยตนเอง</h3>
-                <p>เลือกนักเรียนจากรายชื่อเพื่อเช็คชื่อด้วยตนเอง</p>
-                <a href="/checkin" class="btn-primary" style="margin-top: 20px;">เริ่มใช้งาน</a>
-            </div>
-            <div class="feature-card" onclick="location.href='/admin'">
-                <div class="feature-icon">📊</div>
-                <h3>Dashboard</h3>
-                <p>ดูรายงานการเข้าเรียนและจัดการข้อมูลนักเรียน</p>
-                <a href="/admin" class="btn-primary" style="margin-top: 20px;">เข้าสู่ระบบ</a>
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2>เพิ่มนักเรียนใหม่</h2>
-            <div id="alert" style="display:none;"></div>
-            
-            <form id="studentForm">
-                <div class="form-group">
-                    <label>รหัสนักเรียน:</label>
-                    <input type="text" id="student_id" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>ชื่อ-นามสกุล:</label>
-                    <input type="text" id="name" required>
-                </div>
-                
-                <div class="form-group">
-                    <label>ห้องเรียน:</label>
-                    <input type="text" id="class_name" placeholder="เช่น ม.1/1" required>
-                </div>
-                
-                <div class="video-container">
-                    <video id="video" autoplay style="display:none;"></video>
-                    <canvas id="canvas"></canvas>
-                    <div id="preview" style="margin: 10px 0;"></div>
+            <div class="content">
+                <!-- Form -->
+                <div class="card">
+                    <h2 style="margin-bottom: 20px;">เพิ่มนักเรียนใหม่</h2>
+                    <div id="alert" style="display:none;"></div>
                     
-                    <!-- อัพโหลดรูป -->
-                    <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
-                    
-                    <div>
-                        <button type="button" class="btn-capture" onclick="document.getElementById('fileInput').click()">📷 อัพโหลดรูป</button>
-                        <button type="button" class="btn-capture" onclick="startCamera()" style="background: #4CAF50;">📹 ถ่ายด้วยกล้อง</button>
-                        <button type="button" class="btn-capture" onclick="capturePhoto()" id="captureBtn" style="display:none;">ถ่ายรูป</button>
-                        <button type="button" class="btn-capture" onclick="retakePhoto()" style="background: #ff9800;">ลบรูป</button>
+                    <form id="studentForm">
+                        <div class="form-group">
+                            <label>รหัสนักเรียน:</label>
+                            <input type="text" id="student_id" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ชื่อ-นามสกุล:</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>ห้องเรียน:</label>
+                            <input type="text" id="class_name" placeholder="เช่น ม.1/1" required>
+                        </div>
+                        
+                        <div class="video-container">
+                            <video id="video" autoplay style="display:none;"></video>
+                            <canvas id="canvas" style="display:none;"></canvas>
+                            <div id="preview"></div>
+                            
+                            <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
+                            
+                            <div style="margin-top: 15px;">
+                                <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">📷 อัพโหลดรูป</button>
+                                <button type="button" class="btn btn-success" onclick="startCamera()">📹 ถ่ายด้วยกล้อง</button>
+                                <button type="button" class="btn btn-primary" onclick="capturePhoto()" id="captureBtn" style="display:none;">ถ่ายรูป</button>
+                                <button type="button" class="btn btn-warning" onclick="retakePhoto()">ลบรูป</button>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1em;">บันทึกนักเรียน</button>
+                    </form>
+                </div>
+                
+                <!-- Students List -->
+                <div class="card">
+                    <h2 style="margin-bottom: 20px;">รายชื่อนักเรียน ({{ students|length }} คน)</h2>
+                    <div class="students-grid">
+                        {% for student in students %}
+                        <div class="student-card">
+                            <strong>{{ student.name }}</strong>
+                            รหัส: {{ student.student_id }}<br>
+                            ห้อง: {{ student.class_name or '-' }}
+                            <button onclick="deleteStudent('{{ student.student_id }}')" class="btn" style="background: #dc3545; color: white; margin-top: 10px; width: 100%;">
+                                🗑️ ลบ
+                            </button>
+                        </div>
+                        {% endfor %}
                     </div>
-                    <p style="font-size: 14px; color: #666; margin-top: 10px;">
-                        💡 สามารถอัพโหลดรูปหรือถ่ายด้วยกล้อง (HTTPS เท่านั้น)
-                    </p>
                 </div>
-                
-                <button type="submit">บันทึกนักเรียน</button>
-            </form>
-        </div>
-        
-        <div class="card">
-            <h2>รายชื่อนักเรียน ({{ students|length }} คน)</h2>
-            <div class="students-list">
-                {% for student in students %}
-                <div class="student-card">
-                    <strong>{{ student.name }}</strong><br>
-                    รหัส: {{ student.student_id }}<br>
-                    <button onclick="deleteStudent('{{ student.student_id }}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: 600;">
-                        🗑️ ลบ
-                    </button>
-                </div>
-                {% endfor %}
             </div>
         </div>
-    </div>
-
-    <div class="footer">
-        <p>© 2024 Student Care System | Powered by Face Recognition & AWS Cloud</p>
     </div>
 
     <script>
@@ -180,8 +142,7 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     capturedImage = e.target.result;
-                    const preview = document.getElementById('preview');
-                    preview.innerHTML = '<img src="' + capturedImage + '" style="max-width: 300px; border-radius: 10px; border: 3px solid #4CAF50;">';
+                    document.getElementById('preview').innerHTML = '<img src="' + capturedImage + '" style="max-width: 300px; border-radius: 10px; border: 3px solid #4CAF50;">';
                 };
                 reader.readAsDataURL(file);
             }
@@ -194,9 +155,7 @@
                     video.style.display = 'block';
                     document.getElementById('captureBtn').style.display = 'inline-block';
                 })
-                .catch(err => {
-                    alert('ไม่สามารถเปิดกล้องได้ (ต้องใช้ HTTPS) กรุณาอัพโหลดรูปแทน');
-                });
+                .catch(err => alert('ไม่สามารถเปิดกล้องได้ กรุณาอัพโหลดรูปแทน'));
         }
 
         function capturePhoto() {
@@ -210,11 +169,8 @@
             canvas.getContext('2d').drawImage(video, 0, 0);
             capturedImage = canvas.toDataURL('image/jpeg', 0.8);
             
-            // แสดงตัวอย่างรูปที่ถ่าย
-            const preview = document.getElementById('preview');
-            preview.innerHTML = '<img src="' + capturedImage + '" style="max-width: 200px; border-radius: 5px; border: 2px solid #4CAF50;">';
-            
-            alert('ถ่ายรูปสำเร็จ! ตรวจสอบรูปด้านล่าง');
+            document.getElementById('preview').innerHTML = '<img src="' + capturedImage + '" style="max-width: 300px; border-radius: 10px; border: 3px solid #4CAF50;">';
+            alert('ถ่ายรูปสำเร็จ!');
         }
         
         function retakePhoto() {
@@ -229,25 +185,17 @@
             const name = document.getElementById('name').value.trim();
             const className = document.getElementById('class_name').value.trim();
             
-            if (!studentId || !name || !className) {
-                alert('กรุณากรอกข้อมูลให้ครบถ้วน!');
-                return;
-            }
-            
             if (!capturedImage) {
                 alert('กรุณาถ่ายรูปก่อน!');
                 return;
             }
             
             try {
-                // ส่งแบบ FormData เหมือนที่ทดสอบ
                 const formData = new FormData();
                 formData.append('student_id', studentId);
                 formData.append('name', name);
                 formData.append('class_name', className);
-                // ส่งเฉพาะ base64 string
-                const base64Data = capturedImage.split(',')[1];
-                formData.append('image_data', base64Data);
+                formData.append('image_data', capturedImage.split(',')[1]);
                 
                 const response = await fetch('/add_student', {
                     method: 'POST',
@@ -261,7 +209,6 @@
                     alertDiv.className = 'alert alert-success';
                     alertDiv.textContent = '✅ ' + result.message;
                     alertDiv.style.display = 'block';
-                    
                     setTimeout(() => location.reload(), 2000);
                 } else {
                     alertDiv.className = 'alert alert-error';
@@ -269,10 +216,7 @@
                     alertDiv.style.display = 'block';
                 }
             } catch (error) {
-                const alertDiv = document.getElementById('alert');
-                alertDiv.className = 'alert alert-error';
-                alertDiv.textContent = '❌ เกิดข้อผิดพลาด: ' + error.message;
-                alertDiv.style.display = 'block';
+                alert('❌ เกิดข้อผิดพลาด: ' + error.message);
             }
         };
         
@@ -280,10 +224,7 @@
             if (!confirm('ต้องการลบนักเรียน ' + studentId + ' หรือไม่?')) return;
             
             try {
-                const response = await fetch('/delete_student/' + studentId, {
-                    method: 'DELETE'
-                });
-                
+                const response = await fetch('/delete_student/' + studentId, { method: 'DELETE' });
                 const result = await response.json();
                 
                 if (result.success) {
