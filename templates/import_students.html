@@ -296,7 +296,43 @@
             
             <div class="alert alert-info">
                 <strong>📋 รูปแบบไฟล์:</strong> ไฟล์ต้องมีคอลัมน์ student_id, name, class_name<br>
-                <a href="/api/download_template" style="color: #0c5460; text-decoration: underline;">ดาวน์โหลดไฟล์ตัวอย่าง</a>
+                <a href="/api/download_template" style="color: #0c5460; text-decoration: underline; font-weight: bold;">📥 ดาวน์โหลดไฟล์ตัวอย่าง</a>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px;">📝 ตัวอย่างข้อมูลในไฟล์ Excel/CSV:</h3>
+                <table style="width: 100%; border-collapse: collapse; background: white;">
+                    <thead>
+                        <tr style="background: #667eea; color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd;">student_id</th>
+                            <th style="padding: 12px; border: 1px solid #ddd;">name</th>
+                            <th style="padding: 12px; border: 1px solid #ddd;">class_name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd;">STD001</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">สมชาย ใจดี</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">ม.1/1</td>
+                        </tr>
+                        <tr style="background: #f8f9fa;">
+                            <td style="padding: 12px; border: 1px solid #ddd;">STD002</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">สมหญิง รักเรียน</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">ม.1/1</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px; border: 1px solid #ddd;">STD003</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">สมศักดิ์ ขยัน</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">ม.1/2</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="margin-top: 15px; color: #666;">
+                    💡 <strong>หมายเหตุ:</strong> 
+                    <br>• student_id = รหัสนักเรียน (ห้ามซ้ำ)
+                    <br>• name = ชื่อ-นามสกุล
+                    <br>• class_name = ห้องเรียน (เช่น ม.1/1, ป.6/2)
+                </p>
             </div>
 
             <div class="file-upload" onclick="document.getElementById('fileInput').click()">
