@@ -2,69 +2,145 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Student Care System</title>
-    <link rel="stylesheet" href="/static/responsive.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f7fa;
         }
 
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px 30px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            font-size: 1.5em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+        }
+
+        .menu-section {
+            margin-bottom: 25px;
+        }
+
+        .menu-title {
+            padding: 10px 20px;
+            font-size: 0.85em;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .menu-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: white;
+        }
+
+        .menu-item.active {
+            background: rgba(255,255,255,0.2);
+            border-left-color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            background: white;
+            padding: 20px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        .navbar-brand {
-            font-size: 1.5em;
-            font-weight: bold;
+        .topbar-title {
+            font-size: 1.8em;
+            color: #333;
         }
 
-        .navbar-user {
+        .topbar-user {
             display: flex;
             align-items: center;
             gap: 20px;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 30px;
+        .user-info {
+            text-align: right;
         }
 
-        .welcome-section {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .welcome-title {
-            font-size: 2em;
+        .user-name {
+            font-weight: 600;
             color: #333;
-            margin-bottom: 10px;
         }
 
-        .welcome-subtitle {
+        .user-role {
+            font-size: 0.9em;
             color: #666;
-            font-size: 1.1em;
         }
 
+        .logout-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #5568d3;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 30px;
+        }
+
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -74,7 +150,7 @@
 
         .stat-card {
             background: white;
-            border-radius: 15px;
+            border-radius: 12px;
             padding: 25px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             transition: transform 0.3s;
@@ -86,7 +162,7 @@
         }
 
         .stat-icon {
-            font-size: 3em;
+            font-size: 2.5em;
             margin-bottom: 15px;
         }
 
@@ -99,363 +175,246 @@
 
         .stat-label {
             color: #666;
-            font-size: 1.1em;
+            font-size: 1em;
         }
 
-        .workflow-section {
+        /* Quick Actions */
+        .quick-actions {
             background: white;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 30px;
+            border-radius: 12px;
+            padding: 25px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
         }
 
         .section-title {
-            font-size: 1.8em;
+            font-size: 1.5em;
             color: #333;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .feature-grid {
+        .actions-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
         }
 
-        .feature-card {
+        .action-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            padding: 25px;
             color: white;
-            cursor: pointer;
-            transition: all 0.3s;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
             text-decoration: none;
-            display: block;
+            transition: all 0.3s;
         }
 
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        .action-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
 
-        .feature-icon {
-            font-size: 2.5em;
-            margin-bottom: 15px;
-        }
-
-        .feature-title {
-            font-size: 1.3em;
-            font-weight: bold;
+        .action-icon {
+            font-size: 2em;
             margin-bottom: 10px;
         }
 
-        .feature-desc {
-            font-size: 0.95em;
-            opacity: 0.9;
-            line-height: 1.5;
+        .action-title {
+            font-weight: 600;
         }
 
-        .quick-actions {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-
-        .action-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .action-btn:hover {
-            background: #5568d3;
-            transform: scale(1.05);
-        }
-
-        .category-section {
-            margin-bottom: 40px;
-        }
-
-        .category-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 1.4em;
-            font-weight: bold;
-        }
-
-        .logout-btn {
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 1px solid white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-
-        .logout-btn:hover {
-            background: white;
-            color: #667eea;
-        }
-
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
             }
-            
-            .feature-grid {
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .stats-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="navbar-brand">🎓 Student Care System</div>
-        <div class="navbar-user">
-            <span>👤 {{ user_name }} ({{ role_name }})</span>
-            <a href="/logout" class="logout-btn">ออกจากระบบ</a>
-        </div>
-    </div>
+    <div class="layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">🎓 Student Care</div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <!-- หลัก -->
+                <div class="menu-section">
+                    <div class="menu-title">หลัก</div>
+                    <a href="/admin" class="menu-item active">
+                        <span>📊</span> Dashboard
+                    </a>
+                    <a href="/register" class="menu-item">
+                        <span>📸</span> ลงทะเบียนนักเรียน
+                    </a>
+                    <a href="/photo_capture" class="menu-item">
+                        <span>📷</span> ถ่ายรูปนักเรียน
+                    </a>
+                    <a href="/import_students" class="menu-item">
+                        <span>📥</span> นำเข้าข้อมูล
+                    </a>
+                </div>
 
-    <div class="container">
-        <!-- Welcome Section -->
-        <div class="welcome-section">
-            <div class="welcome-title">สวัสดี, {{ user_name }} 👋</div>
-            <div class="welcome-subtitle">{{ school_name }} | วันที่ {{ today }}</div>
-        </div>
+                <!-- เช็คชื่อ -->
+                <div class="menu-section">
+                    <div class="menu-title">เช็คชื่อ</div>
+                    <a href="/gate_camera" class="menu-item">
+                        <span>🚪</span> กล้องประตู
+                    </a>
+                    <a href="/camera_classroom" class="menu-item">
+                        <span>🎥</span> กล้องห้องเรียน
+                    </a>
+                    <a href="/camera_behavior" class="menu-item">
+                        <span>👁️</span> ตรวจจับพฤติกรรม
+                    </a>
+                    <a href="/checkin" class="menu-item">
+                        <span>✅</span> เช็คชื่อด้วยตนเอง
+                    </a>
+                    <a href="/multi_camera" class="menu-item">
+                        <span>📹</span> กล้องหลายจุด
+                    </a>
+                    <a href="/qr_checkin" class="menu-item">
+                        <span>📱</span> QR Code Check-in
+                    </a>
+                </div>
 
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">👨🎓</div>
-                <div class="stat-value" id="totalStudents">{{ students|length }}</div>
-                <div class="stat-label">นักเรียนทั้งหมด</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-value" id="todayAttendance">-</div>
-                <div class="stat-label">เข้าเรียนวันนี้</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-value" id="attendanceRate">-</div>
-                <div class="stat-label">เปอร์เซ็นต์การเข้าเรียน</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⚠️</div>
-                <div class="stat-value" id="alerts">-</div>
-                <div class="stat-label">การแจ้งเตือน</div>
-            </div>
-        </div>
+                <!-- ดูแลนักเรียน -->
+                <div class="menu-section">
+                    <div class="menu-title">ดูแลนักเรียน</div>
+                    <a href="/mental_health" class="menu-item">
+                        <span>💚</span> สุขภาพจิต
+                    </a>
+                    <a href="/learning_analytics" class="menu-item">
+                        <span>📚</span> วิเคราะห์การเรียน
+                    </a>
+                    <a href="/anti_bullying" class="menu-item">
+                        <span>🛡️</span> ป้องกันการกลั่นแกล้ง
+                    </a>
+                    <a href="/behavior_score" class="menu-item">
+                        <span>🎓</span> คะแนนความประพฤติ
+                    </a>
+                    <a href="/emotion_detection" class="menu-item">
+                        <span>😊</span> ตรวจจับอารมณ์
+                    </a>
+                </div>
 
-        <!-- Quick Start Workflow -->
-        <div class="workflow-section">
-            <div class="section-title">🚀 เริ่มต้นใช้งาน (แนะนำสำหรับผู้ใช้ใหม่)</div>
-            <div class="feature-grid">
-                <a href="/register" class="feature-card">
-                    <div class="feature-icon">1️⃣ 📸</div>
-                    <div class="feature-title">ลงทะเบียนนักเรียน</div>
-                    <div class="feature-desc">เริ่มต้นด้วยการถ่ายรูปและบันทึกข้อมูลนักเรียน</div>
-                </a>
-                <a href="/camera_classroom" class="feature-card">
-                    <div class="feature-icon">2️⃣ 🎥</div>
-                    <div class="feature-title">เปิดกล้องห้องเรียน</div>
-                    <div class="feature-desc">ระบบจะเช็คชื่ออัตโนมัติเมื่อตรวจจับใบหน้า</div>
-                </a>
-                <a href="/reports" class="feature-card">
-                    <div class="feature-icon">3️⃣ 📊</div>
-                    <div class="feature-title">ดูรายงาน</div>
-                    <div class="feature-desc">ตรวจสอบการเข้าเรียนและพฤติกรรมนักเรียน</div>
-                </a>
-            </div>
-        </div>
+                <!-- รายงาน -->
+                <div class="menu-section">
+                    <div class="menu-title">รายงาน</div>
+                    <a href="/reports" class="menu-item">
+                        <span>📊</span> รายงานขั้นสูง
+                    </a>
+                    <a href="/notification_system" class="menu-item">
+                        <span>🔔</span> การแจ้งเตือน
+                    </a>
+                    <a href="/parent_dashboard" class="menu-item">
+                        <span>👨‍👩‍👧</span> Dashboard ผู้ปกครอง
+                    </a>
+                </div>
 
-        <!-- Main Features by Category -->
-        <div class="category-section">
-            <div class="category-header">📸 การจัดการนักเรียน</div>
-            <div class="feature-grid">
-                <a href="/import_students" class="feature-card">
-                    <div class="feature-icon">📥</div>
-                    <div class="feature-title">นำเข้าข้อมูลนักเรียน</div>
-                    <div class="feature-desc">นำเข้าจาก Excel, API, Database</div>
-                </a>
-                <a href="/register" class="feature-card">
-                    <div class="feature-icon">📸</div>
-                    <div class="feature-title">ลงทะเบียนนักเรียน</div>
-                    <div class="feature-desc">ถ่ายรูปและบันทึกข้อมูลนักเรียนใหม่</div>
-                </a>
-                <a href="/admin" class="feature-card">
-                    <div class="feature-icon">👤</div>
-                    <div class="feature-title">จัดการนักเรียน</div>
-                    <div class="feature-desc">ดู แก้ไข ลบข้อมูลนักเรียน</div>
-                </a>
-            </div>
-        </div>
-
-        <div class="category-section">
-            <div class="category-header">✅ การเช็คชื่อ</div>
-            <div class="feature-grid">
-                <a href="/gate_camera" class="feature-card">
-                    <div class="feature-icon">🚪</div>
-                    <div class="feature-title">กล้องประตูโรงเรียน</div>
-                    <div class="feature-desc">บันทึกเวลาเข้า-ออกโรงเรียนอัตโนมัติ</div>
-                </a>
-                <a href="/camera_classroom" class="feature-card">
-                    <div class="feature-icon">🎥</div>
-                    <div class="feature-title">กล้องห้องเรียน</div>
-                    <div class="feature-desc">เช็คชื่ออัตโนมัติด้วย Face Recognition</div>
-                </a>
-                <a href="/checkin" class="feature-card">
-                    <div class="feature-icon">✅</div>
-                    <div class="feature-title">เช็คชื่อด้วยตนเอง</div>
-                    <div class="feature-desc">เลือกนักเรียนเพื่อเช็คชื่อ</div>
-                </a>
-                <a href="/qr_checkin" class="feature-card">
-                    <div class="feature-icon">📱</div>
-                    <div class="feature-title">QR Code Check-in</div>
-                    <div class="feature-desc">สแกน QR Code เพื่อเช็คชื่อ</div>
-                </a>
-                <a href="/camera_behavior" class="feature-card">
-                    <div class="feature-icon">👁️</div>
-                    <div class="feature-title">กล้องตรวจจับพฤติกรรม</div>
-                    <div class="feature-desc">AI วิเคราะห์พฤติกรรมและอารมณ์</div>
-                </a>
+                <!-- ตั้งค่า -->
+                <div class="menu-section">
+                    <div class="menu-title">ตั้งค่า</div>
+                    <a href="/camera_management" class="menu-item">
+                        <span>📹</span> จัดการกล้อง
+                    </a>
+                    <a href="/manage_users" class="menu-item">
+                        <span>👥</span> จัดการผู้ใช้
+                    </a>
+                    <a href="/ai_face_recognition" class="menu-item">
+                        <span>🤖</span> AI Face Recognition
+                    </a>
+                    <a href="/line_setup" class="menu-item">
+                        <span>📱</span> LINE OA
+                    </a>
+                    <a href="/pwa_mobile" class="menu-item">
+                        <span>📲</span> PWA Mobile
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="category-section">
-            <div class="category-header">👁️ การตรวจจับและวิเคราะห์</div>
-            <div class="feature-grid">
-                <a href="/ai_face_recognition" class="feature-card">
-                    <div class="feature-icon">🤖</div>
-                    <div class="feature-title">AI Face Recognition</div>
-                    <div class="feature-desc">Deep Learning 95-99% accuracy</div>
-                </a>
-                <a href="/camera_behavior" class="feature-card">
-                    <div class="feature-icon">👁️</div>
-                    <div class="feature-title">ตรวจจับพฤติกรรม</div>
-                    <div class="feature-desc">AI ตรวจจับพฤติกรรมผิดปกติ</div>
-                </a>
-                <a href="/emotion_detection" class="feature-card">
-                    <div class="feature-icon">😊</div>
-                    <div class="feature-title">ตรวจจับอารมณ์</div>
-                    <div class="feature-desc">วิเคราะห์อารมณ์นักเรียนด้วย AI</div>
-                </a>
-                <a href="/multi_camera" class="feature-card">
-                    <div class="feature-icon">📹</div>
-                    <div class="feature-title">กล้องหลายจุด</div>
-                    <div class="feature-desc">ดูภาพจากกล้องทุกจุดพร้อมกัน</div>
-                </a>
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Topbar -->
+            <div class="topbar">
+                <div class="topbar-title">Dashboard</div>
+                <div class="topbar-user">
+                    <div class="user-info">
+                        <div class="user-name">{{ user_name }}</div>
+                        <div class="user-role">{{ role_name }} | {{ school_name }}</div>
+                    </div>
+                    <a href="/logout" class="logout-btn">ออกจากระบบ</a>
+                </div>
             </div>
-        </div>
 
-        <div class="category-section">
-            <div class="category-header">💚 การดูแลนักเรียน</div>
-            <div class="feature-grid">
-                <a href="/mental_health" class="feature-card">
-                    <div class="feature-icon">💚</div>
-                    <div class="feature-title">ดูแลสุขภาพจิต</div>
-                    <div class="feature-desc">ระบุนักเรียนที่ต้องการความช่วยเหลือ</div>
-                </a>
-                <a href="/learning_analytics" class="feature-card">
-                    <div class="feature-icon">📚</div>
-                    <div class="feature-title">วิเคราะห์การเรียน</div>
-                    <div class="feature-desc">AI ทำนายผลการเรียนและให้คำแนะนำ</div>
-                </a>
-                <a href="/anti_bullying" class="feature-card">
-                    <div class="feature-icon">🛡️</div>
-                    <div class="feature-title">ป้องกันการกลั่นแกล้ง</div>
-                    <div class="feature-desc">รายงานและติดตามกรณีการกลั่นแกล้ง</div>
-                </a>
-                <a href="/behavior_score" class="feature-card">
-                    <div class="feature-icon">🎓</div>
-                    <div class="feature-title">คะแนนความประพฤติ</div>
-                    <div class="feature-desc">ดูและจัดการคะแนนความประพฤติ</div>
-                </a>
-            </div>
-        </div>
+            <!-- Content -->
+            <div class="content">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">👨‍🎓</div>
+                        <div class="stat-value" id="totalStudents">{{ students|length }}</div>
+                        <div class="stat-label">นักเรียนทั้งหมด</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value" id="todayAttendance">-</div>
+                        <div class="stat-label">เข้าเรียนวันนี้</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-value" id="attendanceRate">-</div>
+                        <div class="stat-label">เปอร์เซ็นต์การเข้าเรียน</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-value" id="alerts">-</div>
+                        <div class="stat-label">การแจ้งเตือน</div>
+                    </div>
+                </div>
 
-        <div class="category-section">
-            <div class="category-header">📊 รายงานและการแจ้งเตือน</div>
-            <div class="feature-grid">
-                <a href="/reports" class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <div class="feature-title">รายงานขั้นสูง</div>
-                    <div class="feature-desc">กราฟ สถิติ Export PDF/Excel</div>
-                </a>
-                <a href="/notification_system" class="feature-card">
-                    <div class="feature-icon">🔔</div>
-                    <div class="feature-title">ระบบแจ้งเตือน</div>
-                    <div class="feature-desc">การแจ้งเตือน Real-time ทั้งหมด</div>
-                </a>
-                <a href="/parent_dashboard" class="feature-card">
-                    <div class="feature-icon">👨👩👧</div>
-                    <div class="feature-title">Dashboard ผู้ปกครอง</div>
-                    <div class="feature-desc">ดูข้อมูลบุตรแบบ Real-time</div>
-                </a>
-                <a href="/line_setup" class="feature-card">
-                    <div class="feature-icon">📱</div>
-                    <div class="feature-title">LINE OA</div>
-                    <div class="feature-desc">ตั้งค่าการแจ้งเตือนผ่าน LINE</div>
-                </a>
-            </div>
-        </div>
-
-        <div class="category-section">
-            <div class="category-header">⚙️ การจัดการระบบ</div>
-            <div class="feature-grid">
-                <a href="/camera_management" class="feature-card">
-                    <div class="feature-icon">📹</div>
-                    <div class="feature-title">จัดการกล้อง Hikvision</div>
-                    <div class="feature-desc">ตั้งค่าและจัดการกล้องทั้งหมด</div>
-                </a>
-                <a href="/manage_users" class="feature-card">
-                    <div class="feature-icon">👥</div>
-                    <div class="feature-title">จัดการผู้ใช้งาน</div>
-                    <div class="feature-desc">เพิ่ม แก้ไข ลบผู้ใช้งาน</div>
-                </a>
-                <a href="/two_factor_auth" class="feature-card">
-                    <div class="feature-icon">🔐</div>
-                    <div class="feature-title">Two-Factor Auth</div>
-                    <div class="feature-desc">เพิ่มความปลอดภัยด้วย 2FA</div>
-                </a>
-                <a href="/audit_logs" class="feature-card">
-                    <div class="feature-icon">📋</div>
-                    <div class="feature-title">Audit Logs</div>
-                    <div class="feature-desc">บันทึกการใช้งานทั้งหมด</div>
-                </a>
-                <a href="/backup_management" class="feature-card">
-                    <div class="feature-icon">💾</div>
-                    <div class="feature-title">Backup/Restore</div>
-                    <div class="feature-desc">สำรองและกู้คืนข้อมูล</div>
-                </a>
-                <a href="/pwa_mobile" class="feature-card">
-                    <div class="feature-icon">📱</div>
-                    <div class="feature-title">PWA Mobile</div>
-                    <div class="feature-desc">ติดตั้งเป็น Mobile App</div>
-                </a>
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <div class="section-title">🚀 เริ่มต้นใช้งานด่วน</div>
+                    <div class="actions-grid">
+                        <a href="/register" class="action-card">
+                            <div class="action-icon">📸</div>
+                            <div class="action-title">ลงทะเบียนนักเรียน</div>
+                        </a>
+                        <a href="/camera_classroom" class="action-card">
+                            <div class="action-icon">🎥</div>
+                            <div class="action-title">เปิดกล้องห้องเรียน</div>
+                        </a>
+                        <a href="/checkin" class="action-card">
+                            <div class="action-icon">✅</div>
+                            <div class="action-title">เช็คชื่อด้วยตนเอง</div>
+                        </a>
+                        <a href="/reports" class="action-card">
+                            <div class="action-icon">📊</div>
+                            <div class="action-title">ดูรายงาน</div>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Load dashboard stats
         async function loadStats() {
             try {
                 const response = await fetch('/api/dashboard_stats');
@@ -472,10 +431,7 @@
             }
         }
 
-        // Load stats on page load
         loadStats();
-        
-        // Refresh stats every 30 seconds
         setInterval(loadStats, 30000);
     </script>
 </body>
