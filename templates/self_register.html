@@ -478,6 +478,12 @@
         // Start camera
         async function startCamera() {
             try {
+                console.log('📷 Requesting camera access...');
+                
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('เบราว์เซอร์ไม่รองรับกล้อง - ต้องใช้ HTTPS หรือ localhost');
+                }
+                
                 stream = await navigator.mediaDevices.getUserMedia({ 
                     video: { 
                         facingMode: 'user',
@@ -491,18 +497,35 @@
                 document.getElementById('cameraGuide').innerHTML = '<p style="color: #4caf50;">✅ กล้องพร้อมใช้งาน - จัดใบหน้าให้อยู่ในกรอบ</p>';
                 document.getElementById('startCameraBtn').style.display = 'none';
                 document.getElementById('captureBtn').style.display = 'block';
+                console.log('✅ Camera started successfully');
             } catch (err) {
+                console.error('❌ Camera error:', err);
                 showAlert('ไม่สามารถเข้าถึงกล้องได้: ' + err.message, 'error');
             }
         }
 
         // Capture photo
         function capturePhoto() {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
+            const maxWidth = 400;
+            const maxHeight = 400;
             
-            capturedImage = canvas.toDataURL('image/jpeg', 0.8);
+            let width = video.videoWidth;
+            let height = video.videoHeight;
+            
+            if (width > maxWidth) {
+                height = (height / width) * maxWidth;
+                width = maxWidth;
+            }
+            if (height > maxHeight) {
+                width = (width / height) * maxHeight;
+                height = maxHeight;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(video, 0, 0, width, height);
+            
+            capturedImage = canvas.toDataURL('image/jpeg', 0.6);
             
             // Stop camera
             if (stream) {
@@ -581,24 +604,61 @@
                 image_data: capturedImage
             };
 
+            console.log('📤 Submitting registration:', data.student_id, data.name, data.class_name);
+            console.log('📊 Image size:', capturedImage.length, 'chars');
             showLoading();
 
             try {
-                const response = await fetch('/api/self_register', {
+                console.log('📡 Posting to /api/self_register...');
+                
+                // ลองใช้ FormData แทน JSON เพื่อหลีก WAF
+                const formData = new FormData();
+                formData.append('student_id', data.student_id);
+                formData.append('name', data.name);
+                formData.append('class_name', data.class_name);
+                formData.append('image_data', data.image_data);
+                
+                // ใช้ relative path เพื่อให้ใช้ protocol เดียวกับหน้าเว็บ (HTTPS)
+                const response = await fetch('/add_student', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
+                    body: formData
                 });
 
+                console.log('📥 Response:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    console.error('❌ HTTP Error:', response.status);
+                    const text = await response.text();
+                    console.error('Response body:', text.substring(0, 200));
+                    showAlert('เกิดข้อผิดพลาด: HTTP ' + response.status, 'error');
+                    return;
+                }
+                
+                const contentType = response.headers.get('content-type');
+                console.log('📋 Content-Type:', contentType);
+                
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.error('❌ Not JSON response');
+                    const text = await response.text();
+                    console.error('Response body:', text.substring(0, 200));
+                    showAlert('เกิดข้อผิดพลาด: ไม่ใช่ JSON response', 'error');
+                    return;
+                }
+
                 const result = await response.json();
+                console.log('✅ Result:', result);
 
                 if (result.success) {
+                    console.log('🎉 Registration successful!');
                     document.getElementById('section3').classList.remove('active');
                     document.getElementById('section4').classList.add('active');
                 } else {
+                    console.error('❌ Registration failed:', result.message);
                     showAlert('เกิดข้อผิดพลาด: ' + result.message, 'error');
                 }
             } catch (error) {
+                console.error('❌ Exception:', error.message);
+                console.error('Stack:', error.stack);
                 showAlert('เกิดข้อผิดพลาด: ' + error.message, 'error');
             }
         }
@@ -622,17 +682,39 @@
         }
         // Load classes on page load
         window.addEventListener('load', async () => {
+            console.log('🔄 Starting to load classes from API...');
             try {
-                const response = await fetch('/api/get_classes');
-                const data = await response.json();
+                console.log('📡 Fetching /api/get_classes...');
+                const response = await fetch('/api/get_classes?v=2');
+                console.log('📥 Response received:', response.status, response.statusText);
                 
-                if (data.success && data.classes.length > 0) {
+                if (!response.ok) {
+                    console.error('❌ API error:', response.status);
+                    console.log('✅ Using default classes from HTML');
+                    return;
+                }
+                
+                const contentType = response.headers.get('content-type');
+                console.log('📋 Content-Type:', contentType);
+                
+                if (!contentType || !contentType.includes('application/json')) {
+                    console.error('❌ Not JSON response, got:', contentType);
+                    console.log('✅ Using default classes from HTML');
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('✅ JSON parsed successfully:', data);
+                
+                if (data.success && data.classes && data.classes.length > 0) {
+                    console.log('📚 Found', data.classes.length, 'classes');
                     const select = document.getElementById('className');
                     select.innerHTML = '<option value="">-- เลือกห้อง --</option>';
                     
                     // Group by level
                     const elementary = data.classes.filter(c => c.startsWith('ป.'));
                     const secondary = data.classes.filter(c => c.startsWith('ม.'));
+                    console.log('🏫 Elementary:', elementary.length, 'Secondary:', secondary.length);
                     
                     if (elementary.length > 0) {
                         const optgroup1 = document.createElement('optgroup');
@@ -657,9 +739,14 @@
                         });
                         select.appendChild(optgroup2);
                     }
+                    console.log('✅ Classes loaded successfully into dropdown');
+                } else {
+                    console.warn('⚠️ API returned no classes or invalid data');
                 }
             } catch (error) {
-                console.log('Using default classes');
+                console.error('❌ Error loading classes:', error.message);
+                console.error('Stack:', error.stack);
+                console.log('✅ Using default classes from HTML');
             }
         });
     </script>

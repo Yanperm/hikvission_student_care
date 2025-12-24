@@ -29,6 +29,10 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24).hex()
 
+# Initialize WebSocket
+from websocket_manager import init_socketio
+socketio = init_socketio(app)
+
 # AWS Cloud API URL
 CLOUD_API_URL = os.environ.get('CLOUD_API_URL', 'http://localhost:8080')
 cloud_sync = CloudSync(CLOUD_API_URL)
@@ -100,6 +104,10 @@ def api_login():
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
+@app.route('/photo_capture')
+def photo_capture():
+    return render_template('photo_capture.html')
 
 @app.route('/register')
 def register():
@@ -377,6 +385,30 @@ def self_register():
 @app.route('/all_features')
 def all_features():
     return render_template('all_features.html')
+
+@app.route('/qr_checkin')
+@login_required
+def qr_checkin():
+    return render_template('qr_checkin.html')
+
+@app.route('/two_factor_auth')
+@login_required
+def two_factor_auth_page():
+    return render_template('two_factor_auth.html')
+
+@app.route('/backup_management')
+@login_required
+def backup_management():
+    if session.get('role') not in ['admin', 'super_admin']:
+        return redirect(url_for('admin'))
+    return render_template('backup_management.html')
+
+@app.route('/audit_logs')
+@login_required
+def audit_logs_page():
+    if session.get('role') not in ['admin', 'super_admin']:
+        return redirect(url_for('admin'))
+    return render_template('audit_logs.html')
 
 @app.route('/mental_health')
 @login_required
@@ -768,12 +800,24 @@ def add_student():
         with open(image_path, 'wb') as f:
             f.write(base64.b64decode(image_data))
         
-        db.add_student(student_id, name, class_name, school_id, image_path)
+        # ตรวจสอบว่ามีอยู่แล้วหรือไม่
+        students = db.get_students(school_id)
+        existing = any(s['student_id'] == student_id for s in students)
+        
+        if existing:
+            # UPDATE
+            db.update_student(student_id, name, class_name, school_id, image_path)
+            message = f'อัพเดทข้อมูล {name} สำเร็จ'
+        else:
+            # INSERT
+            db.add_student(student_id, name, class_name, school_id, image_path)
+            message = f'เพิ่มนักเรียน {name} สำเร็จ'
+        
         cloud_sync.sync_student(student_id, name, class_name, image_path)
         
-        return jsonify({'success': True, 'message': f'เพิ่มนักเรียน {name} สำเร็จ'})
+        return jsonify({'success': True, 'message': message})
     except Exception as e:
-        return jsonify({'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'})
+        return jsonify({'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}))
 
 @app.route('/api/self_register', methods=['POST'])
 def self_register_api():
@@ -1063,6 +1107,152 @@ def export_report():
         'message': f'ส่งออกรายงาน {report_type} เป็น {format_type} สำเร็จ',
         'records_count': len(records)
     })
+
+@app.route('/api/export/attendance_pdf', methods=['POST'])
+@login_required
+def export_attendance_pdf():
+    try:
+        from export_manager import export_manager
+        from flask import send_file
+        
+        school_id = get_current_school_id()
+        school = db.get_school(school_id) if school_id else None
+        school_name = school['name'] if school else 'โรงเรียน'
+        
+        data = request.json
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        
+        attendance = db.get_attendance(school_id, start_date)
+        
+        buffer = export_manager.export_attendance_pdf(attendance, school_name)
+        
+        return send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'attendance_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/export/attendance_excel', methods=['POST'])
+@login_required
+def export_attendance_excel():
+    try:
+        from export_manager import export_manager
+        from flask import send_file
+        
+        school_id = get_current_school_id()
+        data = request.json
+        start_date = data.get('start_date')
+        
+        attendance = db.get_attendance(school_id, start_date)
+        
+        buffer = export_manager.export_attendance_excel(attendance)
+        
+        return send_file(
+            buffer,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'attendance_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/export/behavior_pdf', methods=['POST'])
+@login_required
+def export_behavior_pdf():
+    try:
+        from export_manager import export_manager
+        from flask import send_file
+        
+        school_id = get_current_school_id()
+        school = db.get_school(school_id) if school_id else None
+        school_name = school['name'] if school else 'โรงเรียน'
+        
+        behaviors = db.get_behavior(school_id)
+        
+        buffer = export_manager.export_behavior_pdf(behaviors, school_name)
+        
+        return send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'behavior_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/export/behavior_excel', methods=['POST'])
+@login_required
+def export_behavior_excel():
+    try:
+        from export_manager import export_manager
+        from flask import send_file
+        
+        school_id = get_current_school_id()
+        behaviors = db.get_behavior(school_id)
+        
+        buffer = export_manager.export_behavior_excel(behaviors)
+        
+        return send_file(
+            buffer,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'behavior_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/export/summary_pdf', methods=['POST'])
+@login_required
+def export_summary_pdf():
+    try:
+        from export_manager import export_manager
+        from flask import send_file
+        
+        school_id = get_current_school_id()
+        school = db.get_school(school_id) if school_id else None
+        school_name = school['name'] if school else 'โรงเรียน'
+        
+        # ดึงสถิติ
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('SELECT COUNT(*) FROM students WHERE school_id = ?', (school_id,))
+        total_students = cursor.fetchone()[0]
+        
+        today = datetime.now().strftime('%Y-%m-%d')
+        cursor.execute('SELECT COUNT(DISTINCT student_id) FROM attendance WHERE school_id = ? AND date(timestamp) = ?', (school_id, today))
+        today_attendance = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM behavior WHERE school_id = ? AND severity IN ("warning", "danger")', (school_id,))
+        behavior_alerts = cursor.fetchone()[0]
+        
+        cursor.execute('SELECT COUNT(*) FROM notifications WHERE school_id = ? AND read = 0', (school_id,))
+        unread_notifications = cursor.fetchone()[0]
+        
+        conn.close()
+        
+        stats = {
+            'total_students': total_students,
+            'today_attendance': today_attendance,
+            'attendance_rate': round((today_attendance / total_students * 100) if total_students > 0 else 0, 1),
+            'behavior_alerts': behavior_alerts,
+            'unread_notifications': unread_notifications
+        }
+        
+        buffer = export_manager.export_summary_pdf(stats, school_name)
+        
+        return send_file(
+            buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'summary_{datetime.now().strftime("%Y%m%d")}.pdf'
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 # Mental Health & Learning Analytics APIs
 
@@ -1789,8 +1979,303 @@ def reseller_add_school():
     
     return jsonify({'success': True, 'school_id': school_id, 'message': 'สร้างโรงเรียนสำเร็จ!'})
 
+# ============================================
+# AI FACE RECOGNITION APIs
+# ============================================
+
+@app.route('/api/ai/train', methods=['POST'])
+@login_required
+def ai_train():
+    """เทรนโมเดล AI Face Recognition"""
+    try:
+        from ai_face_recognition import ai_face
+        school_id = get_current_school_id()
+        students = db.get_students(school_id)
+        
+        ai_face.train(students)
+        
+        return jsonify({
+            'success': True,
+            'message': f'เทรนโมเดลสำเร็จ! จำนวน {len(ai_face.known_faces)} คน'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/ai/recognize', methods=['POST'])
+@login_required
+def ai_recognize():
+    """จำแนกใบหน้าด้วย AI"""
+    try:
+        from ai_face_recognition import ai_face
+        
+        # โหลดโมเดล
+        if not ai_face.known_faces:
+            if not ai_face.load_model():
+                return jsonify({'success': False, 'message': 'กรุณาเทรนโมเดลก่อน'})
+        
+        image_data = request.json.get('image')
+        camera_type = request.json.get('camera_type', 'general')
+        school_id = get_current_school_id()
+        
+        results = ai_face.recognize_from_base64(image_data)
+        
+        if results:
+            best = max(results, key=lambda x: x['confidence'])
+            
+            if best['confidence'] > 0.6:
+                students = db.get_students(school_id)
+                student = next((s for s in students if s['student_id'] == best['student_id']), None)
+                
+                if student:
+                    db.add_attendance(student['student_id'], student['name'], school_id, camera_type)
+                    
+                    # Broadcast via WebSocket
+                    socketio.broadcast_attendance(school_id, {
+                        'student_id': student['student_id'],
+                        'student_name': student['name'],
+                        'timestamp': datetime.now().isoformat()
+                    })
+                    
+                    return jsonify({
+                        'success': True,
+                        'student_id': student['student_id'],
+                        'student_name': student['name'],
+                        'confidence': round(best['confidence'] * 100, 1)
+                    })
+        
+        return jsonify({'success': False, 'message': 'ไม่พบใบหน้าที่รู้จัก'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+# ============================================
+# QR CODE APIs
+# ============================================
+
+@app.route('/api/qr/generate/<student_id>')
+@login_required
+def generate_qr(student_id):
+    """สร้าง QR Code สำหรับนักเรียน"""
+    try:
+        from qr_manager import qr_manager
+        from flask import send_file
+        
+        school_id = get_current_school_id()
+        students = db.get_students(school_id)
+        student = next((s for s in students if s['student_id'] == student_id), None)
+        
+        if not student:
+            return jsonify({'success': False, 'message': 'ไม่พบนักเรียน'})
+        
+        buffer = qr_manager.generate_student_qr(student_id, student['name'])
+        
+        return send_file(buffer, mimetype='image/png')
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/qr/scan', methods=['POST'])
+@login_required
+def scan_qr():
+    """สแกน QR Code"""
+    try:
+        from qr_manager import qr_manager
+        
+        image_data = request.json.get('image')
+        camera_type = request.json.get('camera_type', 'qr_code')
+        school_id = get_current_school_id()
+        
+        results = qr_manager.scan_qr_from_base64(image_data)
+        
+        if results:
+            student_id = results[0]['student_id']
+            students = db.get_students(school_id)
+            student = next((s for s in students if s['student_id'] == student_id), None)
+            
+            if student:
+                db.add_attendance(student['student_id'], student['name'], school_id, camera_type)
+                
+                return jsonify({
+                    'success': True,
+                    'student_id': student['student_id'],
+                    'student_name': student['name']
+                })
+        
+        return jsonify({'success': False, 'message': 'ไม่พบ QR Code'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+# ============================================
+# TWO-FACTOR AUTHENTICATION APIs
+# ============================================
+
+@app.route('/api/2fa/enable', methods=['POST'])
+@login_required
+def enable_2fa():
+    """เปิดใช้งาน 2FA"""
+    try:
+        from two_factor_auth import two_fa
+        
+        username = session.get('user')
+        secret = two_fa.generate_secret()
+        
+        # บันทึก secret ลง database
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET two_fa_secret = ? WHERE username = ?', (secret, username))
+        conn.commit()
+        conn.close()
+        
+        # สร้าง QR Code
+        qr_base64 = two_fa.generate_qr_base64(username, secret)
+        
+        return jsonify({
+            'success': True,
+            'secret': secret,
+            'qr_code': qr_base64
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/2fa/verify', methods=['POST'])
+@login_required
+def verify_2fa():
+    """ตรวจสอบ 2FA token"""
+    try:
+        from two_factor_auth import two_fa
+        
+        username = session.get('user')
+        token = request.json.get('token')
+        
+        # ดึง secret จาก database
+        user = db.get_user(username)
+        secret = user.get('two_fa_secret')
+        
+        if not secret:
+            return jsonify({'success': False, 'message': 'ยังไม่ได้เปิดใช้งาน 2FA'})
+        
+        is_valid = two_fa.verify_token(secret, token)
+        
+        return jsonify({
+            'success': is_valid,
+            'message': 'ยืนยันสำเร็จ' if is_valid else 'รหัสไม่ถูกต้อง'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/2fa/disable', methods=['POST'])
+@login_required
+def disable_2fa():
+    """ปิดใช้งาน 2FA"""
+    try:
+        username = session.get('user')
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users SET two_fa_secret = NULL WHERE username = ?', (username,))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'ปิดใช้งาน 2FA สำเร็จ'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+# ============================================
+# AUDIT LOG APIs
+# ============================================
+
+@app.route('/api/audit/logs', methods=['GET'])
+@login_required
+def get_audit_logs():
+    """ดึง audit logs"""
+    try:
+        from audit_logger import audit_logger
+        
+        limit = int(request.args.get('limit', 100))
+        user_id = request.args.get('user_id')
+        action = request.args.get('action')
+        
+        logs = audit_logger.get_logs(limit=limit, user_id=user_id, action=action)
+        
+        return jsonify({'success': True, 'logs': logs})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/audit/stats', methods=['GET'])
+@login_required
+def get_audit_stats():
+    """สถิติ audit logs"""
+    try:
+        from audit_logger import audit_logger
+        
+        days = int(request.args.get('days', 30))
+        stats = audit_logger.get_stats(days=days)
+        
+        return jsonify({'success': True, 'stats': stats})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+# ============================================
+# BACKUP/RESTORE APIs
+# ============================================
+
+@app.route('/api/backup/create', methods=['POST'])
+@login_required
+def create_backup():
+    """สร้าง backup"""
+    try:
+        from backup_manager import backup_manager
+        
+        include_images = request.json.get('include_images', True)
+        result = backup_manager.create_backup(include_images=include_images)
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/backup/list', methods=['GET'])
+@login_required
+def list_backups():
+    """แสดงรายการ backup"""
+    try:
+        from backup_manager import backup_manager
+        
+        backups = backup_manager.list_backups()
+        
+        return jsonify({'success': True, 'backups': backups})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/backup/restore', methods=['POST'])
+@login_required
+def restore_backup():
+    """กู้คืนข้อมูล"""
+    try:
+        from backup_manager import backup_manager
+        
+        backup_file = request.json.get('backup_file')
+        result = backup_manager.restore_backup(backup_file)
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/backup/delete', methods=['POST'])
+@login_required
+def delete_backup():
+    """ลบ backup"""
+    try:
+        from backup_manager import backup_manager
+        
+        backup_file = request.json.get('backup_file')
+        result = backup_manager.delete_backup(backup_file)
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 if __name__ == '__main__':
     os.makedirs('data/students', exist_ok=True)
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
-    app.run(host='0.0.0.0', port=port, debug=debug)
+    
+    # Use socketio.run instead of app.run
+    socketio.run(app, host='0.0.0.0', port=port, debug=debug)

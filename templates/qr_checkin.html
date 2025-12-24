@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Check-in - Student Care</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        h1 { color: #333; margin-bottom: 20px; text-align: center; }
+        .video-container { position: relative; width: 100%; max-width: 640px; margin: 0 auto 20px; }
+        video { width: 100%; border-radius: 15px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%; margin-top: 10px; }
+        .btn:hover { opacity: 0.9; }
+        .result { padding: 20px; background: #f0f0f0; border-radius: 10px; margin-top: 20px; text-align: center; }
+        .success { background: #4CAF50; color: white; }
+        .error { background: #f44336; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>📱 QR Code Check-in</h1>
+            <p style="text-align: center; margin-bottom: 20px;">สแกน QR Code เพื่อเช็คชื่อ</p>
+            
+            <div class="video-container">
+                <video id="video" autoplay></video>
+            </div>
+            
+            <button class="btn" onclick="startCamera()">📷 เปิดกล้อง</button>
+            <button class="btn" onclick="stopCamera()">⏹️ ปิดกล้อง</button>
+            
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let stream = null;
+        let scanning = false;
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                video.srcObject = stream;
+                scanning = true;
+                scanQR();
+            } catch (error) {
+                alert('ไม่สามารถเปิดกล้องได้: ' + error.message);
+            }
+        }
+
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                scanning = false;
+            }
+        }
+
+        async function scanQR() {
+            if (!scanning) return;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+
+            const imageData = canvas.toDataURL('image/jpeg');
+
+            try {
+                const response = await fetch('/api/qr/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="result success">
+                            <h2>✅ เช็คชื่อสำเร็จ!</h2>
+                            <p>${data.student_name}</p>
+                            <p>รหัส: ${data.student_id}</p>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        document.getElementById('result').innerHTML = '';
+                    }, 3000);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+
+            setTimeout(scanQR, 1000);
+        }
+    </script>
+</body>
+</html>

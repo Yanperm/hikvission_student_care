@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup Management - Student Care</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        h1 { color: #333; margin-bottom: 20px; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 50px; cursor: pointer; font-size: 14px; font-weight: 600; margin: 5px; }
+        .btn:hover { opacity: 0.9; }
+        .btn-success { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); }
+        .btn-danger { background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #667eea; color: white; }
+        .checkbox { margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>💾 Backup Management</h1>
+            
+            <div style="margin-bottom: 30px;">
+                <label>
+                    <input type="checkbox" id="includeImages" checked class="checkbox">
+                    รวมรูปภาพนักเรียน
+                </label>
+                <br><br>
+                <button class="btn btn-success" onclick="createBackup()">💾 สร้าง Backup ใหม่</button>
+            </div>
+            
+            <h2>📋 รายการ Backup</h2>
+            <table id="backupTable">
+                <thead>
+                    <tr>
+                        <th>ชื่อไฟล์</th>
+                        <th>วันที่สร้าง</th>
+                        <th>ขนาด</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4" style="text-align: center;">กำลังโหลด...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function loadBackups() {
+            try {
+                const response = await fetch('/api/backup/list');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const tbody = document.querySelector('#backupTable tbody');
+                    
+                    if (data.backups.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">ยังไม่มี Backup</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.backups.map(backup => `
+                            <tr>
+                                <td>${backup.filename}</td>
+                                <td>${new Date(backup.created).toLocaleString('th-TH')}</td>
+                                <td>${formatSize(backup.size)}</td>
+                                <td>
+                                    <button class="btn btn-success" onclick="restoreBackup('${backup.filepath}')">🔄 กู้คืน</button>
+                                    <button class="btn btn-danger" onclick="deleteBackup('${backup.filepath}')">🗑️ ลบ</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        async function createBackup() {
+            if (!confirm('สร้าง Backup ใหม่?')) return;
+            
+            const includeImages = document.getElementById('includeImages').checked;
+            
+            try {
+                const response = await fetch('/api/backup/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ include_images: includeImages })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ สร้าง Backup สำเร็จ!');
+                    loadBackups();
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        async function restoreBackup(filepath) {
+            if (!confirm('⚠️ คุณต้องการกู้คืนข้อมูลใช่หรือไม่?\n\nข้อมูลปัจจุบันจะถูกแทนที่!')) return;
+            
+            try {
+                const response = await fetch('/api/backup/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ backup_file: filepath })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ กู้คืนข้อมูลสำเร็จ!\n\nกรุณา Refresh หน้าเว็บ');
+                    location.reload();
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        async function deleteBackup(filepath) {
+            if (!confirm('ลบ Backup นี้?')) return;
+            
+            try {
+                const response = await fetch('/api/backup/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ backup_file: filepath })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ ลบ Backup สำเร็จ');
+                    loadBackups();
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        loadBackups();
+    </script>
+</body>
+</html>

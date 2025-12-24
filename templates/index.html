@@ -155,7 +155,10 @@
                 {% for student in students %}
                 <div class="student-card">
                     <strong>{{ student.name }}</strong><br>
-                    รหัส: {{ student.student_id }}
+                    รหัส: {{ student.student_id }}<br>
+                    <button onclick="deleteStudent('{{ student.student_id }}')" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 8px; margin-top: 10px; cursor: pointer; font-weight: 600;">
+                        🗑️ ลบ
+                    </button>
                 </div>
                 {% endfor %}
             </div>
@@ -272,6 +275,27 @@
                 alertDiv.style.display = 'block';
             }
         };
+        
+        async function deleteStudent(studentId) {
+            if (!confirm('ต้องการลบนักเรียน ' + studentId + ' หรือไม่?')) return;
+            
+            try {
+                const response = await fetch('/delete_student/' + studentId, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ ' + result.message);
+                    location.reload();
+                } else {
+                    alert('❌ ' + result.message);
+                }
+            } catch (error) {
+                alert('❌ เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
     </script>
 </body>
 </html>

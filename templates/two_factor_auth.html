@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Factor Authentication - Student Care</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        h1 { color: #333; margin-bottom: 20px; text-align: center; }
+        .qr-container { text-align: center; margin: 30px 0; }
+        .qr-container img { max-width: 300px; border: 2px solid #ddd; padding: 10px; border-radius: 10px; }
+        .secret { background: #f0f0f0; padding: 15px; border-radius: 10px; text-align: center; font-family: monospace; font-size: 18px; margin: 20px 0; }
+        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-size: 16px; font-weight: 600; width: 100%; margin-top: 10px; }
+        .btn:hover { opacity: 0.9; }
+        .btn-danger { background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); }
+        input { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; margin: 10px 0; }
+        .info { background: #e3f2fd; padding: 15px; border-radius: 10px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🔐 Two-Factor Authentication</h1>
+            
+            <div id="setupSection" style="display: none;">
+                <div class="info">
+                    <h3>📱 ขั้นตอนการตั้งค่า:</h3>
+                    <ol>
+                        <li>ติดตั้งแอป Google Authenticator หรือ Authy</li>
+                        <li>สแกน QR Code ด้านล่าง</li>
+                        <li>ใส่รหัส 6 หลักเพื่อยืนยัน</li>
+                    </ol>
+                </div>
+                
+                <div class="qr-container">
+                    <img id="qrCode" src="" alt="QR Code">
+                </div>
+                
+                <div class="secret">
+                    <strong>Secret Key:</strong><br>
+                    <span id="secretKey"></span>
+                </div>
+                
+                <input type="text" id="verifyToken" placeholder="ใส่รหัส 6 หลัก" maxlength="6">
+                <button class="btn" onclick="verifySetup()">✅ ยืนยัน</button>
+            </div>
+            
+            <div id="enableSection">
+                <p style="text-align: center; margin-bottom: 20px;">
+                    เพิ่มความปลอดภัยให้บัญชีของคุณด้วย 2FA
+                </p>
+                <button class="btn" onclick="enable2FA()">🔐 เปิดใช้งาน 2FA</button>
+            </div>
+            
+            <div id="disableSection" style="display: none;">
+                <p style="text-align: center; margin-bottom: 20px; color: green;">
+                    ✅ 2FA เปิดใช้งานแล้ว
+                </p>
+                <button class="btn btn-danger" onclick="disable2FA()">❌ ปิดใช้งาน 2FA</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function enable2FA() {
+            try {
+                const response = await fetch('/api/2fa/enable', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('qrCode').src = data.qr_code;
+                    document.getElementById('secretKey').textContent = data.secret;
+                    document.getElementById('enableSection').style.display = 'none';
+                    document.getElementById('setupSection').style.display = 'block';
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        async function verifySetup() {
+            const token = document.getElementById('verifyToken').value;
+            
+            if (token.length !== 6) {
+                alert('กรุณาใส่รหัส 6 หลัก');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/2fa/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ ตั้งค่า 2FA สำเร็จ!');
+                    location.reload();
+                } else {
+                    alert('❌ รหัสไม่ถูกต้อง');
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        async function disable2FA() {
+            if (!confirm('คุณต้องการปิดใช้งาน 2FA ใช่หรือไม่?')) return;
+            
+            try {
+                const response = await fetch('/api/2fa/disable', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ ปิดใช้งาน 2FA สำเร็จ');
+                    location.reload();
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ถ่ายรูปนักเรียน - Student Care System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { max-width: 600px; width: 100%; }
+        .card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 28px; color: #1a1a1a; margin-bottom: 10px; }
+        .header p { color: #64748b; }
+        .search-box { margin-bottom: 30px; }
+        .search-input { width: 100%; padding: 16px 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 18px; text-align: center; font-weight: 600; transition: all 0.3s; }
+        .search-input:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 4px rgba(102,126,234,0.1); }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
+        .student-info { background: #f8fafc; padding: 20px; border-radius: 12px; margin-bottom: 20px; display: none; }
+        .student-name { font-size: 24px; font-weight: 700; color: #1a1a1a; margin-bottom: 10px; }
+        .student-detail { color: #64748b; margin-bottom: 5px; }
+        .camera-section { display: none; }
+        .camera-preview { width: 100%; height: 400px; background: #000; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        #video { width: 100%; height: 100%; object-fit: cover; }
+        #preview { width: 100%; height: 100%; }
+        #preview img { width: 100%; height: 100%; object-fit: cover; }
+        .camera-placeholder { color: #94a3b8; font-size: 64px; }
+        .btn-group { display: flex; gap: 10px; }
+        .btn-success { background: #10b981; color: white; flex: 1; }
+        .btn-secondary { background: #64748b; color: white; flex: 1; }
+        .alert { padding: 16px; border-radius: 12px; margin-bottom: 20px; font-weight: 500; display: none; }
+        .alert-success { background: #d1fae5; color: #065f46; }
+        .alert-error { background: #fee2e2; color: #991b1b; }
+        #canvas { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <h1>📷 ถ่ายรูปนักเรียน</h1>
+                <p>กรอกรหัสนักเรียนเพื่อค้นหาข้อมูล</p>
+            </div>
+
+            <div id="alert" class="alert"></div>
+
+            <div id="searchSection">
+                <div class="search-box">
+                    <input type="text" id="studentId" class="search-input" placeholder="รหัสนักเรียน" autofocus>
+                </div>
+                <button class="btn btn-primary" onclick="searchStudent()">🔍 ค้นหา</button>
+            </div>
+
+            <div id="studentInfo" class="student-info">
+                <div class="student-name" id="studentName"></div>
+                <div class="student-detail">รหัส: <span id="studentIdDisplay"></span></div>
+                <div class="student-detail">ห้อง: <span id="studentClass"></span></div>
+            </div>
+
+            <div id="cameraSection" class="camera-section">
+                <div class="camera-preview">
+                    <video id="video" autoplay playsinline style="display: none;"></video>
+                    <div id="preview"></div>
+                    <div id="placeholder" class="camera-placeholder">📷</div>
+                </div>
+
+                <canvas id="canvas"></canvas>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="startCamera()">📹 เปิดกล้อง</button>
+                    <button class="btn btn-success" id="captureBtn" onclick="capturePhoto()" style="display: none;">📸 ถ่ายรูป</button>
+                    <button class="btn btn-secondary" onclick="retakePhoto()">🔄 ถ่ายใหม่</button>
+                </div>
+
+                <button class="btn btn-primary" onclick="savePhoto()" style="margin-top: 15px; display: none;" id="saveBtn">✅ บันทึกรูปภาพ</button>
+                <button class="btn btn-secondary" onclick="resetSearch()" style="margin-top: 10px;">← ค้นหาคนอื่น</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let video = document.getElementById('video');
+        let canvas = document.getElementById('canvas');
+        let capturedImage = null;
+        let stream = null;
+        let currentStudent = null;
+
+        document.getElementById('studentId').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchStudent();
+        });
+
+        async function searchStudent() {
+            const studentId = document.getElementById('studentId').value.trim();
+            
+            if (!studentId) {
+                showAlert('กรุณากรอกรหัสนักเรียน', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/student/' + studentId);
+                const result = await response.json();
+
+                if (result.success) {
+                    currentStudent = result.student;
+                    
+                    document.getElementById('studentName').textContent = currentStudent.name;
+                    document.getElementById('studentIdDisplay').textContent = currentStudent.student_id;
+                    document.getElementById('studentClass').textContent = currentStudent.class_name || '-';
+                    
+                    document.getElementById('searchSection').style.display = 'none';
+                    document.getElementById('studentInfo').style.display = 'block';
+                    document.getElementById('cameraSection').style.display = 'block';
+                    
+                    showAlert('✅ พบข้อมูลนักเรียน', 'success');
+                } else {
+                    showAlert('❌ ไม่พบรหัสนักเรียน ' + studentId, 'error');
+                }
+            } catch (error) {
+                showAlert('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'user',
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                } 
+            })
+            .then(s => {
+                stream = s;
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('placeholder').style.display = 'none';
+                document.getElementById('preview').style.display = 'none';
+                document.getElementById('captureBtn').style.display = 'inline-block';
+            })
+            .catch(err => {
+                showAlert('ไม่สามารถเปิดกล้องได้: ' + err.message, 'error');
+            });
+        }
+
+        function capturePhoto() {
+            if (!video.videoWidth) {
+                showAlert('กรุณาเปิดกล้องก่อน!', 'error');
+                return;
+            }
+
+            const maxWidth = 400;
+            const maxHeight = 400;
+            
+            let width = video.videoWidth;
+            let height = video.videoHeight;
+            
+            if (width > maxWidth) {
+                height = (height / width) * maxWidth;
+                width = maxWidth;
+            }
+            if (height > maxHeight) {
+                width = (width / height) * maxHeight;
+                height = maxHeight;
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            canvas.getContext('2d').drawImage(video, 0, 0, width, height);
+            
+            capturedImage = canvas.toDataURL('image/jpeg', 0.6);
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            
+            video.style.display = 'none';
+            document.getElementById('preview').innerHTML = '<img src="' + capturedImage + '" alt="Preview">';
+            document.getElementById('preview').style.display = 'block';
+            document.getElementById('captureBtn').style.display = 'none';
+            document.getElementById('saveBtn').style.display = 'block';
+            
+            showAlert('✅ ถ่ายรูปสำเร็จ!', 'success');
+        }
+
+        function retakePhoto() {
+            capturedImage = null;
+            video.style.display = 'none';
+            document.getElementById('preview').innerHTML = '';
+            document.getElementById('preview').style.display = 'none';
+            document.getElementById('placeholder').style.display = 'flex';
+            document.getElementById('captureBtn').style.display = 'none';
+            document.getElementById('saveBtn').style.display = 'none';
+            
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        }
+
+        async function savePhoto() {
+            if (!capturedImage) {
+                showAlert('กรุณาถ่ายรูปก่อน!', 'error');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('student_id', currentStudent.student_id);
+                formData.append('name', currentStudent.name);
+                formData.append('class_name', currentStudent.class_name || '');
+                formData.append('image_data', capturedImage);
+                
+                const response = await fetch('/add_student', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('✅ บันทึกรูปภาพสำเร็จ!', 'success');
+                    setTimeout(() => resetSearch(), 1500);
+                } else {
+                    showAlert('❌ ' + result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        function resetSearch() {
+            document.getElementById('studentId').value = '';
+            document.getElementById('searchSection').style.display = 'block';
+            document.getElementById('studentInfo').style.display = 'none';
+            document.getElementById('cameraSection').style.display = 'none';
+            retakePhoto();
+            currentStudent = null;
+            document.getElementById('studentId').focus();
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alert');
+            alertDiv.className = 'alert alert-' + type;
+            alertDiv.textContent = message;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

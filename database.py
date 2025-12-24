@@ -411,6 +411,17 @@ class Database:
         conn.commit()
         conn.close()
     
+    def update_student(self, student_id, name, class_name, school_id, image_path):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE students 
+            SET name = ?, class_name = ?, image_path = ?
+            WHERE student_id = ? AND school_id = ?
+        ''', (name, class_name, image_path, student_id, school_id))
+        conn.commit()
+        conn.close()
+    
     def get_student_line_token(self, student_id):
         conn = self.get_connection()
         cursor = conn.cursor()

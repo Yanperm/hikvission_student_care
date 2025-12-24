@@ -188,11 +188,88 @@
         }
 
         function exportPDF() {
-            alert('📄 กำลัง Export เป็น PDF...\n(ฟีเจอร์นี้จะพัฒนาเพิ่มเติม)');
+            const reportType = document.getElementById('reportType').value;
+            showLoading();
+            
+            let endpoint = '/api/export/attendance_pdf';
+            if (reportType === 'behavior') {
+                endpoint = '/api/export/behavior_pdf';
+            } else if (reportType === 'summary') {
+                endpoint = '/api/export/summary_pdf';
+            }
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    start_date: document.getElementById('startDate').value,
+                    end_date: document.getElementById('endDate').value
+                })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `report_${reportType}_${new Date().getTime()}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                hideLoading();
+                alert('✅ Export PDF สำเร็จ!');
+            })
+            .catch(error => {
+                hideLoading();
+                alert('❌ เกิดข้อผิดพลาด: ' + error.message);
+            });
         }
 
         function exportExcel() {
-            alert('📊 กำลัง Export เป็น Excel...\n(ฟีเจอร์นี้จะพัฒนาเพิ่มเติม)');
+            const reportType = document.getElementById('reportType').value;
+            showLoading();
+            
+            let endpoint = '/api/export/attendance_excel';
+            if (reportType === 'behavior') {
+                endpoint = '/api/export/behavior_excel';
+            }
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    start_date: document.getElementById('startDate').value,
+                    end_date: document.getElementById('endDate').value
+                })
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `report_${reportType}_${new Date().getTime()}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                hideLoading();
+                alert('✅ Export Excel สำเร็จ!');
+            })
+            .catch(error => {
+                hideLoading();
+                alert('❌ เกิดข้อผิดพลาด: ' + error.message);
+            });
+        }
+        
+        function showLoading() {
+            const loader = document.createElement('div');
+            loader.id = 'loader';
+            loader.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;';
+            loader.innerHTML = '<div style="background:white;padding:30px;border-radius:15px;text-align:center;"><div style="font-size:24px;margin-bottom:10px;">⏳</div><div>กำลังสร้างรายงาน...</div></div>';
+            document.body.appendChild(loader);
+        }
+        
+        function hideLoading() {
+            const loader = document.getElementById('loader');
+            if (loader) loader.remove();
         }
 
         // Set default dates

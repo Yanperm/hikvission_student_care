@@ -1,160 +1,168 @@
+"""
+Backup and Restore System
+สำรองและกู้คืนข้อมูล
+"""
+
 import os
 import shutil
-import zipfile
+import sqlite3
 from datetime import datetime
+import zipfile
 import json
 
 class BackupManager:
-    def __init__(self, backup_dir='backups'):
+    def __init__(self, db_path='data/database.db', backup_dir='backups'):
+        self.db_path = db_path
         self.backup_dir = backup_dir
         os.makedirs(backup_dir, exist_ok=True)
     
     def create_backup(self, include_images=True):
-        """Create full system backup"""
-        try:
-            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            backup_name = f'backup_{timestamp}'
-            backup_path = os.path.join(self.backup_dir, backup_name)
-            
-            os.makedirs(backup_path, exist_ok=True)
-            
-            # Backup database
-            if os.path.exists('data/attendance.db'):
-                shutil.copy2('data/attendance.db', os.path.join(backup_path, 'attendance.db'))
-            
-            # Backup student data
-            if os.path.exists('data/students_data.json'):
-                shutil.copy2('data/students_data.json', os.path.join(backup_path, 'students_data.json'))
-            
-            # Backup face encodings
-            if os.path.exists('data/face_images.npy'):
-                shutil.copy2('data/face_images.npy', os.path.join(backup_path, 'face_images.npy'))
-            if os.path.exists('data/face_labels.npy'):
-                shutil.copy2('data/face_labels.npy', os.path.join(backup_path, 'face_labels.npy'))
-            
-            # Backup configuration
-            if os.path.exists('config.json'):
-                shutil.copy2('config.json', os.path.join(backup_path, 'config.json'))
-            
-            # Backup student images
-            if include_images and os.path.exists('data/students'):
-                shutil.copytree('data/students', os.path.join(backup_path, 'students'))
-            
-            # Create backup metadata
-            metadata = {
-                'timestamp': timestamp,
-                'date': datetime.now().isoformat(),
-                'include_images': include_images,
-                'files': os.listdir(backup_path)
-            }
-            
-            with open(os.path.join(backup_path, 'metadata.json'), 'w') as f:
-                json.dump(metadata, f, indent=2)
-            
-            # Create zip archive
-            zip_path = f'{backup_path}.zip'
-            with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                for root, dirs, files in os.walk(backup_path):
-                    for file in files:
-                        file_path = os.path.join(root, file)
-                        arcname = os.path.relpath(file_path, backup_path)
-                        zipf.write(file_path, arcname)
-            
-            # Remove temporary directory
-            shutil.rmtree(backup_path)
-            
-            return True, zip_path
-        except Exception as e:
-            return False, str(e)
-    
-    def restore_backup(self, backup_file):
-        """Restore system from backup"""
-        try:
-            if not os.path.exists(backup_file):
-                return False, "Backup file not found"
-            
-            # Create temporary extraction directory
-            temp_dir = os.path.join(self.backup_dir, 'temp_restore')
-            os.makedirs(temp_dir, exist_ok=True)
-            
-            # Extract backup
-            with zipfile.ZipFile(backup_file, 'r') as zipf:
-                zipf.extractall(temp_dir)
-            
-            # Restore files
-            if os.path.exists(os.path.join(temp_dir, 'attendance.db')):
-                os.makedirs('data', exist_ok=True)
-                shutil.copy2(os.path.join(temp_dir, 'attendance.db'), 'data/attendance.db')
-            
-            if os.path.exists(os.path.join(temp_dir, 'students_data.json')):
-                shutil.copy2(os.path.join(temp_dir, 'students_data.json'), 'data/students_data.json')
-            
-            if os.path.exists(os.path.join(temp_dir, 'face_images.npy')):
-                shutil.copy2(os.path.join(temp_dir, 'face_images.npy'), 'data/face_images.npy')
-            
-            if os.path.exists(os.path.join(temp_dir, 'face_labels.npy')):
-                shutil.copy2(os.path.join(temp_dir, 'face_labels.npy'), 'data/face_labels.npy')
-            
-            if os.path.exists(os.path.join(temp_dir, 'config.json')):
-                shutil.copy2(os.path.join(temp_dir, 'config.json'), 'config.json')
-            
-            if os.path.exists(os.path.join(temp_dir, 'students')):
-                if os.path.exists('data/students'):
-                    shutil.rmtree('data/students')
-                shutil.copytree(os.path.join(temp_dir, 'students'), 'data/students')
-            
-            # Clean up
-            shutil.rmtree(temp_dir)
-            
-            return True, "Backup restored successfully"
-        except Exception as e:
-            return False, str(e)
+        """สร้าง backup"""
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_name = f"backup_{timestamp}"
+        backup_path = os.path.join(self.backup_dir, backup_name)
+        
+        os.makedirs(backup_path, exist_ok=True)
+        
+        # Backup database
+        if os.path.exists(self.db_path):
+            shutil.copy2(self.db_path, os.path.join(backup_path, 'database.db'))
+        
+        # Backup images
+        if include_images and os.path.exists('data/students'):
+            shutil.copytree('data/students', os.path.join(backup_path, 'students'))
+        
+        # Backup face model
+        if os.path.exists('data/face_model.pkl'):
+            shutil.copy2('data/face_model.pkl', os.path.join(backup_path, 'face_model.pkl'))
+        
+        # Create metadata
+        metadata = {
+            'timestamp': timestamp,
+            'date': datetime.now().isoformat(),
+            'include_images': include_images,
+            'db_size': os.path.getsize(self.db_path) if os.path.exists(self.db_path) else 0
+        }
+        
+        with open(os.path.join(backup_path, 'metadata.json'), 'w') as f:
+            json.dump(metadata, f, indent=2)
+        
+        # Create zip
+        zip_path = f"{backup_path}.zip"
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(backup_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, backup_path)
+                    zipf.write(file_path, arcname)
+        
+        # Remove temp folder
+        shutil.rmtree(backup_path)
+        
+        return {
+            'success': True,
+            'backup_file': zip_path,
+            'timestamp': timestamp,
+            'size': os.path.getsize(zip_path)
+        }
     
     def list_backups(self):
-        """List all available backups"""
+        """แสดงรายการ backup"""
         backups = []
         
-        for file in os.listdir(self.backup_dir):
-            if file.endswith('.zip') and file.startswith('backup_'):
-                file_path = os.path.join(self.backup_dir, file)
-                file_size = os.path.getsize(file_path)
-                file_time = datetime.fromtimestamp(os.path.getmtime(file_path))
+        for filename in os.listdir(self.backup_dir):
+            if filename.endswith('.zip'):
+                filepath = os.path.join(self.backup_dir, filename)
+                
+                # Extract metadata
+                try:
+                    with zipfile.ZipFile(filepath, 'r') as zipf:
+                        if 'metadata.json' in zipf.namelist():
+                            metadata = json.loads(zipf.read('metadata.json'))
+                        else:
+                            metadata = {}
+                except:
+                    metadata = {}
                 
                 backups.append({
-                    'filename': file,
-                    'path': file_path,
-                    'size': file_size,
-                    'size_mb': round(file_size / (1024 * 1024), 2),
-                    'created': file_time.isoformat(),
-                    'created_str': file_time.strftime('%Y-%m-%d %H:%M:%S')
+                    'filename': filename,
+                    'filepath': filepath,
+                    'size': os.path.getsize(filepath),
+                    'created': datetime.fromtimestamp(os.path.getctime(filepath)).isoformat(),
+                    'metadata': metadata
                 })
         
-        return sorted(backups, key=lambda x: x['created'], reverse=True)
+        backups.sort(key=lambda x: x['created'], reverse=True)
+        return backups
+    
+    def restore_backup(self, backup_file):
+        """กู้คืนข้อมูลจาก backup"""
+        if not os.path.exists(backup_file):
+            return {'success': False, 'message': 'ไม่พบไฟล์ backup'}
+        
+        # Create temp restore folder
+        restore_path = os.path.join(self.backup_dir, 'restore_temp')
+        os.makedirs(restore_path, exist_ok=True)
+        
+        try:
+            # Extract zip
+            with zipfile.ZipFile(backup_file, 'r') as zipf:
+                zipf.extractall(restore_path)
+            
+            # Restore database
+            db_backup = os.path.join(restore_path, 'database.db')
+            if os.path.exists(db_backup):
+                # Backup current database first
+                if os.path.exists(self.db_path):
+                    shutil.copy2(self.db_path, f"{self.db_path}.before_restore")
+                
+                shutil.copy2(db_backup, self.db_path)
+            
+            # Restore images
+            students_backup = os.path.join(restore_path, 'students')
+            if os.path.exists(students_backup):
+                if os.path.exists('data/students'):
+                    shutil.rmtree('data/students')
+                shutil.copytree(students_backup, 'data/students')
+            
+            # Restore face model
+            model_backup = os.path.join(restore_path, 'face_model.pkl')
+            if os.path.exists(model_backup):
+                shutil.copy2(model_backup, 'data/face_model.pkl')
+            
+            # Clean up
+            shutil.rmtree(restore_path)
+            
+            return {'success': True, 'message': 'กู้คืนข้อมูลสำเร็จ'}
+        
+        except Exception as e:
+            # Clean up on error
+            if os.path.exists(restore_path):
+                shutil.rmtree(restore_path)
+            
+            return {'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'}
     
     def delete_backup(self, backup_file):
-        """Delete a backup file"""
-        try:
-            if os.path.exists(backup_file):
-                os.remove(backup_file)
-                return True, "Backup deleted successfully"
-            else:
-                return False, "Backup file not found"
-        except Exception as e:
-            return False, str(e)
+        """ลบ backup"""
+        if os.path.exists(backup_file):
+            os.remove(backup_file)
+            return {'success': True, 'message': 'ลบ backup สำเร็จ'}
+        return {'success': False, 'message': 'ไม่พบไฟล์ backup'}
     
-    def cleanup_old_backups(self, keep_count=7):
-        """Keep only the most recent backups"""
-        backups = self.list_backups()
+    def auto_backup(self, keep_days=30):
+        """สร้าง backup อัตโนมัติและลบไฟล์เก่า"""
+        # Create backup
+        result = self.create_backup(include_images=True)
         
-        if len(backups) <= keep_count:
-            return True, f"No cleanup needed ({len(backups)} backups)"
+        # Delete old backups
+        cutoff_date = datetime.now().timestamp() - (keep_days * 24 * 60 * 60)
         
-        deleted_count = 0
-        for backup in backups[keep_count:]:
-            success, _ = self.delete_backup(backup['path'])
-            if success:
-                deleted_count += 1
+        for backup in self.list_backups():
+            created_timestamp = datetime.fromisoformat(backup['created']).timestamp()
+            if created_timestamp < cutoff_date:
+                self.delete_backup(backup['filepath'])
         
-        return True, f"Deleted {deleted_count} old backups"
+        return result
 
+# สร้าง instance
 backup_manager = BackupManager()

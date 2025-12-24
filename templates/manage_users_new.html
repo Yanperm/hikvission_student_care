@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการผู้ใช้ - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
+        .layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); color: white; position: fixed; height: 100vh; overflow-y: auto; }
+        .main-content { flex: 1; margin-left: 260px; }
+        .topbar { background: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .topbar-title { font-size: 24px; font-weight: 700; }
+        .content { padding: 30px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .users-table { width: 100%; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .users-table th { background: #f8fafc; padding: 16px; text-align: left; font-weight: 600; color: #475569; }
+        .users-table td { padding: 16px; border-top: 1px solid #e2e8f0; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge-admin { background: #dbeafe; color: #1e40af; }
+        .badge-teacher { background: #d1fae5; color: #065f46; }
+        .badge-parent { background: #fef3c7; color: #92400e; }
+        .btn-delete { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; }
+        .modal-content { background: white; max-width: 500px; margin: 50px auto; padding: 30px; border-radius: 16px; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-input { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">👥 จัดการผู้ใช้งาน</div>
+                <button class="btn-primary" onclick="openAddModal()">➕ เพิ่มผู้ใช้</button>
+            </div>
+            
+            <div class="content">
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>ชื่อผู้ใช้</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>บทบาท</th>
+                            <th>โรงเรียน</th>
+                            <th>จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable">
+                        <tr><td colspan="5" style="text-align: center; padding: 40px;">กำลังโหลด...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h2>➕ เพิ่มผู้ใช้ใหม่</h2>
+            <form id="addUserForm">
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" class="form-input" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="password" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ชื่อ-นามสกุล</label>
+                    <input type="text" class="form-input" id="name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">บทบาท</label>
+                    <select class="form-input" id="role">
+                        <option value="admin">Admin</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="parent">Parent</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">บันทึก</button>
+                <button type="button" class="btn-delete" style="width: 100%; margin-top: 10px;" onclick="closeModal()">ยกเลิก</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        async function loadUsers() {
+            const response = await fetch('/api/users');
+            const data = await response.json();
+            
+            if (data.success) {
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = data.users.map(u => `
+                    <tr>
+                        <td>${u.username}</td>
+                        <td>${u.name}</td>
+                        <td><span class="badge badge-${u.role}">${u.role}</span></td>
+                        <td>${u.school_id || '-'}</td>
+                        <td><button class="btn-delete" onclick="deleteUser(${u.id})">🗑️ ลบ</button></td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        document.getElementById('addUserForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                name: document.getElementById('name').value,
+                role: document.getElementById('role').value
+            };
+            
+            const response = await fetch('/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('✅ ' + result.message);
+                closeModal();
+                loadUsers();
+            } else {
+                alert('❌ ' + result.message);
+            }
+        };
+
+        async function deleteUser(userId) {
+            if (!confirm('ต้องการลบผู้ใช้นี้?')) return;
+            
+            const response = await fetch('/api/users/' + userId, { method: 'DELETE' });
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('✅ ' + result.message);
+                loadUsers();
+            }
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>

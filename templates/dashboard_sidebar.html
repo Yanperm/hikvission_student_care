@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Student Care System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f5f7fa; }
+        
+        .layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); color: white; position: fixed; height: 100vh; overflow-y: auto; z-index: 1000; }
+        .sidebar-header { padding: 25px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-logo { font-size: 20px; font-weight: 700; }
+        .sidebar-menu { padding: 20px 0; }
+        .menu-section { margin-bottom: 25px; }
+        .menu-title { padding: 0 20px; font-size: 11px; text-transform: uppercase; opacity: 0.6; margin-bottom: 10px; font-weight: 600; }
+        .menu-item { padding: 12px 20px; display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; transition: all 0.3s; }
+        .menu-item:hover { background: rgba(255,255,255,0.1); }
+        .menu-item.active { background: rgba(255,255,255,0.2); }
+        .menu-icon { font-size: 18px; width: 20px; text-align: center; }
+        
+        /* Main Content */
+        .main-content { flex: 1; margin-left: 260px; }
+        .topbar { background: white; padding: 20px 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .topbar-title { font-size: 24px; font-weight: 700; color: #1a1a1a; }
+        .topbar-user { display: flex; align-items: center; gap: 15px; }
+        .user-info { text-align: right; }
+        .user-name { font-weight: 600; color: #1a1a1a; }
+        .user-role { font-size: 13px; color: #64748b; }
+        .logout-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; }
+        
+        .content { padding: 30px; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .stat-icon { font-size: 32px; }
+        .stat-value { font-size: 32px; font-weight: 700; color: #1a1a1a; margin-bottom: 5px; }
+        .stat-label { font-size: 14px; color: #64748b; }
+        
+        /* Quick Actions */
+        .section { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .section-title { font-size: 18px; font-weight: 600; color: #1a1a1a; margin-bottom: 20px; }
+        .actions-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .action-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-decoration: none; display: block; transition: all 0.3s; }
+        .action-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(102,126,234,0.3); }
+        .action-icon { font-size: 28px; margin-bottom: 10px; }
+        .action-title { font-size: 15px; font-weight: 600; }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 0; transform: translateX(-100%); }
+            .main-content { margin-left: 0; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">🎓 Student Care</div>
+            </div>
+            
+            <div class="sidebar-menu">
+                <div class="menu-section">
+                    <div class="menu-title">หลัก</div>
+                    <a href="/admin" class="menu-item active">
+                        <span class="menu-icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/register" class="menu-item">
+                        <span class="menu-icon">📝</span>
+                        <span>ลงทะเบียนนักเรียน</span>
+                    </a>
+                    <a href="/photo_capture" class="menu-item">
+                        <span class="menu-icon">📷</span>
+                        <span>ถ่ายรูปนักเรียน</span>
+                    </a>
+                    <a href="/import_students" class="menu-item">
+                        <span class="menu-icon">📥</span>
+                        <span>นำเข้าข้อมูล</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-title">เช็คชื่อ</div>
+                    <a href="/gate_camera" class="menu-item">
+                        <span class="menu-icon">🚪</span>
+                        <span>กล้องประตู</span>
+                    </a>
+                    <a href="/camera_classroom" class="menu-item">
+                        <span class="menu-icon">🎥</span>
+                        <span>กล้องห้องเรียน</span>
+                    </a>
+                    <a href="/camera_behavior" class="menu-item">
+                        <span class="menu-icon">👁️</span>
+                        <span>ตรวจจับพฤติกรรม</span>
+                    </a>
+                    <a href="/checkin" class="menu-item">
+                        <span class="menu-icon">✅</span>
+                        <span>เช็คชื่อด้วยตนเอง</span>
+                    </a>
+                    <a href="/multi_camera" class="menu-item">
+                        <span class="menu-icon">📹</span>
+                        <span>กล้องหลายจุด</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-title">ดูแลนักเรียน</div>
+                    <a href="/mental_health" class="menu-item">
+                        <span class="menu-icon">💚</span>
+                        <span>สุขภาพจิต</span>
+                    </a>
+                    <a href="/learning_analytics" class="menu-item">
+                        <span class="menu-icon">📚</span>
+                        <span>วิเคราะห์การเรียน</span>
+                    </a>
+                    <a href="/anti_bullying" class="menu-item">
+                        <span class="menu-icon">🛡️</span>
+                        <span>ป้องกันการกลั่นแกล้ง</span>
+                    </a>
+                    <a href="/behavior_score" class="menu-item">
+                        <span class="menu-icon">🎓</span>
+                        <span>คะแนนความประพฤติ</span>
+                    </a>
+                    <a href="/emotion_detection" class="menu-item">
+                        <span class="menu-icon">😊</span>
+                        <span>ตรวจจับอารมณ์</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-title">รายงาน</div>
+                    <a href="/reports" class="menu-item">
+                        <span class="menu-icon">📈</span>
+                        <span>รายงานขั้นสูง</span>
+                    </a>
+                    <a href="/notification_system" class="menu-item">
+                        <span class="menu-icon">🔔</span>
+                        <span>การแจ้งเตือน</span>
+                    </a>
+                    <a href="/parent_dashboard" class="menu-item">
+                        <span class="menu-icon">👨👩👧</span>
+                        <span>Dashboard ผู้ปกครอง</span>
+                    </a>
+                </div>
+                
+                <div class="menu-section">
+                    <div class="menu-title">ตั้งค่า</div>
+                    <a href="/camera_management" class="menu-item">
+                        <span class="menu-icon">📹</span>
+                        <span>จัดการกล้อง</span>
+                    </a>
+                    <a href="/manage_users" class="menu-item">
+                        <span class="menu-icon">👥</span>
+                        <span>จัดการผู้ใช้</span>
+                    </a>
+                    <a href="/ai_face_recognition" class="menu-item">
+                        <span class="menu-icon">🤖</span>
+                        <span>AI Face Recognition</span>
+                    </a>
+                    <a href="/line_setup" class="menu-item">
+                        <span class="menu-icon">📱</span>
+                        <span>LINE OA</span>
+                    </a>
+                    <a href="/pwa_mobile" class="menu-item">
+                        <span class="menu-icon">📲</span>
+                        <span>PWA Mobile</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="topbar">
+                <div class="topbar-title">Dashboard</div>
+                <div class="topbar-user">
+                    <div class="user-info">
+                        <div class="user-name">{{ user_name }}</div>
+                        <div class="user-role">{{ role_name }}</div>
+                    </div>
+                    <a href="/logout"><button class="logout-btn">ออกจากระบบ</button></a>
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">👨🎓</div>
+                        </div>
+                        <div class="stat-value" id="totalStudents">{{ students|length }}</div>
+                        <div class="stat-label">นักเรียนทั้งหมด</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">✅</div>
+                        </div>
+                        <div class="stat-value" id="todayAttendance">-</div>
+                        <div class="stat-label">เข้าเรียนวันนี้</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">📊</div>
+                        </div>
+                        <div class="stat-value" id="attendanceRate">-</div>
+                        <div class="stat-label">เปอร์เซ็นต์เข้าเรียน</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon">⚠️</div>
+                        </div>
+                        <div class="stat-value" id="alerts">-</div>
+                        <div class="stat-label">การแจ้งเตือน</div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="section">
+                    <div class="section-title">🚀 เริ่มต้นใช้งาน</div>
+                    <div class="actions-grid">
+                        <a href="/register" class="action-card">
+                            <div class="action-icon">📝</div>
+                            <div class="action-title">จัดการนักเรียน</div>
+                        </a>
+                        <a href="/photo_capture" class="action-card">
+                            <div class="action-icon">📷</div>
+                            <div class="action-title">ถ่ายรูปนักเรียน</div>
+                        </a>
+                        <a href="/camera_classroom" class="action-card">
+                            <div class="action-icon">🎥</div>
+                            <div class="action-title">เปิดกล้องห้องเรียน</div>
+                        </a>
+                        <a href="/reports" class="action-card">
+                            <div class="action-icon">📊</div>
+                            <div class="action-title">ดูรายงาน</div>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="section">
+                    <div class="section-title">📋 กิจกรรมล่าสุด</div>
+                    <div id="recentActivity" style="color: #64748b;">กำลังโหลด...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/dashboard_stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalStudents').textContent = data.stats.total_students;
+                    document.getElementById('todayAttendance').textContent = data.stats.today_attendance;
+                    document.getElementById('attendanceRate').textContent = data.stats.attendance_rate + '%';
+                    document.getElementById('alerts').textContent = data.stats.behavior_alerts;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        loadStats();
+        setInterval(loadStats, 30000);
+    </script>
+</body>
+</html>

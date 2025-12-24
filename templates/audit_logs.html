@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs - Student Care</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .card { background: white; border-radius: 20px; padding: 40px; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
+        h1 { color: #333; margin-bottom: 20px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-box { background: #f8f9fa; padding: 20px; border-radius: 15px; text-align: center; }
+        .stat-box h3 { font-size: 32px; color: #667eea; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #667eea; color: white; }
+        .badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-success { background: #4CAF50; color: white; }
+        .badge-error { background: #f44336; color: white; }
+        select { padding: 10px; border: 2px solid #ddd; border-radius: 10px; margin-right: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>📋 Audit Logs</h1>
+            
+            <div class="stats" id="stats">
+                <div class="stat-box">
+                    <p>Total Logs</p>
+                    <h3 id="totalLogs">-</h3>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <select id="actionFilter" onchange="loadLogs()">
+                    <option value="">ทุกการกระทำ</option>
+                    <option value="login">Login</option>
+                    <option value="logout">Logout</option>
+                    <option value="create">Create</option>
+                    <option value="update">Update</option>
+                    <option value="delete">Delete</option>
+                </select>
+                
+                <select id="limitFilter" onchange="loadLogs()">
+                    <option value="50">50 รายการ</option>
+                    <option value="100" selected>100 รายการ</option>
+                    <option value="200">200 รายการ</option>
+                </select>
+            </div>
+            
+            <table id="logsTable">
+                <thead>
+                    <tr>
+                        <th>เวลา</th>
+                        <th>ผู้ใช้</th>
+                        <th>การกระทำ</th>
+                        <th>Resource</th>
+                        <th>IP Address</th>
+                        <th>สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="6" style="text-align: center;">กำลังโหลด...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/audit/stats?days=30');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalLogs').textContent = data.stats.total;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function loadLogs() {
+            try {
+                const action = document.getElementById('actionFilter').value;
+                const limit = document.getElementById('limitFilter').value;
+                
+                let url = `/api/audit/logs?limit=${limit}`;
+                if (action) url += `&action=${action}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const tbody = document.querySelector('#logsTable tbody');
+                    
+                    if (data.logs.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">ไม่มีข้อมูล</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.logs.map(log => `
+                            <tr>
+                                <td>${new Date(log.timestamp).toLocaleString('th-TH')}</td>
+                                <td>${log.username || '-'}</td>
+                                <td>${log.action}</td>
+                                <td>${log.resource || '-'}</td>
+                                <td>${log.ip_address || '-'}</td>
+                                <td><span class="badge badge-${log.status === 'success' ? 'success' : 'error'}">${log.status}</span></td>
+                            </tr>
+                        `).join('');
+                    }
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาด: ' + error.message);
+            }
+        }
+
+        loadStats();
+        loadLogs();
+    </script>
+</body>
+</html>
