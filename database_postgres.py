@@ -122,23 +122,38 @@ class DatabasePostgres:
         count = cursor.fetchone()['count']
         
         if count == 0:
+            # Super Admin
             cursor.execute('''
                 INSERT INTO users (username, password, name, role, school_id)
                 VALUES (%s, %s, %s, %s, %s)
-            ''', ('admin', 'admin123', 'Super Admin', 'super_admin', None))
+            ''', ('superadmin', 'admin123', 'Super Admin', 'super_admin', None))
             
+            # School
             cursor.execute('''
                 INSERT INTO schools (school_id, name, address)
                 VALUES (%s, %s, %s)
             ''', ('SCH001', 'โรงเรียนทดสอบ', 'กรุงเทพฯ'))
             
+            # Admin
             cursor.execute('''
                 INSERT INTO users (username, password, name, role, school_id)
                 VALUES (%s, %s, %s, %s, %s)
-            ''', ('school_admin', 'admin123', 'ผู้ดูแลโรงเรียน', 'admin', 'SCH001'))
+            ''', ('admin', 'admin123', 'Admin', 'admin', 'SCH001'))
+            
+            # Teacher
+            cursor.execute('''
+                INSERT INTO users (username, password, name, role, school_id)
+                VALUES (%s, %s, %s, %s, %s)
+            ''', ('teacher1', 'teacher123', 'Teacher 1', 'teacher', 'SCH001'))
+            
+            # Parent
+            cursor.execute('''
+                INSERT INTO users (username, password, name, role, school_id)
+                VALUES (%s, %s, %s, %s, %s)
+            ''', ('parent1', 'parent123', 'Parent 1', 'parent', 'SCH001'))
             
             conn.commit()
-            print("✅ สร้างผู้ใช้เริ่มต้น: admin/admin123, school_admin/admin123")
+            print("✅ สร้างผู้ใช้เริ่มต้น: superadmin/admin123, admin/admin123, teacher1/teacher123, parent1/parent123")
         
         conn.close()
     
