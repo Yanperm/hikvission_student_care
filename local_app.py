@@ -9,7 +9,17 @@ from datetime import datetime, timedelta
 load_dotenv()
 
 # Use SQLite by default, RDS only if explicitly enabled
-if os.environ.get('USE_RDS', 'false').lower() == 'true':
+db_type = os.environ.get('DB_TYPE', 'sqlite')
+
+if db_type == 'postgresql' or os.environ.get('USE_POSTGRES', 'false').lower() == 'true':
+    try:
+        from database_postgres import db
+        print("Using PostgreSQL Database")
+    except Exception as e:
+        print(f"PostgreSQL Connection Failed: {str(e)}")
+        print("Falling back to SQLite")
+        from database import db
+elif os.environ.get('USE_RDS', 'false').lower() == 'true':
     try:
         from database_rds import db
         print("Using RDS Database")
@@ -28,6 +38,10 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or os.urandom(24).hex()
+
+# Register Database Setup Blueprint
+from database_setup_api import db_setup_bp
+app.register_blueprint(db_setup_bp)
 
 # Initialize WebSocket
 from websocket_manager import init_socketio
