@@ -15,9 +15,10 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f23;
             min-height: 100vh;
+            color: #fff;
         }
 
         .container {
@@ -28,34 +29,61 @@
 
         .header {
             text-align: center;
-            color: white;
-            padding: 40px 20px;
+            padding: 80px 20px 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0 0 50px 50px;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
         }
 
         .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
+            font-size: 3.5em;
+            margin-bottom: 20px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 800;
+            letter-spacing: -1px;
         }
 
         .header p {
-            font-size: 1.3em;
+            font-size: 1.4em;
             opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header .badges {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
         }
 
         .workflow-section {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            margin: 30px 0;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            background: #1a1a2e;
+            border-radius: 30px;
+            padding: 50px 40px;
+            margin: 40px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .workflow-title {
             text-align: center;
-            font-size: 2em;
-            color: #667eea;
-            margin-bottom: 40px;
+            font-size: 2.2em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 50px;
+            font-weight: 800;
         }
 
         .workflow-steps {
@@ -67,16 +95,36 @@
 
         .step-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
-            padding: 30px;
+            border-radius: 20px;
+            padding: 35px;
             color: white;
             text-align: center;
-            transition: transform 0.3s;
+            transition: all 0.3s;
             cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .step-card:hover::before {
+            opacity: 1;
         }
 
         .step-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
         }
 
         .step-number {
@@ -112,17 +160,19 @@
         }
 
         .role-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 35px;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
             transition: all 0.3s;
+            border: 2px solid rgba(102, 126, 234, 0.2);
         }
 
         .role-card:hover {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+            transform: translateY(-8px);
+            border-color: #667eea;
         }
 
         .role-icon {
@@ -131,9 +181,13 @@
         }
 
         .role-title {
-            font-size: 1.5em;
-            color: #667eea;
+            font-size: 1.6em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 15px;
+            font-weight: 700;
         }
 
         .role-features {
@@ -142,8 +196,9 @@
         }
 
         .role-features li {
-            padding: 8px 0;
-            color: #555;
+            padding: 10px 0;
+            color: rgba(255,255,255,0.8);
+            font-size: 1.05em;
         }
 
         .cta-button {
@@ -173,10 +228,18 @@
         }
 
         .feature-item {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
+            background: #1a1a2e;
+            padding: 25px;
+            border-radius: 15px;
             text-align: center;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s;
+        }
+
+        .feature-item:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
         }
 
         .feature-icon {
@@ -185,8 +248,9 @@
         }
 
         .feature-name {
-            font-weight: bold;
-            color: #333;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+            font-size: 1.05em;
         }
 
         .demo-section {
@@ -239,6 +303,12 @@
         <div class="header">
             <h1>🎓 Student Care System</h1>
             <p>ระบบดูแลนักเรียนอัจฉริยะด้วย AI และ Face Recognition</p>
+            <div class="badges">
+                <span class="badge">✅ AI Face Recognition 99.6%</span>
+                <span class="badge">📊 21 ฟีเจอร์ครบครัน</span>
+                <span class="badge">☁️ Cloud Sync</span>
+                <span class="badge">📱 PWA Mobile</span>
+            </div>
         </div>
 
         <!-- Workflow Section -->
