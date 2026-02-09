@@ -128,9 +128,9 @@ class DatabasePostgres:
             ''', ('admin', 'admin123', 'Super Admin', 'super_admin', None))
             
             cursor.execute('''
-                INSERT INTO schools (school_id, name, address, phone)
-                VALUES (%s, %s, %s, %s)
-            ''', ('SCH001', 'โรงเรียนทดสอบ', 'กรุงเทพฯ', '02-xxx-xxxx'))
+                INSERT INTO schools (school_id, name, address)
+                VALUES (%s, %s, %s)
+            ''', ('SCH001', 'โรงเรียนทดสอบ', 'กรุงเทพฯ'))
             
             cursor.execute('''
                 INSERT INTO users (username, password, name, role, school_id)
