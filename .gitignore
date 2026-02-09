@@ -1,3 +1,13 @@
+# Environment
+.env
+*.pem
+*.key
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
 # Python
 __pycache__/
 *.py[cod]
@@ -6,40 +16,14 @@ __pycache__/
 .Python
 venv/
 env/
-ENV/
 
-# Database
-*.db
-*.sqlite3
-data/database.db
-
-# Student Images
-data/students/*.jpg
-data/students/*.png
+# Data
+data/
+backups/
 
 # Logs
 *.log
-student-care.log
-
-# Environment & Secrets (⚠️ NEVER COMMIT THESE!)
-.env
-.env.local
-.env.development
-.env.production
-.env.*.local
-*.pem
-*.ppk
-*.key
-firebase_credentials.json
-config.json
-
-# AWS Credentials
-.aws/
-credentials
-
-# Database Backups
-*.sql
-*.dump
+/tmp/
 
 # IDE
 .vscode/
@@ -50,6 +34,3 @@ credentials
 # OS
 .DS_Store
 Thumbs.db
-
-# Elastic Beanstalk
-.elasticbeanstalk/

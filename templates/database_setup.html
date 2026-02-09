@@ -39,7 +39,7 @@
         <div class="setup-card">
             <div class="header">
                 <h1>🗄️ ตั้งค่า Database</h1>
-                <p>เชื่อมต่อกับ MySQL หรือ AWS RDS</p>
+                <p>เชื่อมต่อกับ MySQL, PostgreSQL หรือ AWS RDS</p>
             </div>
 
             <div id="alert" class="alert"></div>
@@ -54,12 +54,12 @@
                 <div class="db-option" onclick="selectDbType('mysql')">
                     <div class="db-icon">🐬</div>
                     <strong>MySQL</strong>
-                    <p style="font-size: 0.9em; color: #666;">Local/Remote</p>
+                    <p style="font-size: 0.9em; color: #666;">Local/RDS</p>
                 </div>
-                <div class="db-option" onclick="selectDbType('rds')">
-                    <div class="db-icon">☁️</div>
-                    <strong>AWS RDS</strong>
-                    <p style="font-size: 0.9em; color: #666;">Cloud Database</p>
+                <div class="db-option" onclick="selectDbType('postgresql')">
+                    <div class="db-icon">🐘</div>
+                    <strong>PostgreSQL</strong>
+                    <p style="font-size: 0.9em; color: #666;">Local/RDS</p>
                 </div>
             </div>
 
@@ -72,7 +72,7 @@
                 </div>
             </div>
 
-            <!-- MySQL/RDS Form -->
+            <!-- MySQL/PostgreSQL Form -->
             <div id="mysql-form" style="display: none;">
                 <form id="dbForm">
                     <div class="form-group">
@@ -84,7 +84,7 @@
                     <div class="form-group">
                         <label>🔢 Port</label>
                         <input type="number" class="form-control" id="dbPort" value="3306" required>
-                        <div class="help-text">MySQL/RDS ใช้ port 3306 (default)</div>
+                        <div class="help-text" id="portHelp">MySQL ใช้ port 3306, PostgreSQL ใช้ 5432</div>
                     </div>
 
                     <div class="form-group">
@@ -139,17 +139,22 @@
                 document.getElementById('sqlite-info').style.display = 'none';
                 document.getElementById('mysql-form').style.display = 'block';
                 
-                // Pre-fill for RDS
-                if (type === 'rds') {
-                    document.getElementById('dbHost').placeholder = 'xxx.rds.amazonaws.com';
+                // Update port and placeholder
+                if (type === 'postgresql') {
+                    document.getElementById('dbPort').value = '5432';
+                    document.getElementById('dbHost').placeholder = 'localhost หรือ xxx.rds.amazonaws.com';
+                    document.getElementById('portHelp').textContent = 'PostgreSQL ใช้ port 5432 (default)';
                 } else {
-                    document.getElementById('dbHost').placeholder = 'localhost';
+                    document.getElementById('dbPort').value = '3306';
+                    document.getElementById('dbHost').placeholder = 'localhost หรือ xxx.rds.amazonaws.com';
+                    document.getElementById('portHelp').textContent = 'MySQL ใช้ port 3306 (default)';
                 }
             }
         }
 
         async function testConnection() {
             const config = {
+                type: selectedType,
                 host: document.getElementById('dbHost').value,
                 port: document.getElementById('dbPort').value,
                 database: document.getElementById('dbName').value,
