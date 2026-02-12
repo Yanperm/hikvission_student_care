@@ -33,6 +33,8 @@ class Database:
                 status TEXT DEFAULT 'active',
                 features TEXT,
                 reseller_id TEXT,
+                line_channel_token TEXT,
+                line_channel_secret TEXT,
                 created_at TEXT,
                 updated_at TEXT
             )

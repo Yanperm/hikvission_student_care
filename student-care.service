@@ -1,0 +1,15 @@
+[Unit]
+Description=Student Care System
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/hikvission_student_care
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+ExecStart=/usr/bin/python3 local_app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

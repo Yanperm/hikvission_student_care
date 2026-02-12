@@ -3,85 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>กล้องหน้าประตูโรงเรียน - Student Care</title>
+    <title>กล้องหน้าประตู - Student Care</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/notification.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Kanit', sans-serif; background: #1a1a2e; color: white; }
-        .navbar { background: rgba(255,255,255,0.95); padding: 15px 0; }
-        .navbar .nav-container { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; padding: 0 20px; }
-        .logo { font-size: 24px; font-weight: 700; color: #667eea; }
-        .nav-links { display: flex; gap: 20px; }
-        .nav-links a { text-decoration: none; color: #333; font-weight: 500; padding: 8px 16px; border-radius: 8px; transition: all 0.3s; }
-        .nav-links a:hover { background: #667eea; color: white; }
-        .container { max-width: 1400px; margin: 20px auto; padding: 20px; }
-        .header { text-align: center; padding: 30px; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); border-radius: 20px; margin-bottom: 30px; }
-        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .card { background: #16213e; border-radius: 20px; padding: 30px; }
-        #video { width: 100%; border-radius: 15px; background: #000; }
-        .status { padding: 20px; border-radius: 10px; margin: 15px 0; text-align: center; font-weight: 600; font-size: 18px; }
-        .status.scanning { background: #2196F3; }
-        .status.checkin { background: #4CAF50; animation: pulse 1s; }
-        .status.checkout { background: #FF9800; animation: pulse 1s; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-        .log-list { max-height: 600px; overflow-y: auto; }
-        .log-item { background: #0f3460; padding: 20px; margin: 15px 0; border-radius: 10px; }
-        .log-item.checkin { border-left: 5px solid #4CAF50; }
-        .log-item.checkout { border-left: 5px solid #FF9800; }
-        .btn { background: #2196F3; color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; margin: 5px; }
-        .btn:hover { background: #1976D2; transform: scale(1.05); }
-        .btn-stop { background: #f44336; }
-        .btn-checkin { background: #4CAF50; }
-        .btn-checkout { background: #FF9800; }
-        .mode-selector { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; 
+            background: #f5f5f7;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .sidebar { 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            width: 240px; 
+            height: 100vh; 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            border-right: 1px solid rgba(0,0,0,0.08);
+            z-index: 1000;
+        }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+        .sidebar-header h2 { font-size: 18px; font-weight: 600; color: #1d1d1f; }
+        .menu { padding: 12px 8px; }
+        .menu-item { 
+            padding: 8px 12px; 
+            margin: 2px 0;
+            cursor: pointer; 
+            transition: all 0.2s;
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            color: #1d1d1f; 
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .menu-item:hover { background: rgba(0,0,0,0.04); }
+        .menu-item.active { background: #007aff; color: white; }
+        
+        .main-content { margin-left: 240px; padding: 24px; }
+        .top-bar { 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            padding: 16px 24px; 
+            border-radius: 16px; 
+            margin-bottom: 24px; 
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .top-bar h1 { font-size: 24px; font-weight: 600; color: #1d1d1f; }
+        
+        .card { 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 16px; 
+            padding: 24px; 
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        
+        #video { width: 100%; border-radius: 12px; background: #000; position: relative; }
+        #overlay { position: absolute; top: 0; left: 0; pointer-events: none; }
+        .video-container { position: relative; display: inline-block; width: 100%; }
+        
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.2s;
+            font-size: 13px;
+            margin: 4px;
+        }
+        .btn-primary { background: #007aff; color: white; }
+        .btn-success { background: #34c759; color: white; }
+        .btn-danger { background: #ff3b30; color: white; }
+        
+        .status { 
+            padding: 16px; 
+            border-radius: 10px; 
+            margin: 12px 0; 
+            text-align: center; 
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .status.scanning { background: rgba(0,122,255,0.1); color: #007aff; }
+        .status.success { background: rgba(52,199,89,0.1); color: #34c759; }
+        
+        .log-item { 
+            background: rgba(0,0,0,0.02); 
+            padding: 16px; 
+            margin: 8px 0; 
+            border-radius: 10px;
+            font-size: 13px;
+        }
+        
+        .logout-btn { 
+            background: rgba(0,0,0,0.04); 
+            color: #1d1d1f; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            margin: 12px 8px; 
+            text-align: center; 
+            cursor: pointer;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">🎓 Student Care</div>
-            <div class="nav-links">
-                <a href="/">🏠 หน้าหลัก</a>
-                <a href="/camera_classroom">📚 กล้องในห้องเรียน</a>
-                <a href="/camera_gate">🚪 กล้องหน้าประตู</a>
-                <a href="/admin">👨💼 Admin</a>
-            </div>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🎓 Student Care</h2>
         </div>
-    </nav>
+        <div class="menu">
+            <a href="/admin" class="menu-item"><span>📊</span> ภาพรวม</a>
+            <a href="/admin" class="menu-item"><span>👥</span> จัดการนักเรียน</a>
+            <a href="/import_students" class="menu-item"><span>📥</span> นำเข้าข้อมูล</a>
+            <a href="/admin" class="menu-item"><span>✅</span> การเข้าเรียน</a>
+            <a href="/camera_gate" class="menu-item active"><span>🚪</span> กล้องหน้าประตู</a>
+            <a href="/line_setup" class="menu-item"><span>💚</span> ตั้งค่า LINE OA</a>
+            <a href="/admin" class="menu-item"><span>📈</span> รายงาน</a>
+        </div>
+        <div class="logout-btn" onclick="location.href='/admin'">← กลับ</div>
+    </div>
 
-    <div class="container">
-        <div class="header">
+    <div class="main-content">
+        <div class="top-bar">
             <h1>🚪 กล้องหน้าประตูโรงเรียน</h1>
-            <p>ระบบจะแจ้งเตือนผู้ปกครอง เมื่อบุตรเข้า-ออกโรงเรียน</p>
         </div>
 
-        <div class="main-grid">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 16px;">
             <div class="card">
-                <h2>📹 กล้องหน้าประตู</h2>
+                <h2 style="margin-bottom: 16px; font-size: 18px;">📹 กล้อง</h2>
                 <div id="status" class="status scanning">🔍 กำลังสแกนใบหน้า...</div>
                 
-                <div class="mode-selector">
-                    <button class="btn btn-checkin" onclick="setMode('checkin')">🟢 โหมดเข้าโรงเรียน</button>
-                    <button class="btn btn-checkout" onclick="setMode('checkout')">🟠 โหมดออกจากโรงเรียน</button>
+                <div style="text-align: center; margin: 12px 0;">
+                    <button class="btn btn-success" onclick="setMode('checkin')">🟢 เข้าโรงเรียน</button>
+                    <button class="btn btn-danger" onclick="setMode('checkout')">🟠 ออกจากโรงเรียน</button>
                 </div>
                 
-                <video id="video" autoplay></video>
+                <div class="video-container">
+                    <video id="video" autoplay></video>
+                    <canvas id="overlay"></canvas>
+                </div>
                 <canvas id="canvas" style="display: none;"></canvas>
                 
-                <div style="text-align: center; margin-top: 20px;">
-                    <button class="btn" onclick="startCamera()">▶️ เริ่มกล้อง</button>
-                    <button class="btn btn-stop" onclick="stopCamera()">⏹️ หยุดกล้อง</button>
+                <div style="text-align: center; margin-top: 16px;">
+                    <button class="btn btn-primary" onclick="startCamera()">▶️ เริ่ม</button>
+                    <button class="btn btn-danger" onclick="stopCamera()">⏹️ หยุด</button>
                 </div>
                 
-                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; text-align: center;">
-                    <strong>โหมดปัจจุบัน: <span id="currentMode">เข้าโรงเรียน</span></strong>
+                <div style="margin-top: 16px; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 10px; text-align: center;">
+                    <strong>โหมด: <span id="currentMode">เข้าโรงเรียน</span></strong>
                 </div>
             </div>
 
             <div class="card">
-                <h2>📋 บันทึกเข้า-ออก (<span id="count">0</span> รายการ)</h2>
-                <div id="logList" class="log-list"></div>
+                <h2 style="margin-bottom: 16px; font-size: 18px;">📋 บันทึก (<span id="count">0</span>)</h2>
+                <div id="logList" style="max-height: 600px; overflow-y: auto;"></div>
             </div>
         </div>
     </div>
@@ -90,28 +173,36 @@
     <script>
         let video = document.getElementById('video');
         let canvas = document.getElementById('canvas');
+        let overlay = document.getElementById('overlay');
         let stream = null;
         let isScanning = false;
         let checkedToday = new Set();
-        let currentMode = 'checkin'; // checkin or checkout
+        let currentMode = 'checkin';
         let logCount = 0;
 
         function setMode(mode) {
             currentMode = mode;
-            const modeText = mode === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
-            document.getElementById('currentMode').textContent = modeText;
-            showToast('เปลี่ยนเป็นโหมด' + modeText, 'info');
+            document.getElementById('currentMode').textContent = mode === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
+            showToast('เปลี่ยนโหมดแล้ว', 'info');
         }
 
         async function startCamera() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
+                
+                video.onloadedmetadata = () => {
+                    overlay.width = video.videoWidth;
+                    overlay.height = video.videoHeight;
+                    overlay.style.width = video.offsetWidth + 'px';
+                    overlay.style.height = video.offsetHeight + 'px';
+                };
+                
                 isScanning = true;
                 scanFaces();
-                updateStatus('กำลังสแกนใบหน้า...', 'scanning');
+                updateStatus('กำลังสแกน...', 'scanning');
             } catch (err) {
-                showToast('ไม่สามารถเปิดกล้องได้: ' + err, 'error');
+                showToast('ไม่สามารถเปิดกล้อง: ' + err, 'error');
             }
         }
 
@@ -120,7 +211,6 @@
                 stream.getTracks().forEach(track => track.stop());
                 video.srcObject = null;
                 isScanning = false;
-                updateStatus('หยุดการสแกน', 'scanning');
             }
         }
 
@@ -131,24 +221,43 @@
             canvas.height = video.videoHeight;
             canvas.getContext('2d').drawImage(video, 0, 0);
             
-            const imageData = canvas.toDataURL('image/jpeg', 0.8);
+            const imageData = canvas.toDataURL('image/jpeg', 0.95);
             
             try {
-                const response = await fetch('/recognize_face', {
+                console.log('Scanning face...');
+                const res = await fetch('/api/face/recognize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ image: imageData, camera_type: 'gate' })
                 });
 
-                const result = await response.json();
+                const result = await res.json();
+                console.log('Recognition result:', result);
+
+                // Draw face box
+                const ctx = overlay.getContext('2d');
+                ctx.clearRect(0, 0, overlay.width, overlay.height);
+                
+                if (result.face_location) {
+                    const [top, right, bottom, left] = result.face_location;
+                    const scaleX = overlay.width / canvas.width;
+                    const scaleY = overlay.height / canvas.height;
+                    
+                    ctx.strokeStyle = result.success ? '#34c759' : '#007aff';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(left * scaleX, top * scaleY, (right - left) * scaleX, (bottom - top) * scaleY);
+                    
+                    if (result.student_name) {
+                        ctx.fillStyle = result.success ? '#34c759' : '#007aff';
+                        ctx.font = 'bold 16px Kanit';
+                        ctx.fillText(result.student_name, left * scaleX, top * scaleY - 10);
+                    }
+                }
 
                 if (result.success && result.student_id) {
                     const key = result.student_id + '_' + currentMode;
                     if (!checkedToday.has(key)) {
-                        await processGateEntry(result.student_id, result.student_name, result.class_name);
-                    } else {
-                        const modeText = currentMode === 'checkin' ? 'เข้า' : 'ออก';
-                        showToast(result.student_name + ' บันทึก' + modeText + 'แล้ววันนี้', 'info');
+                        await processEntry(result.student_id, result.student_name);
                     }
                 }
             } catch (error) {
@@ -158,11 +267,10 @@
             setTimeout(scanFaces, 2000);
         }
 
-        async function processGateEntry(studentId, studentName, className) {
+        async function processEntry(studentId, studentName) {
             const key = studentId + '_' + currentMode;
             checkedToday.add(key);
             
-            // บันทึกลง database
             await fetch('/api/gate_entry', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -173,32 +281,24 @@
                 })
             });
             
-            // แสดงผล
-            const modeText = currentMode === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
-            const icon = currentMode === 'checkin' ? '🟢' : '🟠';
+            const text = currentMode === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
+            addLog(studentId, studentName, currentMode);
+            updateStatus('✅ ' + studentName + ' ' + text, 'success');
+            showToast(studentName + ' ' + text + ' - แจ้งผู้ปกครองแล้ว', 'success');
             
-            addLogItem(studentId, studentName, className, currentMode);
-            updateStatus(icon + ' ' + studentName + ' ' + modeText + ' สำเร็จ!', currentMode);
-            showToast(studentName + ' ' + modeText + ' - แจ้งเตือนผู้ปกครองแล้ว', 'success');
-            
-            setTimeout(() => updateStatus('กำลังสแกนใบหน้า...', 'scanning'), 3000);
+            setTimeout(() => updateStatus('กำลังสแกน...', 'scanning'), 3000);
         }
 
-        function addLogItem(studentId, studentName, className, type) {
+        function addLog(studentId, studentName, type) {
             const list = document.getElementById('logList');
             const time = new Date().toLocaleTimeString('th-TH');
             const item = document.createElement('div');
-            item.className = 'log-item ' + type;
+            item.className = 'log-item';
             
             const icon = type === 'checkin' ? '🟢' : '🟠';
-            const text = type === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
+            const text = type === 'checkin' ? 'เข้า' : 'ออก';
             
-            item.innerHTML = `
-                ${icon} <strong>${studentName}</strong><br>
-                <small>รหัส: ${studentId} | ห้อง: ${className || '-'}<br>
-                ${text} เวลา: ${time}<br>
-                ✅ แจ้งเตือนผู้ปกครองแล้ว</small>
-            `;
+            item.innerHTML = `${icon} <strong>${studentName}</strong><br><small>${studentId} | ${text} ${time}</small>`;
             list.insertBefore(item, list.firstChild);
             logCount++;
             document.getElementById('count').textContent = logCount;
@@ -210,29 +310,6 @@
             status.className = 'status ' + type;
         }
 
-        async function loadTodayLogs() {
-            try {
-                const response = await fetch('/api/gate_logs');
-                const data = await response.json();
-                if (data.success) {
-                    const today = new Date().toISOString().split('T')[0];
-                    const todayLogs = data.logs.filter(log => {
-                        const logDate = new Date(log.timestamp).toISOString().split('T')[0];
-                        return logDate === today;
-                    });
-                    
-                    todayLogs.reverse().forEach(log => {
-                        const key = log.student_id + '_' + log.type;
-                        checkedToday.add(key);
-                        addLogItem(log.student_id, log.student_name, '', log.type);
-                    });
-                }
-            } catch (error) {
-                console.error('Load logs error:', error);
-            }
-        }
-
-        loadTodayLogs();
         startCamera();
     </script>
 </body>

@@ -2,556 +2,222 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Student Care System - ระบบดูแลนักเรียนอัจฉริยะ</title>
-    <link rel="stylesheet" href="/static/responsive.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Care System</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: #f5f5f7;
+            -webkit-font-smoothing: antialiased;
         }
-
-        body {
-            font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #0f0f23;
-            min-height: 100vh;
-            color: #fff;
+        
+        /* Navbar */
+        .navbar {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-
-        .container {
+        .nav-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            padding: 80px 20px 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 0 0 50px 50px;
-            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
-        }
-
-        .header h1 {
-            font-size: 3.5em;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-            font-weight: 800;
-            letter-spacing: -1px;
-        }
-
-        .header p {
-            font-size: 1.4em;
-            opacity: 0.95;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .header .badges {
+            padding: 0 24px;
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1d1d1f;
+            letter-spacing: -0.4px;
+        }
+        .nav-btn {
+            background: #007aff;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            background: #0051d5;
+            transform: scale(1.02);
+        }
+        
+        /* Hero Section */
+        .hero {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 24px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 700;
+            color: #1d1d1f;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+            line-height: 1.1;
+        }
+        .hero p {
+            font-size: 24px;
+            color: #86868b;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+        .cta-buttons {
+            display: flex;
+            gap: 16px;
             justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
             flex-wrap: wrap;
         }
-
-        .badge {
-            background: rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9em;
-            backdrop-filter: blur(10px);
-        }
-
-        .workflow-section {
-            background: #1a1a2e;
-            border-radius: 30px;
-            padding: 50px 40px;
-            margin: 40px 0;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .workflow-title {
-            text-align: center;
-            font-size: 2.2em;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 50px;
-            font-weight: 800;
-        }
-
-        .workflow-steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-
-        .step-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            padding: 35px;
+        .btn-primary {
+            background: #007aff;
             color: white;
-            text-align: center;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .step-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .step-card:hover::before {
-            opacity: 1;
-        }
-
-        .step-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
-        }
-
-        .step-number {
-            width: 60px;
-            height: 60px;
-            background: white;
-            color: #667eea;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            font-weight: bold;
-            margin: 0 auto 20px;
-        }
-
-        .step-title {
-            font-size: 1.5em;
-            margin-bottom: 15px;
-        }
-
-        .step-desc {
-            font-size: 1em;
-            opacity: 0.9;
-            line-height: 1.6;
-        }
-
-        .role-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
-        }
-
-        .role-card {
-            background: #1a1a2e;
-            border-radius: 20px;
-            padding: 35px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            transition: all 0.3s;
-            border: 2px solid rgba(102, 126, 234, 0.2);
-        }
-
-        .role-card:hover {
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
-            transform: translateY(-8px);
-            border-color: #667eea;
-        }
-
-        .role-icon {
-            font-size: 4em;
-            margin-bottom: 15px;
-        }
-
-        .role-title {
-            font-size: 1.6em;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .role-features {
-            text-align: left;
-            margin: 20px 0;
-        }
-
-        .role-features li {
-            padding: 10px 0;
-            color: rgba(255,255,255,0.8);
-            font-size: 1.05em;
-        }
-
-        .cta-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s;
+            padding: 14px 32px;
+            border-radius: 12px;
             text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
             display: inline-block;
-            margin-top: 15px;
         }
-
-        .cta-button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        .btn-primary:hover {
+            background: #0051d5;
+            transform: scale(1.02);
         }
-
+        .btn-secondary {
+            background: rgba(0,0,0,0.04);
+            color: #1d1d1f;
+            padding: 14px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+        .btn-secondary:hover {
+            background: rgba(0,0,0,0.08);
+        }
+        
+        /* Features */
+        .features {
+            max-width: 1200px;
+            margin: 80px auto;
+            padding: 0 24px;
+        }
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            margin: 30px 0;
         }
-
-        .feature-item {
-            background: #1a1a2e;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            border: 2px solid rgba(102, 126, 234, 0.2);
-            transition: all 0.3s;
-        }
-
-        .feature-item:hover {
-            border-color: #667eea;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
-        }
-
-        .feature-icon {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-        }
-
-        .feature-name {
-            font-weight: 600;
-            color: rgba(255,255,255,0.9);
-            font-size: 1.05em;
-        }
-
-        .demo-section {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            color: white;
-            padding: 40px;
+        .feature-card {
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            padding: 32px;
             border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: all 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 8px;
+            letter-spacing: -0.4px;
+        }
+        .feature-card p {
+            font-size: 14px;
+            color: #86868b;
+            line-height: 1.5;
+        }
+        
+        /* Footer */
+        .footer {
             text-align: center;
-            margin: 30px 0;
-        }
-
-        .demo-section h2 {
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-
-        .demo-accounts {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .demo-account {
-            background: rgba(255,255,255,0.2);
-            padding: 20px;
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
-        }
-
-        .demo-account strong {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 1.2em;
-        }
-
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .workflow-steps {
-                grid-template-columns: 1fr;
-            }
+            padding: 40px 24px;
+            color: #86868b;
+            font-size: 13px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎓 Student Care System</h1>
-            <p>ระบบดูแลนักเรียนอัจฉริยะด้วย AI และ Face Recognition</p>
-            <div class="badges">
-                <span class="badge">✅ AI Face Recognition 99.6%</span>
-                <span class="badge">📊 21 ฟีเจอร์ครบครัน</span>
-                <span class="badge">☁️ Cloud Sync</span>
-                <span class="badge">📱 PWA Mobile</span>
-            </div>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">🎓 Student Care System</div>
+            <a href="/login" class="nav-btn">เข้าสู่ระบบ</a>
         </div>
+    </nav>
 
-        <!-- Workflow Section -->
-        <div class="workflow-section">
-            <h2 class="workflow-title">📋 โฟลว์การทำงานของระบบ</h2>
+    <section class="hero">
+        <h1>ระบบดูแลนักเรียน<br>อัจฉริยะ</h1>
+        <p>ด้วย AI Face Recognition และ LINE Notification</p>
+        <div class="cta-buttons">
+            <a href="/login" class="btn-primary">เริ่มใช้งาน</a>
+            <a href="/student_photo" class="btn-secondary">📸 ถ่ายรูปนักเรียน</a>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">👥</div>
+                <h3>จัดการนักเรียน</h3>
+                <p>เพิ่ม แก้ไข ลบข้อมูลนักเรียน พร้อมรูปภาพ</p>
+            </div>
             
-            <div class="workflow-steps">
-                <div class="step-card" onclick="window.location.href='/register'">
-                    <div class="step-number">1</div>
-                    <div class="step-title">📸 ลงทะเบียน</div>
-                    <div class="step-desc">
-                        ถ่ายรูปและบันทึกข้อมูลนักเรียน<br>
-                        ระบบจะเรียนรู้ใบหน้าด้วย AI
-                    </div>
-                </div>
-
-                <div class="step-card" onclick="window.location.href='/camera_management'">
-                    <div class="step-number">2</div>
-                    <div class="step-title">🎥 ติดตั้งกล้อง</div>
-                    <div class="step-desc">
-                        ติดตั้งกล้องที่ประตู ห้องเรียน<br>
-                        ระบบจะตรวจจับใบหน้าอัตโนมัติ
-                    </div>
-                </div>
-
-                <div class="step-card" onclick="window.location.href='/gate_camera'">
-                    <div class="step-number">3</div>
-                    <div class="step-title">🚪 กล้องประตูโรงเรียน</div>
-                    <div class="step-desc">
-                        บันทึกเวลาเข้า-ออกโรงเรียน<br>
-                        แจ้งเตือนผู้ปกครองอัตโนมัติ
-                    </div>
-                </div>
-
-                <div class="step-card" onclick="window.location.href='/camera_classroom'">
-                    <div class="step-number">4</div>
-                    <div class="step-title">✅ เช็คชื่ออัตโนมัติ</div>
-                    <div class="step-desc">
-                        เมื่อนักเรียนเข้าห้องเรียน<br>
-                        ระบบเช็คชื่อและแจ้งเตือน
-                    </div>
-                </div>
-
-                <div class="step-card" onclick="window.location.href='/camera_behavior'">
-                    <div class="step-number">5</div>
-                    <div class="step-title">👁️ ตรวจจับพฤติกรรม</div>
-                    <div class="step-desc">
-                        AI วิเคราะห์อารมณ์และพฤติกรรม<br>
-                        แจ้งเตือนเมื่อพบความผิดปกติ
-                    </div>
-                </div>
-
-                <div class="step-card" onclick="window.location.href='/reports'">
-                    <div class="step-number">6</div>
-                    <div class="step-title">📊 รายงานและวิเคราะห์</div>
-                    <div class="step-desc">
-                        ดูรายงานการเข้าเรียน พฤติกรรม<br>
-                        AI ทำนายผลการเรียน
-                    </div>
-                </div>
-
-                <div class="step-card" onclick="window.location.href='/mental_health'">
-                    <div class="step-number">7</div>
-                    <div class="step-title">💚 ดูแลสุขภาพจิต</div>
-                    <div class="step-desc">
-                        ระบบแนะนำนักเรียนที่ต้องดูแล<br>
-                        ติดต่อผู้ปกครอง/นักจิตวิทยา
-                    </div>
-                </div>
+            <div class="feature-card">
+                <div class="feature-icon">📥</div>
+                <h3>นำเข้าข้อมูล</h3>
+                <p>นำเข้าข้อมูลจาก Excel/CSV ได้ทันที</p>
             </div>
-        </div>
-
-        <!-- Role Section -->
-        <div class="workflow-section">
-            <h2 class="workflow-title">👥 ระบบรองรับผู้ใช้งาน 4 ระดับ</h2>
             
-            <div class="role-section">
-                <div class="role-card">
-                    <div class="role-icon">👨‍💼</div>
-                    <div class="role-title">ผู้ดูแลระบบ</div>
-                    <ul class="role-features">
-                        <li>✅ จัดการหลายโรงเรียน</li>
-                        <li>✅ ดูสถิติทั้งระบบ</li>
-                        <li>✅ จัดการผู้ใช้งาน</li>
-                        <li>✅ ตั้งค่าระบบ</li>
-                    </ul>
-                    <a href="/login" class="cta-button">เข้าสู่ระบบ</a>
-                </div>
-
-                <div class="role-card">
-                    <div class="role-icon">🏫</div>
-                    <div class="role-title">ผู้ดูแลโรงเรียน</div>
-                    <ul class="role-features">
-                        <li>✅ ลงทะเบียนนักเรียน</li>
-                        <li>✅ ดู Dashboard โรงเรียน</li>
-                        <li>✅ จัดการครูและห้องเรียน</li>
-                        <li>✅ ดูรายงานทั้งหมด</li>
-                    </ul>
-                    <a href="/login" class="cta-button">เข้าสู่ระบบ</a>
-                </div>
-
-                <div class="role-card">
-                    <div class="role-icon">👨‍🏫</div>
-                    <div class="role-title">ครู</div>
-                    <ul class="role-features">
-                        <li>✅ เช็คชื่อนักเรียน</li>
-                        <li>✅ บันทึกพฤติกรรม</li>
-                        <li>✅ ดูรายงานห้องเรียน</li>
-                        <li>✅ ติดต่อผู้ปกครอง</li>
-                    </ul>
-                    <a href="/login" class="cta-button">เข้าสู่ระบบ</a>
-                </div>
-
-                <div class="role-card">
-                    <div class="role-icon">👨‍👩‍👧</div>
-                    <div class="role-title">ผู้ปกครอง</div>
-                    <ul class="role-features">
-                        <li>✅ ดูการเข้าเรียนบุตร</li>
-                        <li>✅ รับแจ้งเตือน LINE</li>
-                        <li>✅ ดูพฤติกรรมและคะแนน</li>
-                        <li>✅ ติดต่อครู</li>
-                    </ul>
-                    <a href="/login" class="cta-button">เข้าสู่ระบบ</a>
-                </div>
+            <div class="feature-card">
+                <div class="feature-icon">✅</div>
+                <h3>เช็คชื่ออัตโนมัติ</h3>
+                <p>ด้วย AI Face Recognition แม่นยำสูง</p>
             </div>
-        </div>
-
-        <!-- Features Grid -->
-        <div class="workflow-section">
-            <h2 class="workflow-title">✨ ฟีเจอร์ทั้งหมด 21 ฟีเจอร์</h2>
             
-            <div class="features-grid">
-                <div class="feature-item">
-                    <div class="feature-icon">📸</div>
-                    <div class="feature-name">ลงทะเบียนนักเรียน</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">🎥</div>
-                    <div class="feature-name">กล้องหลายจุด</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">✅</div>
-                    <div class="feature-name">เช็คชื่ออัตโนมัติ</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">👁️</div>
-                    <div class="feature-name">ตรวจจับพฤติกรรม</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">😊</div>
-                    <div class="feature-name">ตรวจจับอารมณ์</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">💚</div>
-                    <div class="feature-name">ดูแลสุขภาพจิต</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">📚</div>
-                    <div class="feature-name">วิเคราะห์การเรียน</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">🛡️</div>
-                    <div class="feature-name">ป้องกันการกลั่นแกล้ง</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">📊</div>
-                    <div class="feature-name">รายงานขั้นสูง</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">🔔</div>
-                    <div class="feature-name">แจ้งเตือน Real-time</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">📧</div>
-                    <div class="feature-name">แจ้งผู้ปกครอง</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">📱</div>
-                    <div class="feature-name">LINE OA</div>
-                </div>
+            <div class="feature-card">
+                <div class="feature-icon">🚪</div>
+                <h3>กล้องหน้าประตู</h3>
+                <p>ตรวจจับนักเรียนเข้า-ออกโรงเรียน</p>
             </div>
-        </div>
-
-        <!-- Self Registration Section -->
-        <div class="workflow-section" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-            <h2 class="workflow-title" style="color: white;">📸 ถ่ายรูปนักเรียน</h2>
-            <div style="text-align: center; padding: 20px;">
-                <div style="font-size: 4em; margin-bottom: 20px;">🔍</div>
-                <h3 style="font-size: 1.8em; margin-bottom: 15px;">กรอกรหัสนักเรียนเพื่อค้นหาข้อมูล</h3>
-                <p style="font-size: 1.2em; margin-bottom: 30px; opacity: 0.95;">
-                    ค้นหาข้อมูลนักเรียนด้วยรหัส แล้วถ่ายรูปเพื่ออัพเดทข้อมูล<br>
-                    รวดเร็ว ง่าย และปลอดภัย
-                </p>
-                <a href="/photo_capture" class="cta-button" style="background: white; color: #f5576c; display: inline-block; max-width: 300px;">
-                    📸 เริ่มถ่ายรูปเลย →
-                </a>
-                <div style="margin-top: 20px; font-size: 0.9em; opacity: 0.9;">
-                    ✅ ค้นหาด้วยรหัส | ✅ ถ่ายรูปทันที | ✅ อัพเดทอัตโนมัติ
-                </div>
-            </div>
-        </div>
-
-        <!-- Demo Section -->
-        <div class="demo-section">
-            <h2>🚀 ทดลองใช้งานทันที</h2>
-            <p style="font-size: 1.2em; margin-bottom: 20px;">ใช้บัญชีทดสอบด้านล่างเพื่อเข้าสู่ระบบ</p>
             
-            <div class="demo-accounts">
-                <div class="demo-account">
-                    <strong>👨‍💼 Super Admin</strong>
-                    <div>Username: superadmin</div>
-                    <div>Password: admin123</div>
-                </div>
-                <div class="demo-account">
-                    <strong>🏫 Admin</strong>
-                    <div>Username: admin</div>
-                    <div>Password: admin123</div>
-                </div>
-                <div class="demo-account">
-                    <strong>👨‍🏫 Teacher</strong>
-                    <div>Username: teacher1</div>
-                    <div>Password: teacher123</div>
-                </div>
-                <div class="demo-account">
-                    <strong>👨‍👩‍👧 Parent</strong>
-                    <div>Username: parent1</div>
-                    <div>Password: parent123</div>
-                </div>
+            <div class="feature-card">
+                <div class="feature-icon">💚</div>
+                <h3>แจ้งเตือน LINE</h3>
+                <p>ส่งการแจ้งเตือนถึงผู้ปกครองทันที</p>
             </div>
-
-            <a href="/login" class="cta-button" style="background: white; color: #f5576c; margin-top: 30px;">
-                เข้าสู่ระบบทันที →
-            </a>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>รายงานสรุป</h3>
+                <p>ส่งออกรายงาน PDF/Excel ได้ง่าย</p>
+            </div>
         </div>
+    </section>
 
-        <!-- Footer -->
-        <div style="text-align: center; color: white; padding: 40px 0;">
-            <p style="font-size: 1.1em;">© 2025 SOFTUBON CO.,LTD. - Student Care System</p>
-            <p style="opacity: 0.8; margin-top: 10px;">ระบบดูแลนักเรียนอัจฉริยะด้วย AI</p>
-        </div>
-    </div>
+    <footer class="footer">
+        <p>© 2025 SOFTUBON CO.,LTD. All rights reserved.</p>
+    </footer>
 </body>
 </html>

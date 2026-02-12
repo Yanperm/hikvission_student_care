@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่า LINE Notify</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/notification.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #06C755 0%, #00B900 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 20px; }
+        h1 { color: #06C755; margin-bottom: 10px; }
+        .step { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #06C755; }
+        .step h3 { color: #333; margin-bottom: 10px; }
+        .form-group { margin: 20px 0; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Kanit', sans-serif; }
+        input:focus, select:focus { outline: none; border-color: #06C755; }
+        .btn { background: #06C755; color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-weight: 600; width: 100%; font-size: 16px; transition: all 0.3s; }
+        .btn:hover { background: #00B900; transform: translateY(-2px); }
+        .line-logo { text-align: center; font-size: 48px; margin-bottom: 20px; }
+        a { color: #06C755; text-decoration: none; font-weight: 600; }
+        a:hover { text-decoration: underline; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 4px; color: #e91e63; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="line-logo">💚</div>
+            <h1 style="text-align: center;">ตั้งค่า LINE Official Account</h1>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">รับการแจ้งเตือนเมื่อบุตรเข้า-ออกโรงเรียน</p>
+            
+            <div class="step">
+                <h3>📱 ขั้นตอนการเชื่อมต่อ</h3>
+                <ol style="margin-left: 20px; color: #666;">
+                    <li>เลือกบุตรของท่าน</li>
+                    <li>สแกน QR Code ด้วยแอพ LINE</li>
+                    <li>ส่งรหัสนักเรียนในแชท LINE OA</li>
+                    <li>เสร็จสิ้น! รับการแจ้งเตือนอัตโนมัติ</li>
+                </ol>
+            </div>
+            
+            <div class="step">
+                <h3>✏️ เลือกบุตร</h3>
+                <form id="lineForm" onsubmit="generateQR(event)">
+                    <div class="form-group">
+                        <label>เลือกบุตร:</label>
+                        <select id="studentId" required>
+                            <option value="">-- เลือกนักเรียน --</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn">📱 สร้าง QR Code</button>
+                </form>
+                
+                <div id="qrSection" style="display: none; text-align: center; margin-top: 30px;">
+                    <h3 style="color: #06C755; margin-bottom: 15px;">📱 สแกน QR Code นี้ด้วย LINE</h3>
+                    <div id="qrCode" style="background: white; padding: 20px; border-radius: 10px; display: inline-block;"></div>
+                    <p style="margin-top: 15px; color: #666; font-size: 14px;">
+                        หลังสแกนแล้ว ให้ส่งข้อความ: <code id="studentCode"></code><br>
+                        ในแชท LINE OA เพื่อเชื่อมต่อ
+                    </p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>✅ เสร็จแล้ว!</h3>
+                <p style="color: #666;">ท่านจะได้รับการแจ้งเตือนทาง LINE เมื่อ:</p>
+                <ul style="margin-left: 20px; color: #666; margin-top: 10px;">
+                    <li>🟢 บุตรเข้าโรงเรียน</li>
+                    <li>🟠 บุตรออกจากโรงเรียน</li>
+                    <li>⚠️ บุตรขาดเรียน</li>
+                    <li>📝 พฤติกรรมที่ต้องติดตาม</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="text-align: center; color: white; margin-top: 20px;">
+            <a href="/admin" style="color: white;">← กลับหน้า Admin</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <script src="/static/notification.js"></script>
+    <script>
+        let selectedStudent = null;
+        const LINE_OA_URL = 'https://line.me/R/ti/p/@YOUR_LINE_OA_ID'; // แก้เป็น LINE OA ID ของโรงเรียน
+        
+        async function loadStudents() {
+            const res = await fetch('/api/students');
+            const data = await res.json();
+            const select = document.getElementById('studentId');
+            
+            data.students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.student_id;
+                option.textContent = `${student.name} (${student.student_id})`;
+                select.appendChild(option);
+            });
+        }
+        
+        async function generateQR(e) {
+            e.preventDefault();
+            
+            const studentId = document.getElementById('studentId').value;
+            const select = document.getElementById('studentId');
+            const studentName = select.options[select.selectedIndex].text;
+            
+            // แสดง QR Section
+            document.getElementById('qrSection').style.display = 'block';
+            document.getElementById('studentCode').textContent = studentId;
+            
+            // ล้าง QR Code เก่า
+            document.getElementById('qrCode').innerHTML = '';
+            
+            // สร้าง QR Code ใหม่
+            new QRCode(document.getElementById('qrCode'), {
+                text: LINE_OA_URL,
+                width: 256,
+                height: 256,
+                colorDark: '#06C755',
+                colorLight: '#ffffff'
+            });
+            
+            showToast('สแกน QR Code แล้วส่งรหัส: ' + studentId, 'success');
+        }
+        
+        loadStudents();
+    </script>
+</body>
+</html>
