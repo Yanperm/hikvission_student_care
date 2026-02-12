@@ -1664,8 +1664,8 @@ def save_line_config():
         
         cursor.execute("""
             UPDATE schools 
-            SET line_oa_id = ?, line_channel_token = ?, line_channel_secret = ?
-            WHERE school_id = ?
+            SET line_oa_id = %s, line_channel_token = %s, line_channel_secret = %s
+            WHERE school_id = %s
         """, (data['line_oa_id'], data['channel_access_token'], data['channel_secret'], school_id))
         conn.commit()
         conn.close()
