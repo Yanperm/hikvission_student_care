@@ -1623,33 +1623,15 @@ def get_line_config():
     """ดึงการตั้งค่า LINE OA"""
     try:
         school_id = get_current_school_id()
-        conn = db.get_connection()
-        cursor = conn.cursor()
+        school = db.get_school(school_id)
         
-        # เพิ่มคอลัมน์ถ้ายังไม่มี
-        try:
-            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_oa_id TEXT')
-            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_token TEXT')
-            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_secret TEXT')
-            conn.commit()
-        except:
-            pass
-        
-        cursor.execute('SELECT line_oa_id, line_channel_token, line_channel_secret FROM schools WHERE school_id = %s', (school_id,))
-        row = cursor.fetchone()
-        conn.close()
-        
-        if row:
-            oa_id = row['line_oa_id'] if isinstance(row, dict) else row[0]
-            token = row['line_channel_token'] if isinstance(row, dict) else row[1]
-            secret = row['line_channel_secret'] if isinstance(row, dict) else row[2]
-            
+        if school:
             return jsonify({
                 'success': True,
                 'config': {
-                    'line_oa_id': oa_id or '',
-                    'channel_access_token': token or '',
-                    'channel_secret': secret or ''
+                    'line_oa_id': school.get('line_oa_id', ''),
+                    'channel_access_token': school.get('line_channel_token', ''),
+                    'channel_secret': school.get('line_channel_secret', '')
                 }
             })
         return jsonify({'success': False, 'message': 'ไม่พบข้อมูลโรงเรียน'})
@@ -1667,19 +1649,10 @@ def save_line_config():
         conn = db.get_connection()
         cursor = conn.cursor()
         
-        # เพิ่มคอลัมน์ถ้ายังไม่มี
-        try:
-            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_oa_id TEXT')
-            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_token TEXT')
-            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_secret TEXT')
-            conn.commit()
-        except:
-            pass
-        
         cursor.execute("""
             UPDATE schools 
-            SET line_oa_id = %s, line_channel_token = %s, line_channel_secret = %s
-            WHERE school_id = %s
+            SET line_oa_id = ?, line_channel_token = ?, line_channel_secret = ?
+            WHERE school_id = ?
         """, (data['line_oa_id'], data['channel_access_token'], data['channel_secret'], school_id))
         conn.commit()
         conn.close()
