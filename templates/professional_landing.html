@@ -157,6 +157,7 @@
             border-radius: 20px;
             border: 1px solid rgba(0,0,0,0.06);
             transition: all 0.2s;
+            cursor: pointer;
         }
         .feature-card:hover {
             transform: translateY(-4px);
@@ -192,7 +193,11 @@
     <nav class="navbar">
         <div class="nav-container">
             <div class="logo">🎓 Student Care System</div>
-            <a href="/login" class="nav-btn">เข้าสู่ระบบ</a>
+            <div style="display: flex; gap: 20px; align-items: center;">
+                <a href="/register_school" style="color: #1d1d1f; text-decoration: none; font-size: 14px;">ลงทะเบียนโรงเรียน</a>
+                <a href="/pricing" style="color: #1d1d1f; text-decoration: none; font-size: 14px;">แพ็กเกจ</a>
+                <a href="/login" class="nav-btn">เข้าสู่ระบบ</a>
+            </div>
         </div>
     </nav>
 
@@ -200,44 +205,45 @@
         <h1>ระบบดูแลนักเรียน</h1>
         <p>ด้วย AI Face Recognition และ LINE Notification</p>
         <div class="cta-buttons">
-            <a href="/login" class="btn-primary">เริ่มใช้งาน</a>
+            <a href="/register_school" class="btn-primary">ลงทะเบียนโรงเรียน</a>
+            <a href="/login" class="btn-secondary">เข้าสู่ระบบ</a>
             <a href="/student_photo" class="btn-secondary">📸 ถ่ายรูปนักเรียน</a>
         </div>
     </section>
 
     <section class="features" id="features">
         <div class="features-grid">
-            <div class="feature-card">
+            <div class="feature-card" onclick="location.href='/register'">
                 <div class="feature-icon">👥</div>
                 <h3>จัดการนักเรียน</h3>
                 <p>เพิ่ม แก้ไข ลบข้อมูลนักเรียน พร้อมรูปภาพ</p>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-card" onclick="location.href='/import_students'">
                 <div class="feature-icon">📥</div>
                 <h3>นำเข้าข้อมูล</h3>
                 <p>นำเข้าข้อมูลจาก Excel/CSV ได้ทันที</p>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-card" onclick="location.href='/camera_classroom'">
                 <div class="feature-icon">✅</div>
                 <h3>เช็คชื่ออัตโนมัติ</h3>
                 <p>ด้วย AI Face Recognition แม่นยำสูง</p>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-card" onclick="location.href='/gate_camera'">
                 <div class="feature-icon">🚪</div>
                 <h3>กล้องหน้าประตู</h3>
                 <p>ตรวจจับนักเรียนเข้า-ออกโรงเรียน</p>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-card" onclick="location.href='/line_setup'">
                 <div class="feature-icon">💚</div>
                 <h3>แจ้งเตือน LINE</h3>
                 <p>ส่งการแจ้งเตือนถึงผู้ปกครองทันที</p>
             </div>
             
-            <div class="feature-card">
+            <div class="feature-card" onclick="location.href='/reports'">
                 <div class="feature-icon">📊</div>
                 <h3>รายงานสรุป</h3>
                 <p>ส่งออกรายงาน PDF/Excel ได้ง่าย</p>
