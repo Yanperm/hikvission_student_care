@@ -1566,19 +1566,16 @@ def realtime_status():
     })
 
 @app.route('/api/gate_entry', methods=['POST'])
-@login_required
 def gate_entry():
     data = request.json
     student_id = data.get('student_id')
     student_name = data.get('student_name')
-    entry_type = data.get('type')  # checkin or checkout
-    school_id = get_current_school_id()
+    entry_type = data.get('type')
+    school_id = 'SCH001'
     
-    # บันทึกลง attendance
     camera_type = 'gate_in' if entry_type == 'checkin' else 'gate_out'
     db.add_attendance(student_id, student_name, school_id, camera_type)
     
-    # สร้างการแจ้งเตือนผู้ปกครอง
     current_time = datetime.now().strftime('%H:%M น.')
     if entry_type == 'checkin':
         title = '🟢 บุตรของท่านมาถึงโรงเรียนแล้ว'
@@ -1589,15 +1586,19 @@ def gate_entry():
     
     db.add_notification(school_id, student_id, 'gate', title, message)
     
-    # ส่ง LINE OA
     line_user_id = db.get_student_line_token(student_id)
+    line_sent = False
     if line_user_id:
-        line_oa.send_gate_entry(line_user_id, student_name, entry_type, current_time)
+        school = db.get_school(school_id)
+        if school and school.get('line_channel_token'):
+            from line_oa import LineOA
+            line = LineOA(school['line_channel_token'])
+            line_sent = line.send_gate_entry(line_user_id, student_name, entry_type, current_time)
     
     return jsonify({
         'success': True,
         'message': 'บันทึกและแจ้งเตือนผู้ปกครองสำเร็จ (LINE)',
-        'line_sent': bool(line_user_id)
+        'line_sent': line_sent
     })
 
 @app.route('/api/student/<student_id>/line_token', methods=['POST'])
