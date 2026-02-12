@@ -1884,6 +1884,21 @@ def face_recognize():
             
             # Threshold for recognition
             if best_match and best_score < 2000000:  # ลด threshold ให้เข้มงวดขึ้น
+                # ส่ง LINE แจ้งเตือนผู้ปกครอง
+                line_user_id = db.get_student_line_token(best_match)
+                if line_user_id:
+                    try:
+                        current_time = datetime.now().strftime('%H:%M น.')
+                        line_oa.send_message(line_user_id, f"""🟢 บุตรของท่านมาถึงโรงเรียนแล้ว
+
+👤 ชื่อ: {face_cache[best_match]['name']}
+🆔 รหัส: {best_match}
+⏰ เวลา: {current_time}
+
+✅ ระบบตรวจจับใบหน้าอัตโนมัติ""")
+                    except:
+                        pass
+                
                 return jsonify({
                     'success': True,
                     'student_id': best_match,
