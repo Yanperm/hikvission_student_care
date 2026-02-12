@@ -401,7 +401,7 @@ def import_students():
 @app.route('/gate_camera')
 def gate_camera_standalone():
     """Standalone gate camera - no login required"""
-    return render_template('gate_camera_standalone.html')
+    return render_template('camera_gate.html')
 
 @app.route('/camera_management')
 @login_required
