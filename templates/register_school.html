@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ลงทะเบียนโรงเรียน - Student Care System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .container { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 600px; width: 100%; padding: 40px; }
+        h1 { color: #667eea; text-align: center; margin-bottom: 10px; font-size: 32px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+        .step { display: none; }
+        .step.active { display: block; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #333; font-weight: 600; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; transition: border 0.3s; }
+        input:focus, select:focus { outline: none; border-color: #667eea; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102,126,234,0.4); }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn-secondary:hover { background: #d0d0d0; }
+        .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
+        .plan { border: 3px solid #e0e0e0; border-radius: 12px; padding: 20px; cursor: pointer; transition: all 0.3s; text-align: center; }
+        .plan:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .plan.selected { border-color: #667eea; background: #f0f4ff; }
+        .plan-name { font-size: 24px; font-weight: bold; color: #667eea; margin-bottom: 10px; }
+        .plan-price { font-size: 32px; font-weight: bold; color: #333; margin: 15px 0; }
+        .plan-features { list-style: none; text-align: left; margin-top: 15px; }
+        .plan-features li { padding: 8px 0; color: #666; }
+        .plan-features li:before { content: "✓ "; color: #4caf50; font-weight: bold; }
+        .progress { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .progress-step { flex: 1; text-align: center; position: relative; }
+        .progress-step:before { content: ""; position: absolute; top: 15px; left: 50%; width: 100%; height: 2px; background: #e0e0e0; z-index: -1; }
+        .progress-step:first-child:before { display: none; }
+        .progress-circle { width: 30px; height: 30px; border-radius: 50%; background: #e0e0e0; color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 5px; }
+        .progress-step.active .progress-circle { background: #667eea; }
+        .progress-step.completed .progress-circle { background: #4caf50; }
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 ลงทะเบียนโรงเรียน</h1>
+        <p class="subtitle">เริ่มใช้งาน Student Care System วันนี้</p>
+
+        <div class="progress">
+            <div class="progress-step active" data-step="1">
+                <div class="progress-circle">1</div>
+                <div>ข้อมูลโรงเรียน</div>
+            </div>
+            <div class="progress-step" data-step="2">
+                <div class="progress-circle">2</div>
+                <div>เลือกแพ็กเกจ</div>
+            </div>
+            <div class="progress-step" data-step="3">
+                <div class="progress-circle">3</div>
+                <div>ผู้ดูแลระบบ</div>
+            </div>
+        </div>
+
+        <div id="alert"></div>
+
+        <form id="registerForm">
+            <!-- Step 1: School Info -->
+            <div class="step active" data-step="1">
+                <div class="form-group">
+                    <label>ชื่อโรงเรียน *</label>
+                    <input type="text" name="school_name" required>
+                </div>
+                <div class="form-group">
+                    <label>ที่อยู่</label>
+                    <input type="text" name="address">
+                </div>
+                <div class="form-group">
+                    <label>เบอร์โทรศัพท์</label>
+                    <input type="tel" name="phone">
+                </div>
+                <div class="form-group">
+                    <label>อีเมล</label>
+                    <input type="email" name="email">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="nextStep()">ถัดไป →</button>
+            </div>
+
+            <!-- Step 2: Select Plan -->
+            <div class="step" data-step="2">
+                <div class="plans" id="plansContainer"></div>
+                <input type="hidden" name="plan_id" id="selectedPlan">
+                <button type="button" class="btn btn-secondary" onclick="prevStep()">← ย้อนกลับ</button>
+                <button type="button" class="btn btn-primary" onclick="nextStep()">ถัดไป →</button>
+            </div>
+
+            <!-- Step 3: Admin User -->
+            <div class="step" data-step="3">
+                <div class="form-group">
+                    <label>ชื่อผู้ดูแลระบบ *</label>
+                    <input type="text" name="admin_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" name="admin_username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" name="admin_password" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>ยืนยัน Password *</label>
+                    <input type="password" name="confirm_password" required>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="prevStep()">← ย้อนกลับ</button>
+                <button type="submit" class="btn btn-primary">✓ ลงทะเบียน</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let currentStep = 1;
+        let plans = [];
+
+        // Load plans
+        fetch('/api/saas/plans')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    plans = data.plans;
+                    renderPlans();
+                }
+            });
+
+        function renderPlans() {
+            const container = document.getElementById('plansContainer');
+            container.innerHTML = plans.map(plan => `
+                <div class="plan" onclick="selectPlan(${plan.id})">
+                    <div class="plan-name">${plan.name}</div>
+                    <div class="plan-price">฿${plan.price.toLocaleString()}<small>/ปี</small></div>
+                    <ul class="plan-features">
+                        <li>นักเรียนสูงสุด ${plan.max_students} คน</li>
+                        <li>กล้อง ${plan.max_cameras} ตัว</li>
+                        <li>ผู้ใช้งาน ${plan.max_users} คน</li>
+                        ${plan.features ? plan.features.split(',').map(f => `<li>${f}</li>`).join('') : ''}
+                    </ul>
+                </div>
+            `).join('');
+        }
+
+        function selectPlan(planId) {
+            document.querySelectorAll('.plan').forEach(p => p.classList.remove('selected'));
+            event.target.closest('.plan').classList.add('selected');
+            document.getElementById('selectedPlan').value = planId;
+        }
+
+        function nextStep() {
+            if (currentStep === 2 && !document.getElementById('selectedPlan').value) {
+                showAlert('กรุณาเลือกแพ็กเกจ', 'error');
+                return;
+            }
+
+            document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('completed');
+            
+            currentStep++;
+            
+            document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.add('active');
+        }
+
+        function prevStep() {
+            document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
+            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('active');
+            
+            currentStep--;
+            
+            document.querySelector(`.step[data-step="${currentStep}"]`).classList.add('active');
+            document.querySelector(`.progress-step[data-step="${currentStep}"]`).classList.remove('completed');
+        }
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => alert.innerHTML = '', 5000);
+        }
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            if (data.admin_password !== data.confirm_password) {
+                showAlert('Password ไม่ตรงกัน', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/saas/register', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    setTimeout(() => window.location.href = '/login', 2000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -303,16 +303,44 @@ class DatabasePostgres:
         conn.close()
     
     def get_stats(self):
-        return {}
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) as total_schools FROM schools')
+        total_schools = cursor.fetchone()['total_schools']
+        cursor.execute('SELECT COUNT(*) as total_students FROM students')
+        total_students = cursor.fetchone()['total_students']
+        cursor.execute('SELECT COUNT(*) as active_schools FROM schools WHERE status = %s', ('active',))
+        active_schools = cursor.fetchone()['active_schools']
+        conn.close()
+        return {
+            'total_schools': total_schools,
+            'total_students': total_students,
+            'active_schools': active_schools
+        }
     
     def get_parent_students(self, parent_username):
         return []
     
     def update_school(self, school_id, data):
-        pass
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE schools SET name = %s, address = %s, phone = %s, status = %s
+            WHERE school_id = %s
+        ''', (data.get('name'), data.get('address'), data.get('phone'), data.get('status'), school_id))
+        conn.commit()
+        conn.close()
     
     def delete_school(self, school_id):
-        pass
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM students WHERE school_id = %s', (school_id,))
+        cursor.execute('DELETE FROM attendance WHERE school_id = %s', (school_id,))
+        cursor.execute('DELETE FROM behavior WHERE school_id = %s', (school_id,))
+        cursor.execute('DELETE FROM notifications WHERE school_id = %s', (school_id,))
+        cursor.execute('DELETE FROM schools WHERE school_id = %s', (school_id,))
+        conn.commit()
+        conn.close()
     
     def get_cameras(self, school_id):
         return []
