@@ -19,7 +19,7 @@
         .plan-price { font-size: 48px; font-weight: bold; color: #333; margin: 20px 0; }
         .plan-price small { font-size: 18px; color: #666; }
         .plan-features { list-style: none; margin: 30px 0; text-align: left; }
-        .plan-features li { padding: 12px 0; border-bottom: 1px solid #f0f0f0; color: #666; }
+        .plan-features li { padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #666; font-size: 14px; }
         .plan-features li:before { content: "✓ "; color: #4caf50; font-weight: bold; margin-right: 10px; }
         .btn { display: block; width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; text-align: center; }
         .btn-primary { background: #667eea; color: white; }
@@ -36,62 +36,78 @@
 </head>
 <body>
     <div class="container">
-        <h1>💳 เลือกแพ็กเกจที่เหมาะกับคุณ</h1>
-        <p class="subtitle">ทดลองใช้ฟรี 30 วัน ไม่ต้องใช้บัตรเครดิต</p>
+        <h1>💳 เลือกแพ็กเกจที่เหมาะกับโรงเรียนของคุณ</h1>
+        <p class="subtitle">ระบบดูแลนักเรียนครบวงจร 21 ฟีเจอร์ พร้อมสนับสนุน 24/7</p>
 
-        <div class="plans" id="plansContainer">
+        <div class="plans">
             <div class="plan">
-                <div class="plan-name">Free</div>
-                <div class="plan-price">฿0<small>/ปี</small></div>
+                <div class="plan-name">Starter</div>
+                <div class="plan-price">ฟรี<small>/30 วัน</small></div>
                 <ul class="plan-features">
                     <li>นักเรียน 50 คน</li>
-                    <li>กล้อง 2 ตัว</li>
-                    <li>ผู้ใช้งาน 3 คน</li>
-                    <li>รายงานพื้นฐาน</li>
+                    <li>📸 ลงทะเบียนนักเรียน</li>
+                    <li>✅ เช็คชื่อด้วยตนเอง</li>
+                    <li>📊 Dashboard พื้นฐาน</li>
+                    <li>👤 โปรไฟล์นักเรียน</li>
+                    <li>📈 รายงานพื้นฐาน</li>
                 </ul>
-                <a href="/register_school" class="btn btn-secondary">เริ่มใช้งานฟรี</a>
+                <a href="/register_school" class="btn btn-secondary">ทดลองใช้ฟรี</a>
             </div>
 
             <div class="plan">
                 <div class="plan-name">Basic</div>
-                <div class="plan-price">฿9,900<small>/ปี</small></div>
+                <div class="plan-price">฿4,900<small>/ปี</small></div>
                 <ul class="plan-features">
                     <li>นักเรียน 200 คน</li>
-                    <li>กล้อง 5 ตัว</li>
-                    <li>ผู้ใช้งาน 10 คน</li>
-                    <li>รายงานขั้นสูง</li>
-                    <li>LINE Notification</li>
+                    <li>📚 กล้องในห้องเรียน (Auto Check-in)</li>
+                    <li>🚪 กล้องหน้าประตู</li>
+                    <li>👁️ ตรวจจับพฤติกรรม</li>
+                    <li>🤖 AI Face Recognition (99.6%)</li>
+                    <li>📧 แจ้งเตือนผู้ปกครอง (Email)</li>
+                    <li>📱 Progressive Web App (PWA)</li>
+                    <li>📈 รายงานขั้นสูง + Export PDF/Excel</li>
                 </ul>
                 <a href="/register_school" class="btn btn-primary">เลือกแพ็กเกจนี้</a>
             </div>
 
             <div class="plan featured">
-                <div class="badge">แนะนำ</div>
-                <div class="plan-name">Pro</div>
-                <div class="plan-price">฿29,900<small>/ปี</small></div>
+                <div class="badge">ยอดนิยม</div>
+                <div class="plan-name">Professional</div>
+                <div class="plan-price">฿14,900<small>/ปี</small></div>
                 <ul class="plan-features">
                     <li>นักเรียน 1,000 คน</li>
-                    <li>กล้อง 20 ตัว</li>
-                    <li>ผู้ใช้งาน 50 คน</li>
-                    <li>รายงานขั้นสูง + AI</li>
-                    <li>LINE Notification</li>
-                    <li>API Access</li>
+                    <li>📷 กล้องหลายจุด (Multi-Camera)</li>
+                    <li>🎯 ตรวจจับอารมณ์</li>
+                    <li>💚 ดูแลสุขภาพจิต</li>
+                    <li>📚 วิเคราะห์การเรียนรู้ (AI Prediction)</li>
+                    <li>🛡️ ป้องกันการกลั่นแกล้ง</li>
+                    <li>🎓 คะแนนความประพฤติ</li>
+                    <li>🔔 ระบบแจ้งเตือน Real-time</li>
+                    <li>💚 แจ้งเตือน LINE OA</li>
+                    <li>☁️ Cloud Sync อัตโนมัติ</li>
+                    <li>🔐 จัดการผู้ใช้หลายระดับ</li>
                 </ul>
                 <a href="/register_school" class="btn btn-primary">เลือกแพ็กเกจนี้</a>
             </div>
 
             <div class="plan">
                 <div class="plan-name">Enterprise</div>
-                <div class="plan-price">฿99,900<small>/ปี</small></div>
+                <div class="plan-price">ตามความต้องการ</div>
                 <ul class="plan-features">
                     <li>นักเรียนไม่จำกัด</li>
-                    <li>กล้องไม่จำกัด</li>
-                    <li>ผู้ใช้งานไม่จำกัด</li>
-                    <li>ฟีเจอร์ครบทุกอย่าง</li>
-                    <li>Support 24/7</li>
+                    <li>🏫 Multi-School Management</li>
+                    <li>👨‍👩‍👧 Dashboard ผู้ปกครอง</li>
+                    <li>🔄 Hybrid Architecture</li>
+                    <li>🔐 Two-Factor Authentication</li>
+                    <li>📋 Audit Logs</li>
+                    <li>💾 Backup/Restore</li>
+                    <li>🎯 QR Code Check-in</li>
+                    <li>📊 รายงานขั้นสูง (21 ฟีเจอร์ครบ)</li>
                     <li>Custom Development</li>
+                    <li>On-Premise Installation</li>
+                    <li>Dedicated Support 24/7</li>
                 </ul>
-                <a href="/register_school" class="btn btn-primary">ติดต่อเรา</a>
+                <a href="mailto:support@softubon.com" class="btn btn-primary">ติดต่อเรา</a>
             </div>
         </div>
 
