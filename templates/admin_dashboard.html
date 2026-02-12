@@ -343,6 +343,52 @@
         .logout-btn:hover { 
             background: rgba(0,0,0,0.08);
         }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid rgba(0,0,0,0.08);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .top-bar {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            .stat-card h3 {
+                font-size: 28px;
+            }
+            table {
+                font-size: 12px;
+                display: block;
+                overflow-x: auto;
+            }
+            th, td {
+                padding: 8px 4px;
+            }
+            .btn {
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .section-header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
 <body>

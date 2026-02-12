@@ -74,6 +74,34 @@
             margin-bottom: 40px;
             font-weight: 400;
         }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+                letter-spacing: -1px;
+            }
+            .hero p {
+                font-size: 18px;
+            }
+            .cta-buttons {
+                flex-direction: column;
+            }
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                text-align: center;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-container {
+                padding: 0 16px;
+            }
+            .hero, .features {
+                padding: 0 16px;
+                margin: 40px auto;
+            }
+        }
         .cta-buttons {
             display: flex;
             gap: 16px;
