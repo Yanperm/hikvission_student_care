@@ -271,20 +271,26 @@
             const key = studentId + '_' + currentMode;
             checkedToday.add(key);
             
-            await fetch('/api/gate_entry', {
+            const res = await fetch('/api/gate/recognize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    student_id: studentId,
-                    student_name: studentName,
+                    image: canvas.toDataURL('image/jpeg', 0.95),
                     type: currentMode
                 })
             });
             
+            const result = await res.json();
+            
             const text = currentMode === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
             addLog(studentId, studentName, currentMode);
             updateStatus('✅ ' + studentName + ' ' + text, 'success');
-            showToast(studentName + ' ' + text + ' - แจ้งผู้ปกครองแล้ว', 'success');
+            
+            if (result.line_sent) {
+                showToast(studentName + ' ' + text + ' - แจ้งผู้ปกครองแล้ว', 'success');
+            } else {
+                showToast(studentName + ' ' + text, 'success');
+            }
             
             setTimeout(() => updateStatus('กำลังสแกน...', 'scanning'), 3000);
         }
