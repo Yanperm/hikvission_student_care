@@ -1739,7 +1739,7 @@ def line_webhook():
                 text = event['message']['text'].strip()
                 
                 # ถ้าส่งรหัสนักเรียนมา
-                students = db.get_students(None)  # ดึงทุกโรงเรียน
+                students = db.get_students('SCH001')  # ใช้ school_id แทน None
                 student = next((s for s in students if s['student_id'] == text), None)
                 
                 if student:
@@ -1880,8 +1880,10 @@ def face_recognize():
                     best_score = score
                     best_match = student_id
             
+            print(f'Best match: {best_match}, Score: {best_score}')  # Debug
+            
             # Threshold for recognition
-            if best_match and best_score < 5000000:  # เพิ่ม threshold
+            if best_match and best_score < 2000000:  # ลด threshold ให้เข้มงวดขึ้น
                 return jsonify({
                     'success': True,
                     'student_id': best_match,
