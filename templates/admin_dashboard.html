@@ -343,19 +343,57 @@
         .logout-btn:hover { 
             background: rgba(0,0,0,0.08);
         }
+        .hamburger {
+            display: none;
+        }
+        .overlay {
+            display: none;
+        }
         
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
                 height: auto;
-                position: relative;
-                border-right: none;
-                border-bottom: 1px solid rgba(0,0,0,0.08);
+                position: fixed;
+                left: -100%;
+                transition: left 0.3s;
+                z-index: 1001;
+                height: 100vh;
+            }
+            .sidebar.active {
+                left: 0;
             }
             .main-content {
                 margin-left: 0;
                 padding: 16px;
+                padding-top: 70px;
+            }
+            .hamburger {
+                display: block;
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                z-index: 1002;
+                background: white;
+                border: 1px solid rgba(0,0,0,0.1);
+                border-radius: 8px;
+                padding: 8px 12px;
+                cursor: pointer;
+                font-size: 24px;
+            }
+            .overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1000;
+            }
+            .overlay.active {
+                display: block;
             }
             .stats-grid {
                 grid-template-columns: 1fr;
@@ -392,6 +430,10 @@
     </style>
 </head>
 <body>
+    <!-- Hamburger Menu -->
+    <div class="hamburger" onclick="toggleMenu()">☰</div>
+    <div class="overlay" onclick="toggleMenu()"></div>
+    
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -949,6 +991,11 @@
         loadStats();
         setInterval(loadStats, 10000); // Refresh ทุก 10 วินาที
         setInterval(refreshStudents, 10000);
+        
+        function toggleMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
     </script>
 </body>
 </html>
