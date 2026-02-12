@@ -816,6 +816,13 @@ def get_school_detail(school_id):
     db.update_school(school_id, data)
     return jsonify({'success': True, 'message': 'อัพเดทข้อมูลสำเร็จ!'})
 
+@app.route('/api/schools/<school_id>', methods=['PUT'])
+@super_admin_required
+def update_school_api(school_id):
+    data = request.json
+    db.update_school(school_id, data)
+    return jsonify({'success': True, 'message': 'อัพเดทข้อมูลสำเร็จ!'})
+
 @app.route('/api/schools/<school_id>', methods=['DELETE'])
 @super_admin_required
 def delete_school_api(school_id):
