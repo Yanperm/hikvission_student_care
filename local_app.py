@@ -1587,16 +1587,16 @@ def gate_entry():
     db.add_notification(school_id, student_id, 'gate', title, message)
     
     line_user_id = db.get_student_line_token(student_id)
-    print(f'[DEBUG] LINE user_id: {line_user_id}')
+    print(f'[DEBUG] LINE user_id: {line_user_id}', flush=True)
     line_sent = False
     if line_user_id:
         school = db.get_school(school_id)
-        print(f'[DEBUG] School token: {school.get("line_channel_token")[:20] if school and school.get("line_channel_token") else "None"}')
+        print(f'[DEBUG] School token: {school.get("line_channel_token")[:20] if school and school.get("line_channel_token") else "None"}', flush=True)
         if school and school.get('line_channel_token'):
             from line_oa import LineOA
             line = LineOA(school['line_channel_token'])
             line_sent = line.send_gate_entry(line_user_id, student_name, entry_type, current_time)
-            print(f'[DEBUG] LINE sent: {line_sent}')
+            print(f'[DEBUG] LINE sent: {line_sent}', flush=True)
     
     return jsonify({
         'success': True,
