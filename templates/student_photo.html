@@ -358,13 +358,12 @@
                 const res = await fetch('/api/line/config');
                 const data = await res.json();
                 
-                let lineOAID = '@YOUR_LINE_OA_ID';
-                if (data.success && data.config && data.config.line_oa_id) {
-                    lineOAID = data.config.line_oa_id;
-                } else {
-                    lineOAID = prompt('กรุณากรอก LINE OA ID (เช่น @abc1234):');
-                    if (!lineOAID) return;
+                if (!data.success || !data.config || !data.config.line_oa_id) {
+                    showToast('❌ กรุณาตั้งค่า LINE OA ก่อน (เมนู ตั้งค่า LINE OA)', 'error');
+                    return;
                 }
+                
+                const lineOAID = data.config.line_oa_id;
                 
                 // เปิด LINE OA โดยตรง
                 const lineUrl = `https://line.me/R/ti/p/${lineOAID}?text=${encodeURIComponent(currentStudent.student_id)}`;
@@ -388,12 +387,7 @@
                     }
                 }, 3000);
             } catch (error) {
-                const lineOAID = prompt('กรุณากรอก LINE OA ID (เช่น @abc1234):');
-                if (!lineOAID) return;
-                
-                const lineUrl = `https://line.me/R/ti/p/${lineOAID}?text=${encodeURIComponent(currentStudent.student_id)}`;
-                window.open(lineUrl, '_blank');
-                showToast('กรุณายืนยันใน LINE แล้วส่งรหัส: ' + currentStudent.student_id, 'success');
+                showToast('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
             }
         }
     </script>
