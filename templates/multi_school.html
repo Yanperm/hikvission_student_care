@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>จัดการโรงเรียน - Student Care System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 30px; }
+        h1 { font-size: 32px; margin-bottom: 10px; }
+        .section { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; margin: 5px; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { background: #f5f7fa; font-weight: 600; }
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-active { background: #d4edda; color: #155724; }
+        .badge-trial { background: #fff3cd; color: #856404; }
+        .badge-expired { background: #f8d7da; color: #721c24; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; }
+        input, select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal-content { background: white; max-width: 600px; margin: 50px auto; padding: 30px; border-radius: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🏫 จัดการโรงเรียน</h1>
+            <p>เพิ่ม แก้ไข ลบโรงเรียนในระบบ</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <button class="btn btn-primary" onclick="showAddModal()">+ เพิ่มโรงเรียนใหม่</button>
+            <table id="schoolsTable">
+                <thead>
+                    <tr>
+                        <th>รหัส</th>
+                        <th>ชื่อโรงเรียน</th>
+                        <th>ที่อยู่</th>
+                        <th>เบอร์โทร</th>
+                        <th>สถานะ</th>
+                        <th>วันหมดอายุ</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h2>เพิ่มโรงเรียนใหม่</h2>
+            <form id="addForm">
+                <div class="form-group">
+                    <label>ชื่อโรงเรียน *</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>ที่อยู่</label>
+                    <input type="text" name="address">
+                </div>
+                <div class="form-group">
+                    <label>เบอร์โทร</label>
+                    <input type="tel" name="phone">
+                </div>
+                <div class="form-group">
+                    <label>อีเมล</label>
+                    <input type="email" name="email">
+                </div>
+                <div class="form-group">
+                    <label>Username Admin *</label>
+                    <input type="text" name="admin_username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password Admin *</label>
+                    <input type="password" name="admin_password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">บันทึก</button>
+                <button type="button" class="btn" onclick="closeModal()">ยกเลิก</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        loadSchools();
+
+        function loadSchools() {
+            fetch('/api/schools')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const tbody = document.querySelector('#schoolsTable tbody');
+                        tbody.innerHTML = data.schools.map(s => `
+                            <tr>
+                                <td>${s.school_id}</td>
+                                <td>${s.name}</td>
+                                <td>${s.address || '-'}</td>
+                                <td>${s.phone || '-'}</td>
+                                <td><span class="badge badge-${s.status}">${s.status}</span></td>
+                                <td>${s.expire_date || '-'}</td>
+                                <td>
+                                    <button class="btn btn-primary" onclick="editSchool('${s.school_id}')">แก้ไข</button>
+                                    <button class="btn btn-danger" onclick="deleteSchool('${s.school_id}')">ลบ</button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+                });
+        }
+
+        function showAddModal() {
+            document.getElementById('addModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            const response = await fetch('/api/schools', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            alert(result.message);
+            if (result.success) {
+                closeModal();
+                loadSchools();
+            }
+        });
+
+        function deleteSchool(schoolId) {
+            if (!confirm('ยืนยันการลบโรงเรียน?')) return;
+
+            fetch(`/api/schools/${schoolId}`, { method: 'DELETE' })
+                .then(r => r.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.success) loadSchools();
+                });
+        }
+    </script>
+</body>
+</html>
