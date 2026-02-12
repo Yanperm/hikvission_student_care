@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แพ็กเกจ - Student Care System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 40px 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { text-align: center; color: white; font-size: 48px; margin-bottom: 20px; }
+        .subtitle { text-align: center; color: rgba(255,255,255,0.9); font-size: 20px; margin-bottom: 60px; }
+        .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .plan { background: white; border-radius: 20px; padding: 40px; text-align: center; transition: all 0.3s; position: relative; }
+        .plan:hover { transform: translateY(-10px); box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        .plan.featured { border: 3px solid #667eea; }
+        .badge { position: absolute; top: -15px; right: 20px; background: #ff9800; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .plan-name { font-size: 28px; font-weight: bold; color: #667eea; margin-bottom: 20px; }
+        .plan-price { font-size: 48px; font-weight: bold; color: #333; margin: 20px 0; }
+        .plan-price small { font-size: 18px; color: #666; }
+        .plan-features { list-style: none; margin: 30px 0; text-align: left; }
+        .plan-features li { padding: 12px 0; border-bottom: 1px solid #f0f0f0; color: #666; }
+        .plan-features li:before { content: "✓ "; color: #4caf50; font-weight: bold; margin-right: 10px; }
+        .btn { display: block; width: 100%; padding: 15px; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; text-align: center; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn-secondary:hover { background: #d0d0d0; }
+        .back-link { text-align: center; margin-top: 40px; }
+        .back-link a { color: white; text-decoration: none; font-size: 16px; }
+        @media (max-width: 768px) {
+            h1 { font-size: 32px; }
+            .plans { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💳 เลือกแพ็กเกจที่เหมาะกับคุณ</h1>
+        <p class="subtitle">ทดลองใช้ฟรี 30 วัน ไม่ต้องใช้บัตรเครดิต</p>
+
+        <div class="plans" id="plansContainer">
+            <div class="plan">
+                <div class="plan-name">Free</div>
+                <div class="plan-price">฿0<small>/ปี</small></div>
+                <ul class="plan-features">
+                    <li>นักเรียน 50 คน</li>
+                    <li>กล้อง 2 ตัว</li>
+                    <li>ผู้ใช้งาน 3 คน</li>
+                    <li>รายงานพื้นฐาน</li>
+                </ul>
+                <a href="/register_school" class="btn btn-secondary">เริ่มใช้งานฟรี</a>
+            </div>
+
+            <div class="plan">
+                <div class="plan-name">Basic</div>
+                <div class="plan-price">฿9,900<small>/ปี</small></div>
+                <ul class="plan-features">
+                    <li>นักเรียน 200 คน</li>
+                    <li>กล้อง 5 ตัว</li>
+                    <li>ผู้ใช้งาน 10 คน</li>
+                    <li>รายงานขั้นสูง</li>
+                    <li>LINE Notification</li>
+                </ul>
+                <a href="/register_school" class="btn btn-primary">เลือกแพ็กเกจนี้</a>
+            </div>
+
+            <div class="plan featured">
+                <div class="badge">แนะนำ</div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">฿29,900<small>/ปี</small></div>
+                <ul class="plan-features">
+                    <li>นักเรียน 1,000 คน</li>
+                    <li>กล้อง 20 ตัว</li>
+                    <li>ผู้ใช้งาน 50 คน</li>
+                    <li>รายงานขั้นสูง + AI</li>
+                    <li>LINE Notification</li>
+                    <li>API Access</li>
+                </ul>
+                <a href="/register_school" class="btn btn-primary">เลือกแพ็กเกจนี้</a>
+            </div>
+
+            <div class="plan">
+                <div class="plan-name">Enterprise</div>
+                <div class="plan-price">฿99,900<small>/ปี</small></div>
+                <ul class="plan-features">
+                    <li>นักเรียนไม่จำกัด</li>
+                    <li>กล้องไม่จำกัด</li>
+                    <li>ผู้ใช้งานไม่จำกัด</li>
+                    <li>ฟีเจอร์ครบทุกอย่าง</li>
+                    <li>Support 24/7</li>
+                    <li>Custom Development</li>
+                </ul>
+                <a href="/register_school" class="btn btn-primary">ติดต่อเรา</a>
+            </div>
+        </div>
+
+        <div class="back-link">
+            <a href="/">← กลับหน้าหลัก</a>
+        </div>
+    </div>
+</body>
+</html>
