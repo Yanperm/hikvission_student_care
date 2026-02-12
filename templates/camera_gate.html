@@ -257,6 +257,7 @@
                 if (result.success && result.student_id) {
                     const key = result.student_id + '_' + currentMode;
                     if (!checkedToday.has(key)) {
+                        checkedToday.add(key);
                         await processEntry(result.student_id, result.student_name);
                     }
                 }
@@ -268,8 +269,7 @@
         }
 
         async function processEntry(studentId, studentName) {
-            const key = studentId + '_' + currentMode;
-            checkedToday.add(key);
+            console.log('Processing entry:', studentId, studentName, currentMode);
             
             const res = await fetch('/api/gate/recognize', {
                 method: 'POST',
