@@ -31,6 +31,8 @@ else:
     from database import db
     print("Using SQLite Database")
 from line_oa import line_oa
+from face_recognition_system import face_recognition_system
+from line_notification import line_notification
 import os
 import json
 import base64
