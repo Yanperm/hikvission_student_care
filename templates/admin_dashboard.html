@@ -9,7 +9,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; 
+            font-family: 'Kanit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
             background: #f5f5f7;
             -webkit-font-smoothing: antialiased;
         }
@@ -442,7 +442,14 @@
                         <p>🟠 ออกโรงเรียน: <strong id="checkoutCount">0</strong> คน</p>
                         <p>📊 อัตราการเข้าเรียน: <strong id="attendanceRate">0%</strong></p>
                     </div>
+                    <canvas id="dailyChart" style="margin-top: 20px; max-height: 200px;"></canvas>
                 </div>
+            </div>
+            
+            <!-- Monthly Chart -->
+            <div style="background: white; padding: 24px; border-radius: 16px; margin-top: 20px; border: 1px solid rgba(0,0,0,0.06);">
+                <h3>📊 กราฟการเข้า-ออกรายเดือน</h3>
+                <canvas id="monthlyChart" style="margin-top: 20px; max-height: 300px;"></canvas>
             </div>
         </div>
 
@@ -575,8 +582,11 @@
     </div>
 
     <script src="/static/notification.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         let capturedImage = null;
+        let dailyChart = null;
+        let monthlyChart = null;
 
         function showSection(section) {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -610,16 +620,131 @@
                     const attData = await attRes.json();
                     if (attData.success) {
                         const today = new Date().toISOString().split('T')[0];
-                        const todayAtt = attData.attendance.filter(a => a.timestamp.startsWith(today));
-                        const checkin = todayAtt.filter(a => a.camera_type === 'gate_in').length;
-                        const checkout = todayAtt.filter(a => a.camera_type === 'gate_out').length;
+                        const todayAtt = attData.attendance.filter(a => a.timestamp && a.timestamp.startsWith(today));
+                        const checkin = new Set(todayAtt.filter(a => a.camera_type === 'gate_in').map(a => a.student_id)).size;
+                        const checkout = new Set(todayAtt.filter(a => a.camera_type === 'gate_out').map(a => a.student_id)).size;
                         document.getElementById('checkinCount').textContent = checkin;
                         document.getElementById('checkoutCount').textContent = checkout;
+                        
+                        // สร้างกราฟ
+                        createDailyChart(attData.attendance);
+                        createMonthlyChart(attData.attendance);
                     }
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
             }
+        }
+        
+        function createDailyChart(attendance) {
+            const today = new Date();
+            const last7Days = [];
+            const checkinData = [];
+            const checkoutData = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                last7Days.push(date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' }));
+                
+                const dayAtt = attendance.filter(a => a.timestamp && a.timestamp.startsWith(dateStr));
+                checkinData.push(new Set(dayAtt.filter(a => a.camera_type === 'gate_in').map(a => a.student_id)).size);
+                checkoutData.push(new Set(dayAtt.filter(a => a.camera_type === 'gate_out').map(a => a.student_id)).size);
+            }
+            
+            const ctx = document.getElementById('dailyChart');
+            if (dailyChart) dailyChart.destroy();
+            
+            dailyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: last7Days,
+                    datasets: [
+                        {
+                            label: 'เข้าโรงเรียน',
+                            data: checkinData,
+                            borderColor: '#34c759',
+                            backgroundColor: 'rgba(52, 199, 89, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'ออกโรงเรียน',
+                            data: checkoutData,
+                            borderColor: '#ff9500',
+                            backgroundColor: 'rgba(255, 149, 0, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'bottom' },
+                        title: { display: true, text: 'การเข้า-ออก 7 วันล่าสุด' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
+        
+        function createMonthlyChart(attendance) {
+            const today = new Date();
+            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            const labels = [];
+            const checkinData = [];
+            const checkoutData = [];
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                labels.push(day + '');
+                const date = new Date(today.getFullYear(), today.getMonth(), day);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                const dayAtt = attendance.filter(a => a.timestamp && a.timestamp.startsWith(dateStr));
+                checkinData.push(new Set(dayAtt.filter(a => a.camera_type === 'gate_in').map(a => a.student_id)).size);
+                checkoutData.push(new Set(dayAtt.filter(a => a.camera_type === 'gate_out').map(a => a.student_id)).size);
+            }
+            
+            const ctx = document.getElementById('monthlyChart');
+            if (monthlyChart) monthlyChart.destroy();
+            
+            monthlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'เข้าโรงเรียน',
+                            data: checkinData,
+                            backgroundColor: '#34c759'
+                        },
+                        {
+                            label: 'ออกโรงเรียน',
+                            data: checkoutData,
+                            backgroundColor: '#ff9500'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'bottom' },
+                        title: { 
+                            display: true, 
+                            text: 'สถิติรายเดือน ' + today.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' })
+                        }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
         }
 
         async function loadAttendance() {
