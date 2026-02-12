@@ -321,7 +321,7 @@
                 const lineUrl = `https://line.me/R/ti/p/${lineOAID}?text=${encodeURIComponent(currentStudent.student_id)}`;
                 window.open(lineUrl, '_blank');
                 
-                showToast('กรุณายืนยันใน LINE แล้วส่งรหัส: ' + currentStudent.student_id, 'success');
+                showToast('เปิด LINE แล้ว กรุณาส่งรหัส: ' + currentStudent.student_id + ' ใน LINE เพื่อยืนยัน', 'info');
                 
                 // รีเซ็ตหลัง 3 วิ
                 setTimeout(() => {
