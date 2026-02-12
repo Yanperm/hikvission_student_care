@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตัวแทนจำหน่าย - Student Care System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        h1 { font-size: 32px; margin-bottom: 10px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0; }
+        .stat-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 48px; font-weight: bold; color: #667eea; }
+        .stat-label { color: #666; margin-top: 10px; }
+        .section { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { background: #f5f7fa; font-weight: 600; }
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .badge-active { background: #d4edda; color: #155724; }
+        .badge-trial { background: #fff3cd; color: #856404; }
+        .progress { background: #e0e0e0; height: 10px; border-radius: 5px; overflow: hidden; }
+        .progress-bar { background: #667eea; height: 100%; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>🤝 ตัวแทนจำหน่าย Dashboard</h1>
+            <p id="resellerName">กำลังโหลด...</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="schoolsUsed">0</div>
+                <div class="stat-label">โรงเรียนที่ขายแล้ว</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="maxSchools">0</div>
+                <div class="stat-label">โควต้าทั้งหมด</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="commission">฿0</div>
+                <div class="stat-label">คอมมิชชั่นทั้งหมด</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>โควต้าการขาย</h3>
+            <div class="progress" style="margin-top: 20px;">
+                <div class="progress-bar" id="quotaProgress"></div>
+            </div>
+            <p style="margin-top: 10px; color: #666;" id="quotaText">0 / 0 โรงเรียน</p>
+        </div>
+
+        <div class="section">
+            <h2>โรงเรียนที่ขาย</h2>
+            <button class="btn btn-primary" onclick="addSchool()">+ เพิ่มโรงเรียนใหม่</button>
+            <table id="schoolsTable">
+                <thead>
+                    <tr>
+                        <th>ชื่อโรงเรียน</th>
+                        <th>แพ็กเกจ</th>
+                        <th>สถานะ</th>
+                        <th>วันที่สร้าง</th>
+                        <th>คอมมิชชั่น</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        fetch('/api/reseller/me')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const r = data.reseller;
+                    document.getElementById('resellerName').textContent = r.name;
+                    document.getElementById('schoolsUsed').textContent = r.schools_used || 0;
+                    document.getElementById('maxSchools').textContent = r.max_schools;
+                    document.getElementById('commission').textContent = '฿' + (data.commission || 0).toLocaleString();
+                    
+                    const percent = (r.schools_used / r.max_schools * 100) || 0;
+                    document.getElementById('quotaProgress').style.width = percent + '%';
+                    document.getElementById('quotaText').textContent = `${r.schools_used || 0} / ${r.max_schools} โรงเรียน`;
+
+                    const tbody = document.querySelector('#schoolsTable tbody');
+                    tbody.innerHTML = data.schools.map(s => `
+                        <tr>
+                            <td>${s.name}</td>
+                            <td>${s.plan || 'Free'}</td>
+                            <td><span class="badge badge-${s.status}">${s.status}</span></td>
+                            <td>${new Date(s.created_at).toLocaleDateString('th-TH')}</td>
+                            <td>฿${((s.price || 0) * 0.15).toLocaleString()}</td>
+                        </tr>
+                    `).join('');
+                }
+            });
+
+        function addSchool() {
+            const name = prompt('ชื่อโรงเรียน:');
+            if (!name) return;
+
+            const adminUsername = prompt('Username Admin:');
+            if (!adminUsername) return;
+
+            const adminPassword = prompt('Password Admin:');
+            if (!adminPassword) return;
+
+            fetch('/api/reseller/schools', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    name: name,
+                    admin_username: adminUsername,
+                    admin_password: adminPassword
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                alert(data.message);
+                if (data.success) location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
