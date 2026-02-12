@@ -363,7 +363,7 @@
                 <span>📅</span> นำเข้าข้อมูล
             </a>
             <a class="menu-item" onclick="showSection('attendance')">
-                <span>✅</span> การเข้าเรียน
+                <span>🚪</span> เข้า-ออกโรงเรียน
             </a>
             <a class="menu-item" href="/camera_gate">
                 <span>🚪</span> กล้องหน้าประตู
@@ -491,10 +491,9 @@
         <!-- Attendance Section -->
         <div class="content-section" id="attendance">
             <div class="section-header">
-                <h2>✅ การเข้าเรียน</h2>
+                <h2>🚪 การเข้า-ออกโรงเรียน</h2>
                 <div>
-                    <button class="btn btn-success" onclick="location.href='/camera_classroom'">📸 เปิดกล้อง</button>
-                    <button class="btn btn-primary" onclick="location.href='/checkin'">✋ เช็คชื่อด้วยตนเอง</button>
+                    <button class="btn btn-success" onclick="location.href='/gate_camera'">📸 เปิดกล้องประตู</button>
                 </div>
             </div>
             <table>
@@ -630,15 +629,19 @@
             if (data.attendance.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">ยังไม่มีข้อมูล</td></tr>';
             } else {
-                tbody.innerHTML = data.attendance.slice(0, 50).map(a => `
-                    <tr>
-                        <td>${a.student_id}</td>
-                        <td><strong>${a.student_name}</strong></td>
-                        <td>${new Date(a.timestamp).toLocaleString('th-TH')}</td>
-                        <td>${a.camera_type}</td>
-                        <td><span style="color: #4CAF50;">✅ ${a.status}</span></td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = data.attendance.slice(0, 50).map(a => {
+                    const type = a.camera_type === 'gate_in' ? '🟢 เข้าโรงเรียน' : '🟠 ออกโรงเรียน';
+                    const status = a.camera_type === 'gate_in' ? 'เข้า' : 'ออก';
+                    return `
+                        <tr>
+                            <td>${a.student_id}</td>
+                            <td><strong>${a.student_name}</strong></td>
+                            <td>${new Date(a.timestamp).toLocaleString('th-TH')}</td>
+                            <td>${type}</td>
+                            <td><span style="color: #4CAF50;">✅ ${status}</span></td>
+                        </tr>
+                    `;
+                }).join('');
             }
         }
 
