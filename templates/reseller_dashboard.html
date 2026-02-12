@@ -32,7 +32,7 @@
     <div class="header">
         <div class="container">
             <h1>🤝 ตัวแทนจำหน่าย Dashboard</h1>
-            <p id="resellerName">กำลังโหลด...</p>
+            <p id="resellerName">กำลังโหลด... | คอมมิชชั่น 10%</p>
         </div>
     </div>
 
@@ -100,7 +100,7 @@
                             <td>${s.plan || 'Free'}</td>
                             <td><span class="badge badge-${s.status}">${s.status}</span></td>
                             <td>${new Date(s.created_at).toLocaleDateString('th-TH')}</td>
-                            <td>฿${((s.price || 0) * 0.15).toLocaleString()}</td>
+                            <td>฿${((s.price || 0) * 0.10).toLocaleString()}</td>
                         </tr>
                     `).join('');
                 }
