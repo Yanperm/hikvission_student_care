@@ -1728,6 +1728,7 @@ def line_webhook():
     """รับข้อความจาก LINE OA"""
     try:
         body = request.get_json()
+        print(f'[WEBHOOK] Received: {body}', flush=True)
         
         for event in body.get('events', []):
             if event['type'] == 'message' and event['message']['type'] == 'text':
@@ -1735,11 +1736,15 @@ def line_webhook():
                 reply_token = event['replyToken']
                 text = event['message']['text'].strip()
                 
+                print(f'[WEBHOOK] User {user_id} sent: {text}', flush=True)
+                
                 students = db.get_students('SCH001')
                 student = next((s for s in students if s['student_id'] == text), None)
                 
                 if student:
+                    print(f'[WEBHOOK] Found student: {student["name"]}', flush=True)
                     db.update_student_line_token(text, user_id)
+                    print(f'[WEBHOOK] Saved LINE token for {text}', flush=True)
                     
                     # ดึง token จาก school
                     school = db.get_school('SCH001')
