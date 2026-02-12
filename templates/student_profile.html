@@ -55,7 +55,7 @@
                 <h1>{{ student.name }}</h1>
                 <p>📝 รหัสนักเรียน: <strong>{{ student.student_id }}</strong></p>
                 <p>🏫 ห้องเรียน: <strong>{{ student.class_name or '-' }}</strong></p>
-                <p>📅 ลงทะเบียนเมื่อ: <strong>{{ student.created_at[:10] if student.created_at else '-' }}</strong></p>
+                <p>📅 ลงทะเบียนเมื่อ: <strong>{{ student.created_at.strftime('%d/%m/%Y') if student.created_at else '-' }}</strong></p>
                 <div style="margin-top: 20px;">
                     <a href="/admin" class="btn">← กลับหน้า Admin</a>
                 </div>
@@ -166,7 +166,7 @@
                                 <td>${new Date(a.timestamp).toLocaleDateString('th-TH')}</td>
                                 <td>${new Date(a.timestamp).toLocaleTimeString('th-TH')}</td>
                                 <td>${a.camera_type === 'classroom' ? '📚 ห้องเรียน' : a.camera_type === 'behavior' ? '👀 ตรวจจับพฤติกรรม' : '✋ เช็คชื่อด้วยตนเอง'}</td>
-                                <td><span class="badge badge-success">✅ ${a.status}</span></td>
+                                <td><span class="badge badge-success">✅ ${a.status || 'เข้าเรียน'}</span></td>
                             </tr>
                         `).join('');
                     } else {

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ถ่ายรูปนักเรียน - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/notification.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; 
+            background: #f5f5f7;
+            -webkit-font-smoothing: antialiased;
+            padding: 24px;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .card { 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 16px; 
+            padding: 32px; 
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1d1d1f;
+            text-align: center;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #86868b;
+            margin-bottom: 32px;
+            font-size: 15px;
+        }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+            color: #1d1d1f;
+            font-size: 13px;
+        }
+        .form-group input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid rgba(0,0,0,0.1); 
+            border-radius: 10px;
+            font-size: 15px;
+            background: rgba(255,255,255,0.8);
+            transition: all 0.2s;
+        }
+        .form-group input:focus { 
+            outline: none; 
+            border-color: #007aff;
+            box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
+        }
+        
+        .btn { 
+            width: 100%;
+            padding: 14px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.2s;
+            font-size: 15px;
+            margin: 8px 0;
+        }
+        .btn-primary { background: #007aff; color: white; }
+        .btn-primary:hover { background: #0051d5; transform: scale(1.01); }
+        .btn-success { background: #34c759; color: white; }
+        .btn-danger { background: #ff3b30; color: white; }
+        
+        #video { 
+            width: 100%; 
+            border-radius: 12px; 
+            background: #000;
+            margin: 16px 0;
+        }
+        #canvas { display: none; }
+        
+        #preview {
+            text-align: center;
+            margin: 16px 0;
+        }
+        #preview img {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .info-box {
+            background: rgba(0,122,255,0.1);
+            border-left: 3px solid #007aff;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 13px;
+            color: #1d1d1f;
+        }
+        
+        .student-info {
+            background: rgba(52,199,89,0.1);
+            padding: 16px;
+            border-radius: 10px;
+            margin: 16px 0;
+            display: none;
+        }
+        .student-info h3 {
+            color: #34c759;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>📸 ถ่ายรูปนักเรียน</h1>
+            <p class="subtitle">กรอกรหัสนักเรียนแล้วถ่ายรูปของคุณ</p>
+            
+            <div class="info-box">
+                <strong>📋 ขั้นตอน:</strong><br>
+                1. กรอกรหัสนักเรียน<br>
+                2. กดค้นหา<br>
+                3. เปิดกล้องและถ่ายรูป<br>
+                4. บันทึก
+            </div>
+            
+            <form id="searchForm" onsubmit="searchStudent(event)">
+                <div class="form-group">
+                    <label>รหัสนักเรียน:</label>
+                    <input type="text" id="studentId" placeholder="เช่น STD001" required>
+                </div>
+                <button type="submit" class="btn btn-primary">🔍 ค้นหา</button>
+            </form>
+            
+            <div id="studentInfo" class="student-info">
+                <h3>✅ พบข้อมูล</h3>
+                <p><strong>ชื่อ:</strong> <span id="studentName"></span></p>
+                <p><strong>ห้อง:</strong> <span id="studentClass"></span></p>
+            </div>
+            
+            <div id="cameraSection" style="display: none;">
+                <video id="video" autoplay></video>
+                <canvas id="canvas"></canvas>
+                <div id="preview"></div>
+                
+                <button class="btn btn-primary" onclick="startCamera()">📷 เปิดกล้อง</button>
+                <button class="btn btn-success" onclick="capturePhoto()">📸 ถ่ายรูป</button>
+                <button class="btn btn-danger" onclick="retakePhoto()">🔄 ถ่ายใหม่</button>
+                <button class="btn btn-primary" onclick="savePhoto()" id="saveBtn" style="display: none;">💾 บันทึกรูปภาพ</button>
+                
+                <div id="lineSection" style="display: none; margin-top: 24px; padding: 16px; background: rgba(6,214,160,0.1); border-radius: 10px;">
+                    <h3 style="font-size: 16px; margin-bottom: 12px; color: #06d6a0;">💚 เชื่อมต่อผู้ปกครอง LINE</h3>
+                    <p style="font-size: 13px; margin-bottom: 12px; color: #1d1d1f;">รับการแจ้งเตือนเมื่อบุตรเข้า-ออกโรงเรียน</p>
+                    
+                    <div id="lineStatus" style="margin-bottom: 12px; padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px;">
+                        <p style="font-size: 13px; color: #666;">สถานะ: <span id="lineStatusText">ยังไม่เชื่อมต่อ</span></p>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="connectLINE()" id="connectBtn">💚 เชื่อมต่อ LINE</button>
+                    <button class="btn btn-primary" onclick="testLINE()" id="testBtn" style="display: none;">📤 ทดสอบส่งข้อความ</button>
+                    <p style="font-size: 12px; margin-top: 8px; color: #86868b;">หรือเชื่อมต่อทีหลังได้ที่เมนู "ตั้งค่า LINE OA"</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/notification.js"></script>
+    <script>
+        let currentStudent = null;
+        let capturedImage = null;
+
+        async function searchStudent(e) {
+            e.preventDefault();
+            
+            const studentId = document.getElementById('studentId').value.trim();
+            
+            try {
+                const res = await fetch('/api/students');
+                const data = await res.json();
+                
+                if (!data.success) {
+                    showToast('ไม่สามารถโหลดข้อมูลได้', 'error');
+                    return;
+                }
+                
+                const student = data.students.find(s => s.student_id === studentId);
+                
+                if (student) {
+                    currentStudent = student;
+                    document.getElementById('studentName').textContent = student.name;
+                    document.getElementById('studentClass').textContent = student.class_name || '-';
+                    document.getElementById('studentInfo').style.display = 'block';
+                    document.getElementById('cameraSection').style.display = 'block';
+                    showToast('พบข้อมูล: ' + student.name, 'success');
+                } else {
+                    // ถ้าไม่พบ ให้สร้างใหม่
+                    const name = prompt('ไม่พบรหัสนักเรียน กรุณากรอกชื่อ-นามสกุล:');
+                    if (name) {
+                        currentStudent = {
+                            student_id: studentId,
+                            name: name,
+                            class_name: ''
+                        };
+                        document.getElementById('studentName').textContent = name;
+                        document.getElementById('studentClass').textContent = '-';
+                        document.getElementById('studentInfo').style.display = 'block';
+                        document.getElementById('cameraSection').style.display = 'block';
+                        showToast('เพิ่มนักเรียนใหม่: ' + name, 'success');
+                    }
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('video').srcObject = stream;
+                showToast('เปิดกล้องแล้ว', 'success');
+            } catch (err) {
+                showToast('ไม่สามารถเปิดกล้อง: ' + err, 'error');
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            
+            if (!video.videoWidth) {
+                showToast('กรุณาเปิดกล้องก่อน!', 'error');
+                return;
+            }
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            capturedImage = canvas.toDataURL('image/jpeg', 0.8);
+            document.getElementById('preview').innerHTML = '<img src="' + capturedImage + '">';
+            document.getElementById('saveBtn').style.display = 'block';
+            
+            showToast('ถ่ายรูปแล้ว กดบันทึกเพื่อเสร็จสิ้น', 'success');
+        }
+
+        function retakePhoto() {
+            capturedImage = null;
+            document.getElementById('preview').innerHTML = '';
+            document.getElementById('saveBtn').style.display = 'none';
+            showToast('ถ่ายรูปใหม่ได้เลย', 'info');
+        }
+
+        async function savePhoto() {
+            if (!capturedImage || !currentStudent) {
+                showToast('กรุณาถ่ายรูปก่อน', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('student_id', currentStudent.student_id);
+            formData.append('name', currentStudent.name);
+            formData.append('class_name', currentStudent.class_name || '');
+            formData.append('image_data', capturedImage);
+            
+            try {
+                const res = await fetch('/add_student', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await res.json();
+                
+                if (result.success) {
+                    showToast('✅ บันทึกรูปภาพสำเร็จ!', 'success');
+                    
+                    // ตรวจสอบสถานะ LINE
+                    await checkLINEStatus();
+                    
+                    // แสดงส่วนเชื่อวต่อ LINE
+                    document.getElementById('saveBtn').style.display = 'none';
+                    document.getElementById('lineSection').style.display = 'block';
+                } else {
+                    showToast('เกิดข้อผิดพลาด: ' + result.message, 'error');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+        
+        async function checkLINEStatus() {
+            if (!currentStudent) return;
+            
+            try {
+                const res = await fetch(`/api/student/${currentStudent.student_id}`);
+                const data = await res.json();
+                
+                if (data.success && data.student.parent_line_token) {
+                    document.getElementById('lineStatusText').textContent = '✅ เชื่อมต่อแล้ว';
+                    document.getElementById('lineStatusText').style.color = '#34c759';
+                    document.getElementById('connectBtn').style.display = 'none';
+                    document.getElementById('testBtn').style.display = 'block';
+                } else {
+                    document.getElementById('lineStatusText').textContent = '❌ ยังไม่เชื่อมต่อ';
+                    document.getElementById('lineStatusText').style.color = '#ff3b30';
+                    document.getElementById('connectBtn').style.display = 'block';
+                    document.getElementById('testBtn').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Check LINE status error:', error);
+            }
+        }
+        
+        async function testLINE() {
+            if (!currentStudent) return;
+            
+            try {
+                const res = await fetch('/api/line/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ student_id: currentStudent.student_id })
+                });
+                
+                const result = await res.json();
+                
+                if (result.success) {
+                    showToast('✅ ส่งข้อความทดสอบสำเร็จ! ตรวจสอบ LINE', 'success');
+                } else {
+                    showToast('❌ ' + result.message, 'error');
+                }
+            } catch (error) {
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+        
+        function connectLINE() {
+            if (!currentStudent) return;
+            
+            // แจ้งให้ผู้ใช้เพิ่มเพื่อน LINE OA ก่อน
+            const lineOAID = prompt('กรุณากรอก LINE OA ID (เช่น @abc1234):');
+            if (!lineOAID) return;
+            
+            // เปิด LINE OA โดยตรง
+            const lineUrl = `https://line.me/R/ti/p/${lineOAID}?text=${encodeURIComponent(currentStudent.student_id)}`;
+            window.open(lineUrl, '_blank');
+            
+            showToast('กรุณายืนยันใน LINE แล้วส่งรหัส: ' + currentStudent.student_id, 'success');
+            
+            // รีเซ็ตหลัง 3 วิ
+            setTimeout(() => {
+                document.getElementById('searchForm').reset();
+                document.getElementById('studentInfo').style.display = 'none';
+                document.getElementById('cameraSection').style.display = 'none';
+                document.getElementById('preview').innerHTML = '';
+                document.getElementById('lineSection').style.display = 'none';
+                capturedImage = null;
+                currentStudent = null;
+                
+                const video = document.getElementById('video');
+                if (video.srcObject) {
+                    video.srcObject.getTracks().forEach(track => track.stop());
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

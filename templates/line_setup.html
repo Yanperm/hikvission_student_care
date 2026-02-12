@@ -3,81 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตั้งค่า LINE Notify</title>
+    <title>ตั้งค่า LINE OA - Student Care</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/notification.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Kanit', sans-serif; background: linear-gradient(135deg, #06C755 0%, #00B900 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .card { background: white; border-radius: 20px; padding: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 20px; }
-        h1 { color: #06C755; margin-bottom: 10px; }
-        .step { background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #06C755; }
-        .step h3 { color: #333; margin-bottom: 10px; }
-        .form-group { margin: 20px 0; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-        input, select { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Kanit', sans-serif; }
-        input:focus, select:focus { outline: none; border-color: #06C755; }
-        .btn { background: #06C755; color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; font-weight: 600; width: 100%; font-size: 16px; transition: all 0.3s; }
-        .btn:hover { background: #00B900; transform: translateY(-2px); }
-        .line-logo { text-align: center; font-size: 48px; margin-bottom: 20px; }
-        a { color: #06C755; text-decoration: none; font-weight: 600; }
-        a:hover { text-decoration: underline; }
-        code { background: #f8f9fa; padding: 2px 6px; border-radius: 4px; color: #e91e63; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; 
+            background: #f5f5f7;
+        }
+        
+        .sidebar { 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            width: 240px; 
+            height: 100vh; 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            border-right: 1px solid rgba(0,0,0,0.08);
+            z-index: 1000;
+        }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+        .sidebar-header h2 { font-size: 18px; font-weight: 600; color: #1d1d1f; }
+        .menu { padding: 12px 8px; }
+        .menu-item { 
+            padding: 8px 12px; 
+            margin: 2px 0;
+            cursor: pointer; 
+            transition: all 0.2s;
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            color: #1d1d1f; 
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .menu-item:hover { background: rgba(0,0,0,0.04); }
+        .menu-item.active { background: #007aff; color: white; }
+        
+        .main-content { margin-left: 240px; padding: 24px; }
+        .top-bar { 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            padding: 16px 24px; 
+            border-radius: 16px; 
+            margin-bottom: 24px; 
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .top-bar h1 { font-size: 24px; font-weight: 600; color: #1d1d1f; }
+        
+        .card { 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 16px; 
+            padding: 24px; 
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 6px; 
+            font-weight: 600; 
+            color: #1d1d1f;
+            font-size: 13px;
+        }
+        .form-group select { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid rgba(0,0,0,0.1); 
+            border-radius: 8px;
+            font-size: 13px;
+            background: rgba(255,255,255,0.8);
+        }
+        
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.2s;
+            font-size: 13px;
+        }
+        .btn-primary { background: #007aff; color: white; }
+        .btn-primary:hover { background: #0051d5; }
+        
+        .logout-btn { 
+            background: rgba(0,0,0,0.04); 
+            color: #1d1d1f; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            margin: 12px 8px; 
+            text-align: center; 
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .info-box {
+            background: rgba(0,122,255,0.1);
+            border-left: 3px solid #007aff;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 13px;
+            color: #1d1d1f;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <div class="line-logo">💚</div>
-            <h1 style="text-align: center;">ตั้งค่า LINE Official Account</h1>
-            <p style="text-align: center; color: #666; margin-bottom: 30px;">รับการแจ้งเตือนเมื่อบุตรเข้า-ออกโรงเรียน</p>
-            
-            <div class="step">
-                <h3>📱 ขั้นตอนที่ 1: เพิ่มเพื่อน LINE OA</h3>
-                <ol style="margin-left: 20px; color: #666;">
-                    <li>เปิดแอพ LINE บนมือถือ</li>
-                    <li>สแกน QR Code ของโรงเรียน</li>
-                    <li>เพิ่มเพื่อน LINE Official Account</li>
-                    <li>คัดลอก LINE User ID ของท่าน</li>
-                    <li>หรือติดต่อโรงเรียนเพื่อขอ User ID</li>
-                </ol>
-            </div>
-            
-            <div class="step">
-                <h3>✏️ ขั้นตอนที่ 2: กรอกข้อมูล</h3>
-                <form id="lineForm" onsubmit="saveToken(event)">
-                    <div class="form-group">
-                        <label>เลือกบุตร:</label>
-                        <select id="studentId" required>
-                            <option value="">-- เลือกนักเรียน --</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>LINE User ID:</label>
-                        <input type="text" id="lineToken" placeholder="กรอก LINE User ID" required>
-                        <small style="color: #999;">ตัวอย่าง: U1234567890abcdef...</small>
-                    </div>
-                    
-                    <button type="submit" class="btn">💾 บันทึก</button>
-                </form>
-            </div>
-            
-            <div class="step">
-                <h3>✅ เสร็จแล้ว!</h3>
-                <p style="color: #666;">ท่านจะได้รับการแจ้งเตือนทาง LINE เมื่อ:</p>
-                <ul style="margin-left: 20px; color: #666; margin-top: 10px;">
-                    <li>🟢 บุตรเข้าโรงเรียน</li>
-                    <li>🟠 บุตรออกจากโรงเรียน</li>
-                    <li>⚠️ บุตรขาดเรียน</li>
-                    <li>📝 พฤติกรรมที่ต้องติดตาม</li>
-                </ul>
-            </div>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🎓 Student Care</h2>
         </div>
-        
-        <div style="text-align: center; color: white; margin-top: 20px;">
-            <a href="/admin" style="color: white;">← กลับหน้า Admin</a>
+        <div class="menu">
+            <a href="/admin" class="menu-item"><span>📊</span> ภาพรวม</a>
+            <a href="/admin" class="menu-item"><span>👥</span> จัดการนักเรียน</a>
+            <a href="/import_students" class="menu-item"><span>📥</span> นำเข้าข้อมูล</a>
+            <a href="/admin" class="menu-item"><span>✅</span> การเข้าเรียน</a>
+            <a href="/camera_gate" class="menu-item"><span>🚪</span> กล้องหน้าประตู</a>
+            <a href="/line_setup" class="menu-item active"><span>💚</span> ตั้งค่า LINE OA</a>
+            <a href="/admin" class="menu-item"><span>📈</span> รายงาน</a>
+        </div>
+        <div class="logout-btn" onclick="location.href='/admin'">← กลับ</div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <h1>💚 ตั้งค่า LINE Official Account</h1>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 16px; font-size: 18px;">🔧 ตั้งค่า LINE OA ของโรงเรียน</h2>
+            
+            <div class="info-box">
+                <strong>📋 วิธีหา Channel Access Token:</strong><br>
+                1. เข้า <a href="https://developers.line.biz/console/" target="_blank" style="color: #007aff;">LINE Developers Console</a><br>
+                2. เลือก Provider และ Channel ของคุณ<br>
+                3. ไปที่แท็บ "Messaging API"<br>
+                4. คัดลอก "Channel Access Token" และ "Channel Secret"
+            </div>
+            
+            <form id="lineConfigForm" onsubmit="saveLineConfig(event)" style="margin-bottom: 32px;">
+                <div class="form-group">
+                    <label>Channel Access Token:</label>
+                    <input type="text" id="channelAccessToken" placeholder="ใส่ Channel Access Token" style="width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 13px;" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Channel Secret:</label>
+                    <input type="text" id="channelSecret" placeholder="ใส่ Channel Secret" style="width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 13px;" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">💾 บันทึกการตั้งค่า</button>
+            </form>
         </div>
     </div>
 
@@ -96,29 +179,57 @@
             });
         }
         
-        async function saveToken(e) {
-            e.preventDefault();
-            
-            const studentId = document.getElementById('studentId').value;
-            const lineToken = document.getElementById('lineToken').value;
-            
-            const res = await fetch(`/api/student/${studentId}/line_token`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ line_token: lineToken })
-            });
-            
-            const result = await res.json();
-            
-            if (result.success) {
-                await showAlert('สำเร็จ!', 'บันทึก LINE User ID เรียบร้อย ท่านจะได้รับการแจ้งเตือนทาง LINE OA', 'success');
-                document.getElementById('lineForm').reset();
-            } else {
-                showToast('เกิดข้อผิดพลาด', 'error');
+        async function loadLineConfig() {
+            try {
+                console.log('Loading LINE config...');
+                const res = await fetch('/api/line/config');
+                console.log('Response status:', res.status);
+                const data = await res.json();
+                console.log('Config data:', data);
+                if (data.success && data.config) {
+                    document.getElementById('channelAccessToken').value = data.config.channel_access_token || '';
+                    document.getElementById('channelSecret').value = data.config.channel_secret || '';
+                    console.log('Config loaded successfully');
+                }
+            } catch (error) {
+                console.error('Load config error:', error);
             }
         }
         
-        loadStudents();
+        async function saveLineConfig(e) {
+            e.preventDefault();
+            
+            const channelAccessToken = document.getElementById('channelAccessToken').value;
+            const channelSecret = document.getElementById('channelSecret').value;
+            
+            console.log('Saving LINE config...', { channelAccessToken, channelSecret });
+            
+            try {
+                const res = await fetch('/api/line/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        channel_access_token: channelAccessToken,
+                        channel_secret: channelSecret
+                    })
+                });
+                
+                console.log('Response status:', res.status);
+                const result = await res.json();
+                console.log('Result:', result);
+                
+                if (result.success) {
+                    showToast('บันทึกการตั้งค่า LINE OA สำเร็จ!', 'success');
+                } else {
+                    showToast('เกิดข้อผิดพลาด: ' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+        
+        loadLineConfig();
     </script>
 </body>
 </html>

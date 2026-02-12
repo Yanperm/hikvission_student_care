@@ -1,0 +1,86 @@
+<!-- Sidebar Component -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>🎓 Student Care</h2>
+    </div>
+    <div class="menu">
+        <a href="/admin" class="menu-item"><span>📊</span> ภาพรวม</a>
+        <a href="/admin" class="menu-item"><span>👥</span> จัดการนักเรียน</a>
+        <a href="/import_students" class="menu-item"><span>📥</span> นำเข้าข้อมูล</a>
+        <a href="/admin" class="menu-item"><span>✅</span> การเข้าเรียน</a>
+        <a href="/camera_gate" class="menu-item"><span>🚪</span> กล้องหน้าประตู</a>
+        <a href="/line_setup" class="menu-item"><span>💚</span> ตั้งค่า LINE OA</a>
+        <a href="/admin" class="menu-item"><span>📈</span> รายงาน</a>
+    </div>
+    <div class="logout-btn" onclick="location.href='/logout'">🚪 ออกจากระบบ</div>
+</div>
+
+<style>
+    .sidebar { 
+        position: fixed; 
+        left: 0; 
+        top: 0; 
+        width: 240px; 
+        height: 100vh; 
+        background: rgba(255,255,255,0.8);
+        backdrop-filter: blur(40px) saturate(180%);
+        -webkit-backdrop-filter: blur(40px) saturate(180%);
+        border-right: 1px solid rgba(0,0,0,0.08);
+        z-index: 1000;
+    }
+    .sidebar-header { 
+        padding: 20px; 
+        border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    .sidebar-header h2 { 
+        font-size: 18px; 
+        font-weight: 600; 
+        color: #1d1d1f;
+        letter-spacing: -0.3px;
+    }
+    .menu { padding: 12px 8px; }
+    .menu-item { 
+        padding: 8px 12px; 
+        margin: 2px 0;
+        cursor: pointer; 
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+        color: #1d1d1f; 
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+    }
+    .menu-item:hover { background: rgba(0,0,0,0.04); }
+    .menu-item.active { background: #007aff; color: white; }
+    
+    .logout-btn { 
+        background: rgba(0,0,0,0.04); 
+        color: #1d1d1f; 
+        padding: 8px 16px; 
+        border-radius: 8px; 
+        margin: 12px 8px; 
+        text-align: center; 
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .logout-btn:hover { background: rgba(0,0,0,0.08); }
+    
+    .main-content { margin-left: 240px; }
+</style>
+
+<script>
+    // Auto highlight active menu
+    document.addEventListener('DOMContentLoaded', function() {
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.menu-item').forEach(item => {
+            if (item.getAttribute('href') === currentPath) {
+                item.classList.add('active');
+            }
+        });
+    });
+</script>

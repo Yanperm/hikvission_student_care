@@ -83,6 +83,10 @@ def index():
 def landing_old():
     return render_template('landing.html')
 
+@app.route('/student_photo')
+def student_photo():
+    return render_template('student_photo.html')
+
 @app.route('/login')
 def login():
     return render_template('login.html')
@@ -154,7 +158,7 @@ def admin():
     }
     role_name = role_map.get(session.get('role'), 'ผู้ใช้งาน')
     
-    return render_template('dashboard_improved.html', 
+    return render_template('admin_dashboard.html', 
                          students=students,
                          school_name=school_name,
                          user_name=session.get('name', 'ผู้ใช้งาน'),
@@ -209,6 +213,17 @@ def sync_all_students():
 @app.route('/delete_student/<student_id>', methods=['DELETE'])
 @login_required
 def delete_student(student_id):
+    # ลบรูปภาพก่อน
+    image_path = f'data/students/{student_id}.jpg'
+    if os.path.exists(image_path):
+        os.remove(image_path)
+    
+    # ลบจาก cache
+    global face_cache
+    if student_id in face_cache:
+        del face_cache[student_id]
+    
+    # ลบจาก database
     db.delete_student(student_id)
     return jsonify({'success': True, 'message': 'ลบนักเรียนสำเร็จ'})
 
@@ -1011,6 +1026,37 @@ def get_student_detail(student_id):
     })
 
 # Import APIs
+@app.route('/api/download_template')
+def download_template():
+    """ดาวน์โหลด Template Excel"""
+    try:
+        import pandas as pd
+        from io import BytesIO
+        from flask import send_file
+        
+        # สร้างข้อมูลตัวอย่าง
+        data = {
+            'student_id': ['STD001', 'STD002', 'STD003', 'STD004', 'STD005'],
+            'name': ['สมชาย ใจดี', 'สมหญิง รักเรียน', 'สมศักดิ์ ขยัน', 'สมใจ มีสุข', 'สมปอง เก่งกาจ'],
+            'class_name': ['ม.1/1', 'ม.1/1', 'ม.1/2', 'ม.2/1', 'ม.2/2']
+        }
+        
+        df = pd.DataFrame(data)
+        
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Students')
+        output.seek(0)
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'student_template_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        )
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/api/import/preview', methods=['POST'])
 @login_required
 def import_preview():
@@ -1571,6 +1617,115 @@ def update_line_token(student_id):
         'message': 'บันทึก LINE Token สำเร็จ'
     })
 
+@app.route('/api/line/config', methods=['GET'])
+@login_required
+def get_line_config():
+    """ดึงการตั้งค่า LINE OA"""
+    try:
+        school_id = get_current_school_id()
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        # เพิ่มคอลัมน์ถ้ายังไม่มี
+        try:
+            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_token TEXT')
+            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_secret TEXT')
+            conn.commit()
+        except:
+            pass
+        
+        cursor.execute('SELECT line_channel_token, line_channel_secret FROM schools WHERE school_id = %s', (school_id,))
+        row = cursor.fetchone()
+        conn.close()
+        
+        if row:
+            # PostgreSQL RealDictCursor returns dict
+            token = row['line_channel_token'] if isinstance(row, dict) else row[0]
+            secret = row['line_channel_secret'] if isinstance(row, dict) else row[1]
+            
+            return jsonify({
+                'success': True,
+                'config': {
+                    'channel_access_token': token or '',
+                    'channel_secret': secret or ''
+                }
+            })
+        return jsonify({'success': False, 'message': 'ไม่พบข้อมูลโรงเรียน'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/line/config', methods=['POST'])
+@login_required
+def save_line_config():
+    """บันทึกการตั้งค่า LINE OA"""
+    try:
+        data = request.json
+        school_id = get_current_school_id()
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        # เพิ่มคอลัมน์ถ้ายังไม่มี
+        try:
+            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_token TEXT')
+            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_secret TEXT')
+            conn.commit()
+        except:
+            pass
+        
+        cursor.execute("""
+            UPDATE schools 
+            SET line_channel_token = %s, line_channel_secret = %s
+            WHERE school_id = %s
+        """, (data['channel_access_token'], data['channel_secret'], school_id))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'บันทึกการตั้งค่าสำเร็จ'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/line/test', methods=['POST'])
+@login_required
+def test_line_message():
+    """ทดสอบส่งข้อความ LINE"""
+    try:
+        data = request.json
+        student_id = data.get('student_id')
+        
+        # ดึง LINE token
+        line_user_id = db.get_student_line_token(student_id)
+        
+        if not line_user_id:
+            return jsonify({'success': False, 'message': 'ยังไม่ได้เชื่อมต่อ LINE'})
+        
+        # ส่งข้อความทดสอบ
+        school_id = get_current_school_id()
+        students = db.get_students(school_id)
+        student = next((s for s in students if s['student_id'] == student_id), None)
+        
+        if student:
+            try:
+                line_oa.send_message(line_user_id, f"""📢 ข้อความทดสอบ
+
+✅ ระบบเชื่อมต่อ LINE สำเร็จ!
+
+👤 นักเรียน: {student['name']}
+🆔 รหัส: {student_id}
+
+ท่านจะได้รับการแจ้งเตือนเมื่อ:
+🟢 บุตรเข้าโรงเรียน
+🟠 บุตรออกจากโรงเรียน
+⚠️ บุตรขาดเรียน
+📝 พฤติกรรมผิดปกติ""")
+                return jsonify({'success': True, 'message': 'ส่งข้อความทดสอบสำเร็จ'})
+            except Exception as e:
+                return jsonify({'success': False, 'message': f'ส่งไม่สำเร็จ: {str(e)}'})
+        
+        return jsonify({'success': False, 'message': 'ไม่พบข้อมูลนักเรียน'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/webhook/line', methods=['POST'])
 def line_webhook():
     """รับข้อความจาก LINE OA"""
@@ -1640,6 +1795,111 @@ def get_gate_logs():
     return jsonify({'success': True, 'logs': gate_logs})
 
 # Gate Camera APIs (No login required)
+# Simple face recognition cache
+face_cache = {}
+
+@app.route('/api/face/recognize', methods=['POST'])
+def face_recognize():
+    """Face recognition API - no login required"""
+    try:
+        import cv2
+        import numpy as np
+        
+        data = request.json
+        image_data = data.get('image')
+        camera_type = data.get('camera_type', 'general')
+        
+        if not image_data:
+            return jsonify({'success': False, 'message': 'No image data'})
+        
+        # Convert base64 to image
+        if ',' in image_data:
+            image_data = image_data.split(',')[1]
+        
+        try:
+            missing_padding = len(image_data) % 4
+            if missing_padding:
+                image_data += '=' * (4 - missing_padding)
+            
+            nparr = np.frombuffer(base64.b64decode(image_data), np.uint8)
+            frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        except Exception as e:
+            return jsonify({'success': False, 'message': f'Decode error: {str(e)}'})
+        
+        if frame is None or frame.size == 0:
+            return jsonify({'success': False, 'message': 'Invalid image'})
+        
+        # Face detection
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+        
+        if len(faces) > 0:
+            (x, y, w, h) = faces[0]
+            face_location = [int(y), int(x+w), int(y+h), int(x)]
+            
+            # Extract face region
+            face_roi = gray[y:y+h, x:x+w]
+            face_roi = cv2.resize(face_roi, (100, 100))
+            
+            # Load cache if empty
+            global face_cache
+            if not face_cache:
+                print('Loading face cache...')
+                students = db.get_students('SCH001')  # ใช้ school_id แทน None
+                print(f'Found {len(students)} students')
+                for student in students:
+                    if student.get('image_path') and os.path.exists(student['image_path']):
+                        try:
+                            img = cv2.imread(student['image_path'], cv2.IMREAD_GRAYSCALE)
+                            if img is not None:
+                                student_faces = face_cascade.detectMultiScale(img, 1.3, 5)
+                                if len(student_faces) > 0:
+                                    sx, sy, sw, sh = student_faces[0]
+                                    student_face = img[sy:sy+sh, sx:sx+sw]
+                                    student_face = cv2.resize(student_face, (100, 100))
+                                    face_cache[student['student_id']] = {
+                                        'face': student_face,
+                                        'name': student['name']
+                                    }
+                                    print(f'Cached: {student["student_id"]} - {student["name"]}')
+                        except Exception as e:
+                            print(f'Error caching {student.get("student_id")}: {e}')
+                            continue
+                print(f'Cache loaded: {len(face_cache)} faces')
+            
+            # Compare with cached faces
+            best_match = None
+            best_score = float('inf')
+            
+            for student_id, cache_data in face_cache.items():
+                diff = cv2.absdiff(face_roi, cache_data['face'])
+                score = np.sum(diff)
+                
+                if score < best_score:
+                    best_score = score
+                    best_match = student_id
+            
+            # Threshold for recognition
+            if best_match and best_score < 5000000:  # เพิ่ม threshold
+                return jsonify({
+                    'success': True,
+                    'student_id': best_match,
+                    'student_name': face_cache[best_match]['name'],
+                    'face_location': face_location,
+                    'camera_type': camera_type
+                })
+            
+            return jsonify({
+                'success': False,
+                'face_location': face_location,
+                'message': 'Face detected but not recognized'
+            })
+        
+        return jsonify({'success': False, 'message': 'No face detected'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/api/gate/recognize', methods=['POST'])
 def gate_recognize():
     """Face recognition for gate camera - no login required"""
@@ -2373,4 +2633,4 @@ if __name__ == '__main__':
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
     
     # Use socketio.run instead of app.run
-    socketio.run(app, host='0.0.0.0', port=port, debug=debug, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=port, debug=True, allow_unsafe_werkzeug=True)
