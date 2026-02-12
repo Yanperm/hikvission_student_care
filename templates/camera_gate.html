@@ -281,6 +281,7 @@
             });
             
             const result = await res.json();
+            console.log('Gate API result:', result);
             
             const text = currentMode === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
             addLog(studentId, studentName, currentMode);
