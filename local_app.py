@@ -1617,6 +1617,22 @@ def update_line_token(student_id):
         'message': 'บันทึก LINE Token สำเร็จ'
     })
 
+@app.route('/api/line/config/public', methods=['GET'])
+def get_line_config_public():
+    """ดึงการตั้งค่า LINE OA - Public API"""
+    try:
+        school = db.get_school('SCH001')
+        if school:
+            return jsonify({
+                'success': True,
+                'config': {
+                    'line_oa_id': school.get('line_oa_id', '')
+                }
+            })
+        return jsonify({'success': False, 'message': 'ไม่พบข้อมูล'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/api/line/config', methods=['GET'])
 @login_required
 def get_line_config():
