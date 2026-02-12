@@ -175,7 +175,6 @@
                     </div>
                     
                     <button class="btn btn-success" onclick="connectLINE()" id="connectBtn">💚 เชื่อมต่อ LINE</button>
-                    <button class="btn btn-primary" onclick="testLINE()" id="testBtn" style="display: none;">📤 ทดสอบส่งข้อความ</button>
                     <p style="font-size: 12px; margin-top: 8px; color: #86868b;">หรือเชื่อมต่อทีหลังได้ที่เมนู "ตั้งค่า LINE OA"</p>
                 </div>
             </div>
@@ -291,10 +290,7 @@
                 if (result.success) {
                     showToast('✅ บันทึกรูปภาพสำเร็จ!', 'success');
                     
-                    // ตรวจสอบสถานะ LINE
-                    await checkLINEStatus();
-                    
-                    // แสดงส่วนเชื่อวต่อ LINE
+                    // แสดงส่วนเชื่อมต่อ LINE
                     document.getElementById('saveBtn').style.display = 'none';
                     document.getElementById('lineSection').style.display = 'block';
                 } else {
@@ -304,39 +300,7 @@
                 showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
             }
         }
-        
-        async function checkLINEStatus() {
-            if (!currentStudent) return;
-            
-            try {
-                const res = await fetch(`/api/students?school_id=SCH001`);
-                const data = await res.json();
-                
-                if (data.success) {
-                    const student = data.students.find(s => s.student_id === currentStudent.student_id);
-                    
-                    if (student && student.parent_line_token) {
-                        document.getElementById('lineStatusText').textContent = '✅ เชื่อมต่อแล้ว';
-                        document.getElementById('lineStatusText').style.color = '#34c759';
-                        document.getElementById('connectBtn').style.display = 'none';
-                        document.getElementById('testBtn').style.display = 'block';
-                    } else {
-                        document.getElementById('lineStatusText').textContent = '❌ ยังไม่เชื่อมต่อ';
-                        document.getElementById('lineStatusText').style.color = '#ff3b30';
-                        document.getElementById('connectBtn').style.display = 'block';
-                        document.getElementById('testBtn').style.display = 'none';
-                    }
-                }
-            } catch (error) {
-                console.error('Check LINE status error:', error);
-            }
-        }
-        
-        async function testLINE() {
-            if (!currentStudent) return;
-            
-            showToast('ฟีเจอร์นี้ต้อง login ก่อน กรุณาทดสอบในหน้า Admin', 'info');
-        }
+
         
         async function connectLINE() {
             if (!currentStudent) return;
