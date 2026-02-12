@@ -309,19 +309,23 @@
             if (!currentStudent) return;
             
             try {
-                const res = await fetch(`/api/student/${currentStudent.student_id}`);
+                const res = await fetch(`/api/students?school_id=SCH001`);
                 const data = await res.json();
                 
-                if (data.success && data.student.parent_line_token) {
-                    document.getElementById('lineStatusText').textContent = '✅ เชื่อมต่อแล้ว';
-                    document.getElementById('lineStatusText').style.color = '#34c759';
-                    document.getElementById('connectBtn').style.display = 'none';
-                    document.getElementById('testBtn').style.display = 'block';
-                } else {
-                    document.getElementById('lineStatusText').textContent = '❌ ยังไม่เชื่อมต่อ';
-                    document.getElementById('lineStatusText').style.color = '#ff3b30';
-                    document.getElementById('connectBtn').style.display = 'block';
-                    document.getElementById('testBtn').style.display = 'none';
+                if (data.success) {
+                    const student = data.students.find(s => s.student_id === currentStudent.student_id);
+                    
+                    if (student && student.parent_line_token) {
+                        document.getElementById('lineStatusText').textContent = '✅ เชื่อมต่อแล้ว';
+                        document.getElementById('lineStatusText').style.color = '#34c759';
+                        document.getElementById('connectBtn').style.display = 'none';
+                        document.getElementById('testBtn').style.display = 'block';
+                    } else {
+                        document.getElementById('lineStatusText').textContent = '❌ ยังไม่เชื่อมต่อ';
+                        document.getElementById('lineStatusText').style.color = '#ff3b30';
+                        document.getElementById('connectBtn').style.display = 'block';
+                        document.getElementById('testBtn').style.display = 'none';
+                    }
                 }
             } catch (error) {
                 console.error('Check LINE status error:', error);
@@ -331,23 +335,7 @@
         async function testLINE() {
             if (!currentStudent) return;
             
-            try {
-                const res = await fetch('/api/line/test', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ student_id: currentStudent.student_id })
-                });
-                
-                const result = await res.json();
-                
-                if (result.success) {
-                    showToast('✅ ส่งข้อความทดสอบสำเร็จ! ตรวจสอบ LINE', 'success');
-                } else {
-                    showToast('❌ ' + result.message, 'error');
-                }
-            } catch (error) {
-                showToast('เกิดข้อผิดพลาด: ' + error.message, 'error');
-            }
+            showToast('ฟีเจอร์นี้ต้อง login ก่อน กรุณาทดสอบในหน้า Admin', 'info');
         }
         
         async function connectLINE() {
