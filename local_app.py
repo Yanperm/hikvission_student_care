@@ -558,6 +558,148 @@ def anti_bullying():
 def pricing():
     return render_template('pricing.html')
 
+@app.route('/subscription')
+@login_required
+def subscription():
+    return render_template('subscription.html')
+
+# ============================================
+# SaaS REGISTRATION & SUBSCRIPTION APIs
+# ============================================
+
+@app.route('/register_school')
+def register_school_page():
+    """หน้าสมัครใช้งานโรงเรียนใหม่"""
+    return render_template('register_school.html')
+
+@app.route('/api/saas/plans', methods=['GET'])
+def get_plans():
+    """ดึงรายการแพ็กเกจ"""
+    try:
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM plans WHERE active = TRUE ORDER BY price')
+        plans = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return jsonify({'success': True, 'plans': plans})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/saas/register', methods=['POST'])
+def register_school_api():
+    """ลงทะเบียนโรงเรียนใหม่"""
+    try:
+        data = request.json
+        
+        # สร้างโรงเรียน
+        school_data = {
+            'name': data['school_name'],
+            'address': data.get('address', ''),
+            'phone': data.get('phone', ''),
+            'email': data.get('email', ''),
+            'status': 'trial',
+            'expire_date': (datetime.now() + timedelta(days=30)).isoformat()
+        }
+        school_id = db.add_school(school_data)
+        
+        # สร้าง admin user
+        db.add_user(
+            data['admin_username'],
+            data['admin_password'],
+            data['admin_name'],
+            'admin',
+            school_id
+        )
+        
+        # สร้าง subscription
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO subscriptions (school_id, plan_id, status, start_date, end_date)
+            VALUES (%s, %s, %s, %s, %s)
+        ''', (
+            school_id,
+            data.get('plan_id', 1),
+            'trial',
+            datetime.now().isoformat(),
+            (datetime.now() + timedelta(days=30)).isoformat()
+        ))
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'school_id': school_id,
+            'message': 'ลงทะเบียนสำเร็จ! ทดลองใช้ฟรี 30 วัน'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/saas/subscription/<school_id>', methods=['GET'])
+@login_required
+def get_subscription(school_id):
+    """ดึงข้อมูล subscription"""
+    try:
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT s.*, p.name as plan_name, p.price, p.max_students
+            FROM subscriptions s
+            JOIN plans p ON s.plan_id = p.id
+            WHERE s.school_id = %s
+            ORDER BY s.start_date DESC
+            LIMIT 1
+        ''', (school_id,))
+        subscription = cursor.fetchone()
+        conn.close()
+        
+        if subscription:
+            return jsonify({'success': True, 'subscription': dict(subscription)})
+        return jsonify({'success': False, 'message': 'ไม่พบข้อมูล'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/saas/upgrade', methods=['POST'])
+@login_required
+def upgrade_subscription():
+    """อัพเกรดแพ็กเกจ"""
+    try:
+        data = request.json
+        school_id = get_current_school_id()
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        # อัพเดท subscription
+        cursor.execute('''
+            UPDATE subscriptions
+            SET plan_id = %s, status = %s, end_date = %s
+            WHERE school_id = %s
+        ''', (
+            data['plan_id'],
+            'active',
+            (datetime.now() + timedelta(days=365)).isoformat(),
+            school_id
+        ))
+        
+        # บันทึกการชำระเงิน
+        cursor.execute('''
+            INSERT INTO payments (school_id, amount, payment_method, status)
+            VALUES (%s, %s, %s, %s)
+        ''', (
+            school_id,
+            data['amount'],
+            data.get('payment_method', 'credit_card'),
+            'completed'
+        ))
+        
+        conn.commit()
+        conn.close()
+        
+        return jsonify({'success': True, 'message': 'อัพเกรดสำเร็จ!'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 @app.route('/teacher_dashboard')
 @login_required
 def teacher_dashboard():
