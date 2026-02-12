@@ -343,10 +343,19 @@ class DatabasePostgres:
         conn.close()
     
     def get_student_line_token(self, student_id):
-        return None
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT parent_line_token FROM students WHERE student_id = %s', (student_id,))
+        result = cursor.fetchone()
+        conn.close()
+        return result['parent_line_token'] if result and result.get('parent_line_token') else None
     
     def update_student_line_token(self, student_id, line_token):
-        pass
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE students SET parent_line_token = %s WHERE student_id = %s', (line_token, student_id))
+        conn.commit()
+        conn.close()
     
     def get_all_resellers(self):
         return []
