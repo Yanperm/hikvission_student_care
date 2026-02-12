@@ -258,7 +258,7 @@
                     const key = result.student_id + '_' + currentMode;
                     if (!checkedToday.has(key)) {
                         checkedToday.add(key);
-                        await processEntry(result.student_id, result.student_name);
+                        await processEntry(result.student_id, result.student_name, imageData);
                     }
                 }
             } catch (error) {
@@ -268,14 +268,14 @@
             setTimeout(scanFaces, 2000);
         }
 
-        async function processEntry(studentId, studentName) {
+        async function processEntry(studentId, studentName, imageData) {
             console.log('Processing entry:', studentId, studentName, currentMode);
             
             const res = await fetch('/api/gate/recognize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    image: canvas.toDataURL('image/jpeg', 0.95),
+                    image: imageData,
                     type: currentMode
                 })
             });
