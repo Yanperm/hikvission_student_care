@@ -974,21 +974,17 @@ def get_dashboard_stats():
     conn = db.get_connection()
     cursor = conn.cursor()
     
-    # นับนักเรียนทั้งหมด
-    cursor.execute('SELECT COUNT(*) FROM students WHERE school_id = ?', (school_id,))
+    cursor.execute('SELECT COUNT(*) FROM students WHERE school_id = %s', (school_id,))
     total_students = cursor.fetchone()[0]
     
-    # นับการเข้าเรียนวันนี้
     today = datetime.now().strftime('%Y-%m-%d')
-    cursor.execute('SELECT COUNT(DISTINCT student_id) FROM attendance WHERE school_id = ? AND date(timestamp) = ?', (school_id, today))
+    cursor.execute('SELECT COUNT(DISTINCT student_id) FROM attendance WHERE school_id = %s AND date(timestamp) = %s', (school_id, today))
     today_attendance = cursor.fetchone()[0]
     
-    # นับพฤติกรรมที่ต้องติดตาม
-    cursor.execute('SELECT COUNT(*) FROM behavior WHERE school_id = ? AND severity IN ("warning", "danger")', (school_id,))
+    cursor.execute('SELECT COUNT(*) FROM behavior WHERE school_id = %s AND severity IN (%s, %s)', (school_id, 'warning', 'danger'))
     behavior_alerts = cursor.fetchone()[0]
     
-    # นับการแจ้งเตือนที่ยังไม่อ่าน
-    cursor.execute('SELECT COUNT(*) FROM notifications WHERE school_id = ? AND read = 0', (school_id,))
+    cursor.execute('SELECT COUNT(*) FROM notifications WHERE school_id = %s AND read = 0', (school_id,))
     unread_notifications = cursor.fetchone()[0]
     
     conn.close()
