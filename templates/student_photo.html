@@ -343,7 +343,7 @@
             
             // ดึง LINE OA ID จากการตั้งค่า
             try {
-                const res = await fetch('/api/line/config');
+                const res = await fetch('/api/line/config/public');
                 const data = await res.json();
                 
                 if (!data.success || !data.config || !data.config.line_oa_id) {
