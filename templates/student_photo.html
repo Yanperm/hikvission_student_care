@@ -350,34 +350,51 @@
             }
         }
         
-        function connectLINE() {
+        async function connectLINE() {
             if (!currentStudent) return;
             
-            // แจ้งให้ผู้ใช้เพิ่มเพื่อน LINE OA ก่อน
-            const lineOAID = prompt('กรุณากรอก LINE OA ID (เช่น @abc1234):');
-            if (!lineOAID) return;
-            
-            // เปิด LINE OA โดยตรง
-            const lineUrl = `https://line.me/R/ti/p/${lineOAID}?text=${encodeURIComponent(currentStudent.student_id)}`;
-            window.open(lineUrl, '_blank');
-            
-            showToast('กรุณายืนยันใน LINE แล้วส่งรหัส: ' + currentStudent.student_id, 'success');
-            
-            // รีเซ็ตหลัง 3 วิ
-            setTimeout(() => {
-                document.getElementById('searchForm').reset();
-                document.getElementById('studentInfo').style.display = 'none';
-                document.getElementById('cameraSection').style.display = 'none';
-                document.getElementById('preview').innerHTML = '';
-                document.getElementById('lineSection').style.display = 'none';
-                capturedImage = null;
-                currentStudent = null;
+            // ดึง LINE OA ID จากการตั้งค่า
+            try {
+                const res = await fetch('/api/line/config');
+                const data = await res.json();
                 
-                const video = document.getElementById('video');
-                if (video.srcObject) {
-                    video.srcObject.getTracks().forEach(track => track.stop());
+                let lineOAID = '@YOUR_LINE_OA_ID';
+                if (data.success && data.config && data.config.line_oa_id) {
+                    lineOAID = data.config.line_oa_id;
+                } else {
+                    lineOAID = prompt('กรุณากรอก LINE OA ID (เช่น @abc1234):');
+                    if (!lineOAID) return;
                 }
-            }, 3000);
+                
+                // เปิด LINE OA โดยตรง
+                const lineUrl = `https://line.me/R/ti/p/${lineOAID}?text=${encodeURIComponent(currentStudent.student_id)}`;
+                window.open(lineUrl, '_blank');
+                
+                showToast('กรุณายืนยันใน LINE แล้วส่งรหัส: ' + currentStudent.student_id, 'success');
+                
+                // รีเซ็ตหลัง 3 วิ
+                setTimeout(() => {
+                    document.getElementById('searchForm').reset();
+                    document.getElementById('studentInfo').style.display = 'none';
+                    document.getElementById('cameraSection').style.display = 'none';
+                    document.getElementById('preview').innerHTML = '';
+                    document.getElementById('lineSection').style.display = 'none';
+                    capturedImage = null;
+                    currentStudent = null;
+                    
+                    const video = document.getElementById('video');
+                    if (video.srcObject) {
+                        video.srcObject.getTracks().forEach(track => track.stop());
+                    }
+                }, 3000);
+            } catch (error) {
+                const lineOAID = prompt('กรุณากรอก LINE OA ID (เช่น @abc1234):');
+                if (!lineOAID) return;
+                
+                const lineUrl = `https://line.me/R/ti/p/${lineOAID}?text=${encodeURIComponent(currentStudent.student_id)}`;
+                window.open(lineUrl, '_blank');
+                showToast('กรุณายืนยันใน LINE แล้วส่งรหัส: ' + currentStudent.student_id, 'success');
+            }
         }
     </script>
 </body>

@@ -150,6 +150,12 @@
             
             <form id="lineConfigForm" onsubmit="saveLineConfig(event)" style="margin-bottom: 32px;">
                 <div class="form-group">
+                    <label>LINE OA ID:</label>
+                    <input type="text" id="lineOAID" placeholder="@abc1234" style="width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 13px;" required>
+                    <small style="color: #666;">ตัวอย่าง: @softubon</small>
+                </div>
+                
+                <div class="form-group">
                     <label>Channel Access Token:</label>
                     <input type="text" id="channelAccessToken" placeholder="ใส่ Channel Access Token" style="width: 100%; padding: 10px; border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; font-size: 13px;" required>
                 </div>
@@ -187,6 +193,7 @@
                 const data = await res.json();
                 console.log('Config data:', data);
                 if (data.success && data.config) {
+                    document.getElementById('lineOAID').value = data.config.line_oa_id || '';
                     document.getElementById('channelAccessToken').value = data.config.channel_access_token || '';
                     document.getElementById('channelSecret').value = data.config.channel_secret || '';
                     console.log('Config loaded successfully');
@@ -199,16 +206,18 @@
         async function saveLineConfig(e) {
             e.preventDefault();
             
+            const lineOAID = document.getElementById('lineOAID').value;
             const channelAccessToken = document.getElementById('channelAccessToken').value;
             const channelSecret = document.getElementById('channelSecret').value;
             
-            console.log('Saving LINE config...', { channelAccessToken, channelSecret });
+            console.log('Saving LINE config...', { lineOAID, channelAccessToken, channelSecret });
             
             try {
                 const res = await fetch('/api/line/config', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
+                        line_oa_id: lineOAID,
                         channel_access_token: channelAccessToken,
                         channel_secret: channelSecret
                     })
