@@ -1106,29 +1106,49 @@ def import_from_db():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
-@app.route('/api/download_template')
+# Import System APIs
+@app.route('/api/import/with_images', methods=['POST'])
 @login_required
-def download_template():
+def import_students_with_images():
+    """นำเข้าข้อมูลพร้อมรูปภาพ"""
     try:
-        import pandas as pd
-        from io import BytesIO
+        from student_import_system import StudentImportSystem
+        
+        school_id = get_current_school_id()
+        excel_file = request.files.get('excel')
+        images_zip = request.files.get('images')
+        
+        if not excel_file:
+            return jsonify({'success': False, 'message': 'กรุณาอัพโหลดไฟล์ Excel'})
+        
+        import_system = StudentImportSystem(db)
+        
+        if images_zip:
+            result = import_system.import_with_images(excel_file, images_zip, school_id)
+        else:
+            result = import_system.import_from_excel(excel_file, school_id)
+        
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/import/template', methods=['GET'])
+@login_required
+def download_import_template():
+    """ดาวน์โหลด Template Excel"""
+    try:
+        from student_import_system import StudentImportSystem
         from flask import send_file
         
-        # Create sample template
-        df = pd.DataFrame({
-            'student_id': ['STD001', 'STD002', 'STD003'],
-            'name': ['สมชาย ใจดี', 'สมหญิง รักเรียน', 'สมศักดิ์ ขยัน'],
-            'class_name': ['ม.1/1', 'ม.1/1', 'ม.1/2']
-        })
+        import_system = StudentImportSystem(db)
+        output = import_system.create_template_excel()
         
-        output = BytesIO()
-        df.to_excel(output, index=False)
-        output.seek(0)
-        
-        return send_file(output, 
-                        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                        as_attachment=True,
-                        download_name='student_template.xlsx')
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name=f'student_import_template_{datetime.now().strftime("%Y%m%d")}.xlsx'
+        )
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
@@ -1624,9 +1644,6 @@ def get_gate_logs():
 def gate_recognize():
     """Face recognition for gate camera - no login required"""
     try:
-        import cv2
-        import numpy as np
-        
         data = request.json
         image_data = data.get('image')
         entry_type = data.get('type', 'checkin')
@@ -1634,51 +1651,48 @@ def gate_recognize():
         if not image_data:
             return jsonify({'success': False, 'message': 'No image data'})
         
-        # Convert base64 to image
-        if ',' in image_data:
-            image_data = image_data.split(',')[1]
+        # ใช้ Face Recognition System ใหม่
+        results = face_recognition_system.recognize_from_base64(image_data)
         
-        nparr = np.frombuffer(base64.b64decode(image_data), np.uint8)
-        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        if frame is None:
-            return jsonify({'success': False, 'message': 'Invalid image'})
-        
-        # Simple face detection
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-        
-        if len(faces) > 0:
-            # Get first student from any school (for demo)
-            students = db.get_students(None)
-            if students:
-                student = students[0]
-                camera_type = 'gate_in' if entry_type == 'checkin' else 'gate_out'
+        if results and len(results) > 0:
+            best_match = max(results, key=lambda x: x['confidence'])
+            
+            if best_match['confidence'] > 0.6:  # ความแม่นยำ > 60%
+                student_id = best_match['student_id']
+                students = db.get_students(None)
+                student = next((s for s in students if s['student_id'] == student_id), None)
                 
-                # Save attendance
-                db.add_attendance(
-                    student['student_id'], 
-                    student['name'], 
-                    student.get('school_id', 'SCH001'),
-                    camera_type
-                )
-                
-                # Send notification to cloud
-                cloud_sync.send_attendance(
-                    student['student_id'], 
-                    student['name'], 
-                    camera_type=camera_type
-                )
-                
-                return jsonify({
-                    'success': True,
-                    'student_id': student['student_id'],
-                    'student_name': student['name'],
-                    'type': entry_type
-                })
+                if student:
+                    school_id = student.get('school_id', 'SCH001')
+                    camera_type = 'gate_in' if entry_type == 'checkin' else 'gate_out'
+                    
+                    # บันทึกการเข้า-ออก
+                    db.add_attendance(student_id, student['name'], school_id, camera_type)
+                    
+                    # ส่งแจ้งเตือน LINE
+                    line_user_id = db.get_student_line_token(student_id)
+                    if line_user_id:
+                        current_time = datetime.now().strftime('%H:%M น.')
+                        line_notification.send_gate_notification(
+                            line_user_id, 
+                            student['name'], 
+                            entry_type, 
+                            current_time
+                        )
+                    
+                    # Sync to cloud
+                    cloud_sync.send_attendance(student_id, student['name'], camera_type=camera_type)
+                    
+                    return jsonify({
+                        'success': True,
+                        'student_id': student_id,
+                        'student_name': student['name'],
+                        'confidence': round(best_match['confidence'] * 100, 1),
+                        'type': entry_type,
+                        'line_sent': bool(line_user_id)
+                    })
         
-        return jsonify({'success': False, 'message': 'No face detected'})
+        return jsonify({'success': False, 'message': 'ไม่พบใบหน้าที่รู้จัก'})
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
@@ -2024,9 +2038,45 @@ def reseller_add_school():
     
     return jsonify({'success': True, 'school_id': school_id, 'message': 'สร้างโรงเรียนสำเร็จ!'})
 
-# ============================================
-# AI FACE RECOGNITION APIs
-# ============================================
+# Face Recognition APIs
+@app.route('/api/face/train', methods=['POST'])
+@login_required
+def train_face_model():
+    """เทรนโมเดล Face Recognition"""
+    try:
+        school_id = get_current_school_id()
+        students = db.get_students(school_id)
+        
+        # กรองเฉพาะนักเรียนที่มีรูป
+        students_with_images = [s for s in students if s.get('image_path')]
+        
+        if len(students_with_images) == 0:
+            return jsonify({
+                'success': False,
+                'message': 'ไม่มีนักเรียนที่มีรูปภาพ'
+            })
+        
+        # เทรนโมเดล
+        success_count = face_recognition_system.train_from_students(students_with_images)
+        
+        return jsonify({
+            'success': True,
+            'trained': success_count,
+            'total': len(students_with_images),
+            'message': f'เทรนสำเร็จ {success_count}/{len(students_with_images)} คน'
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/face/status', methods=['GET'])
+@login_required
+def face_model_status():
+    """ตรวจสอบสถานะโมเดล"""
+    return jsonify({
+        'success': True,
+        'trained_count': len(face_recognition_system.known_face_ids),
+        'model_exists': os.path.exists('data/face_model.pkl')
+    })
 
 @app.route('/api/ai/train', methods=['POST'])
 @login_required

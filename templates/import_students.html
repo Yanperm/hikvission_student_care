@@ -272,6 +272,12 @@
                 <div class="method-desc">นำเข้าจากไฟล์ Excel หรือ CSV (แนะนำ)</div>
             </div>
 
+            <div class="method-card" onclick="selectMethod('excel_images')">
+                <div class="method-icon">📸</div>
+                <div class="method-title">Excel + รูปภาพ</div>
+                <div class="method-desc">นำเข้าพร้อมรูปภาพและ LINE ID</div>
+            </div>
+
             <div class="method-card" onclick="selectMethod('api')">
                 <div class="method-icon">🔌</div>
                 <div class="method-title">API Integration</div>
@@ -488,6 +494,34 @@
             </div>
         </div>
 
+        <!-- Excel + Images Import -->
+        <div id="excel_images-section" class="import-section">
+            <h2 style="margin-bottom: 20px;">📸 นำเข้าพร้อมรูปภาพและ LINE ID</h2>
+            
+            <div class="alert alert-info">
+                <strong>📝 ขั้นตอน:</strong><br>
+                1. ดาวน์โหลด Template Excel<br>
+                2. กรอกข้อมูลนักเรียน + LINE ID ผู้ปกครอง<br>
+                3. เตรียมรูปภาพนักเรียน (ชื่อไฟล์ = รหัสนักเรียน.jpg)<br>
+                4. บีบอัดรูปทั้งหมดเป็น ZIP<br>
+                5. อัพโหลดทั้ง Excel และ ZIP<br>
+                <a href="/api/import/template" style="color: #0c5460; text-decoration: underline; font-weight: bold;">📥 ดาวน์โหลด Template</a>
+            </div>
+
+            <div class="form-group">
+                <label>📄 ไฟล์ Excel (ข้อมูลนักเรียน)</label>
+                <input type="file" class="form-control" id="excelFileWithImages" accept=".xlsx,.xls">
+            </div>
+
+            <div class="form-group">
+                <label>🖼️ ไฟล์ ZIP (รูปภาพนักเรียน)</label>
+                <input type="file" class="form-control" id="imagesZip" accept=".zip">
+                <small style="color: #666;">ชื่อไฟล์รูปต้องตรงกับ student_id เช่น STD001.jpg, STD002.jpg</small>
+            </div>
+
+            <button class="btn" onclick="importWithImages()">✅ นำเข้าข้อมูลและรูปภาพ</button>
+        </div>
+
         <div id="resultMessage"></div>
     </div>
         </div>
@@ -700,6 +734,47 @@
                     resultDiv.innerHTML = '';
                 }
             }, 5000);
+        }
+
+        function importWithImages() {
+            const excelFile = document.getElementById('excelFileWithImages').files[0];
+            const imagesZip = document.getElementById('imagesZip').files[0];
+
+            if (!excelFile) {
+                showMessage('กรุณาเลือกไฟล์ Excel', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('excel', excelFile);
+            if (imagesZip) {
+                formData.append('images', imagesZip);
+            }
+
+            showMessage('กำลังนำเข้าข้อมูล...', 'info');
+
+            fetch('/api/import/with_images', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let msg = `✅ นำเข้าสำเร็จ ${data.imported}/${data.total} คน`;
+                    if (data.images_matched) {
+                        msg += ` | จับคู่รูปภาพ ${data.images_matched} คน`;
+                    }
+                    showMessage(msg, 'success');
+                    setTimeout(() => {
+                        window.location.href = '/admin';
+                    }, 2000);
+                } else {
+                    showMessage('เกิดข้อผิดพลาด: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('เกิดข้อผิดพลาด: ' + error.message, 'error');
+            });
         }
     </script>
 </body>
