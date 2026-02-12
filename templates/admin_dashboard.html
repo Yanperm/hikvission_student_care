@@ -436,11 +436,11 @@
                     </div>
                 </div>
                 <div style="padding: 20px; background: #f8f9fa; border-radius: 10px;">
-                    <h3>📈 สถิติวันนี้</h3>
+                    <h3>📈 สถิติการเข้า-ออกวันนี้</h3>
                     <div style="margin-top: 15px;">
-                        <p>อัตราการเข้าเรียน: <strong id="attendanceRate">0%</strong></p>
-                        <p>นักเรียนขาดเรียน: <strong id="absentCount">0</strong> คน</p>
-                        <p>พฤติกรรมดี: <strong id="goodBehavior">0</strong> ครั้ง</p>
+                        <p>🟢 เข้าโรงเรียน: <strong id="checkinCount">0</strong> คน</p>
+                        <p>🟠 ออกโรงเรียน: <strong id="checkoutCount">0</strong> คน</p>
+                        <p>📊 อัตราการเข้าเรียน: <strong id="attendanceRate">0%</strong></p>
                     </div>
                 </div>
             </div>
@@ -605,7 +605,18 @@
                     document.getElementById('behaviorAlerts').textContent = data.stats.behavior_alerts;
                     document.getElementById('unreadNotifications').textContent = data.stats.unread_notifications;
                     document.getElementById('attendanceRate').textContent = data.stats.attendance_rate + '%';
-                    document.getElementById('absentCount').textContent = data.stats.total_students - data.stats.today_attendance;
+                    
+                    // ดึงข้อมูลการเข้า-ออก
+                    const attRes = await fetch('/api/attendance');
+                    const attData = await attRes.json();
+                    if (attData.success) {
+                        const today = new Date().toISOString().split('T')[0];
+                        const todayAtt = attData.attendance.filter(a => a.timestamp.startsWith(today));
+                        const checkin = todayAtt.filter(a => a.camera_type === 'gate_in').length;
+                        const checkout = todayAtt.filter(a => a.camera_type === 'gate_out').length;
+                        document.getElementById('checkinCount').textContent = checkin;
+                        document.getElementById('checkoutCount').textContent = checkout;
+                    }
                 }
             } catch (error) {
                 console.error('Error loading stats:', error);
