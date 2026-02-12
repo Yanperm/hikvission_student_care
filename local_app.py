@@ -1628,24 +1628,26 @@ def get_line_config():
         
         # เพิ่มคอลัมน์ถ้ายังไม่มี
         try:
+            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_oa_id TEXT')
             cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_token TEXT')
             cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_secret TEXT')
             conn.commit()
         except:
             pass
         
-        cursor.execute('SELECT line_channel_token, line_channel_secret FROM schools WHERE school_id = %s', (school_id,))
+        cursor.execute('SELECT line_oa_id, line_channel_token, line_channel_secret FROM schools WHERE school_id = %s', (school_id,))
         row = cursor.fetchone()
         conn.close()
         
         if row:
-            # PostgreSQL RealDictCursor returns dict
-            token = row['line_channel_token'] if isinstance(row, dict) else row[0]
-            secret = row['line_channel_secret'] if isinstance(row, dict) else row[1]
+            oa_id = row['line_oa_id'] if isinstance(row, dict) else row[0]
+            token = row['line_channel_token'] if isinstance(row, dict) else row[1]
+            secret = row['line_channel_secret'] if isinstance(row, dict) else row[2]
             
             return jsonify({
                 'success': True,
                 'config': {
+                    'line_oa_id': oa_id or '',
                     'channel_access_token': token or '',
                     'channel_secret': secret or ''
                 }
@@ -1667,6 +1669,7 @@ def save_line_config():
         
         # เพิ่มคอลัมน์ถ้ายังไม่มี
         try:
+            cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_oa_id TEXT')
             cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_token TEXT')
             cursor.execute('ALTER TABLE schools ADD COLUMN IF NOT EXISTS line_channel_secret TEXT')
             conn.commit()
@@ -1675,9 +1678,9 @@ def save_line_config():
         
         cursor.execute("""
             UPDATE schools 
-            SET line_channel_token = %s, line_channel_secret = %s
+            SET line_oa_id = %s, line_channel_token = %s, line_channel_secret = %s
             WHERE school_id = %s
-        """, (data['channel_access_token'], data['channel_secret'], school_id))
+        """, (data['line_oa_id'], data['channel_access_token'], data['channel_secret'], school_id))
         conn.commit()
         conn.close()
         
@@ -1692,21 +1695,25 @@ def test_line_message():
     try:
         data = request.json
         student_id = data.get('student_id')
+        school_id = get_current_school_id()
         
-        # ดึง LINE token
+        # ดึง LINE token จากฐานข้อมูล
+        school = db.get_school(school_id)
+        if not school or not school.get('line_channel_token'):
+            return jsonify({'success': False, 'message': 'กรุณาตั้งค่า LINE OA ในหน้าตั้งค่าก่อน'})
+        
+        from line_oa import LineOA
+        line = LineOA(school['line_channel_token'])
+        
         line_user_id = db.get_student_line_token(student_id)
-        
         if not line_user_id:
             return jsonify({'success': False, 'message': 'ยังไม่ได้เชื่อมต่อ LINE'})
         
-        # ส่งข้อความทดสอบ
-        school_id = get_current_school_id()
         students = db.get_students(school_id)
         student = next((s for s in students if s['student_id'] == student_id), None)
         
         if student:
-            try:
-                line_oa.send_message(line_user_id, f"""📢 ข้อความทดสอบ
+            result = line.send_message(line_user_id, f"""📢 ข้อความทดสอบ
 
 ✅ ระบบเชื่อมต่อ LINE สำเร็จ!
 
@@ -1718,9 +1725,10 @@ def test_line_message():
 🟠 บุตรออกจากโรงเรียน
 ⚠️ บุตรขาดเรียน
 📝 พฤติกรรมผิดปกติ""")
+            if result:
                 return jsonify({'success': True, 'message': 'ส่งข้อความทดสอบสำเร็จ'})
-            except Exception as e:
-                return jsonify({'success': False, 'message': f'ส่งไม่สำเร็จ: {str(e)}'})
+            else:
+                return jsonify({'success': False, 'message': 'ส่งไม่สำเร็จ ตรวจสอบ console log'})
         
         return jsonify({'success': False, 'message': 'ไม่พบข้อมูลนักเรียน'})
     except Exception as e:
@@ -1738,15 +1746,19 @@ def line_webhook():
                 reply_token = event['replyToken']
                 text = event['message']['text'].strip()
                 
-                # ถ้าส่งรหัสนักเรียนมา
-                students = db.get_students('SCH001')  # ใช้ school_id แทน None
+                students = db.get_students('SCH001')
                 student = next((s for s in students if s['student_id'] == text), None)
                 
                 if student:
-                    # พบนักเรียน - บันทึก User ID
                     db.update_student_line_token(text, user_id)
                     
-                    reply_msg = f"""✅ เชื่อมต่อสำเร็จ!
+                    # ดึง token จาก school
+                    school = db.get_school('SCH001')
+                    if school and school.get('line_channel_token'):
+                        from line_oa import LineOA
+                        line = LineOA(school['line_channel_token'])
+                        
+                        reply_msg = f"""✅ เชื่อมต่อสำเร็จ!
 
 👤 ชื่อ: {student['name']}
 🏫 ห้อง: {student.get('class_name', '-')}
@@ -1758,16 +1770,20 @@ def line_webhook():
 📝 พฤติกรรมผิดปกติ
 
 ขอบคุณที่ไว้วางใจ Student Care System"""
-                    
-                    line_oa.reply_message(reply_token, reply_msg)
+                        
+                        line.reply_message(reply_token, reply_msg)
                 else:
-                    # ไม่พบนักเวียน
-                    reply_msg = f"""❌ ไม่พบรหัสนักเรียน: {text}
+                    school = db.get_school('SCH001')
+                    if school and school.get('line_channel_token'):
+                        from line_oa import LineOA
+                        line = LineOA(school['line_channel_token'])
+                        
+                        reply_msg = f"""❌ ไม่พบรหัสนักเรียน: {text}
 
 กรุณาส่งรหัสนักเรียนที่ถูกต้อง
 ตัวอย่าง: STD001"""
-                    
-                    line_oa.reply_message(reply_token, reply_msg)
+                        
+                        line.reply_message(reply_token, reply_msg)
         
         return jsonify({'success': True}), 200
     

@@ -729,8 +729,41 @@
             showToast(result.message, 'success');
         }
 
+        // โหลดข้อมูลนักเรียนใหม่ทุก 10 วินาที
+        async function refreshStudents() {
+            try {
+                const res = await fetch('/api/students_auth');
+                const data = await res.json();
+                if (data.success) {
+                    const tbody = document.getElementById('studentsTable');
+                    tbody.innerHTML = data.students.map(student => `
+                        <tr>
+                            <td><img src="/student_image/${student.student_id}" class="student-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2245%22 height=%2245%22%3E%3Ccircle cx=%2222%22 cy=%2222%22 r=%2222%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2220%22%3E👤%3C/text%3E%3C/svg%3E'"></td>
+                            <td>${student.student_id}</td>
+                            <td><strong>${student.name}</strong></td>
+                            <td>${student.class_name || '-'}</td>
+                            <td>
+                                ${student.parent_line_token ? 
+                                    `<span style="color: #34c759;">✅ เชื่อมแล้ว</span>
+                                    <button class="btn btn-sm btn-success" onclick="testLINE('${student.student_id}')">📤 ทดสอบ</button>` : 
+                                    `<span style="color: #ff3b30;">❌ ยังไม่เชื่อม</span>`
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="viewStudent('${student.student_id}')">ดู</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteStudent('${student.student_id}')">ลบ</button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error refreshing students:', error);
+            }
+        }
+
         loadStats();
         setInterval(loadStats, 30000);
+        setInterval(refreshStudents, 10000); // Refresh ทุก 10 วินาที
     </script>
 </body>
 </html>
