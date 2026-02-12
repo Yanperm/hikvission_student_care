@@ -97,26 +97,14 @@
             <a class="menu-item" onclick="showSection('attendance')">
                 <span>✅</span> การเข้าเรียน
             </a>
-            <a class="menu-item" onclick="showSection('behavior')">
-                <span>👁️</span> พฤติกรรม
-            </a>
             <a class="menu-item" href="/camera_gate">
-                <span>🚺</span> กล้องหน้าประตู
+                <span>🚪</span> กล้องหน้าประตู
             </a>
             <a class="menu-item" href="/line_setup">
                 <span>💚</span> ตั้งค่า LINE OA
             </a>
             <a class="menu-item" onclick="showSection('reports')">
                 <span>📈</span> รายงาน
-            </a>
-            <a class="menu-item" onclick="showSection('notifications')">
-                <span>🔔</span> การแจ้งเตือน
-            </a>
-            <a class="menu-item" href="/manage_users">
-                <span>👥</span> จัดการผู้ใช้งาน
-            </a>
-            <a class="menu-item" href="/all_features">
-                <span>🎯</span> ฟีเจอร์ทั้งหมด
             </a>
         </div>
         <div class="logout-btn" onclick="location.href='/logout'">
@@ -250,28 +238,6 @@
             </table>
         </div>
 
-        <!-- Behavior Section -->
-        <div class="content-section" id="behavior">
-            <div class="section-header">
-                <h2>👁️ พฤติกรรมนักเรียน</h2>
-                <button class="btn btn-primary" onclick="openAddBehaviorModal()">➕ บันทึกพฤติกรรม</button>
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>รหัสนักเรียน</th>
-                        <th>ชื่อ-นามสกุล</th>
-                        <th>พฤติกรรม</th>
-                        <th>ระดับ</th>
-                        <th>เวลา</th>
-                    </tr>
-                </thead>
-                <tbody id="behaviorTable">
-                    <tr><td colspan="5" style="text-align: center;">กำลังโหลด...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
         <!-- Reports Section -->
         <div class="content-section" id="reports">
             <div class="section-header">
@@ -297,15 +263,6 @@
             <button class="btn btn-primary" onclick="exportReport()">📥 ส่งออกรายงาน</button>
         </div>
 
-        <!-- Notifications Section -->
-        <div class="content-section" id="notifications">
-            <div class="section-header">
-                <h2>🔔 การแจ้งเตือน</h2>
-            </div>
-            <div id="notificationsList">
-                <p style="text-align: center; color: #666;">กำลังโหลด...</p>
-            </div>
-        </div>
     </div>
 
     <!-- Add Student Modal -->
@@ -354,8 +311,6 @@
             event.target.closest('.menu-item').classList.add('active');
             
             if (section === 'attendance') loadAttendance();
-            if (section === 'behavior') loadBehavior();
-            if (section === 'notifications') loadNotifications();
         }
 
         async function loadStats() {
@@ -386,42 +341,6 @@
                         <td>${a.camera_type}</td>
                         <td><span style="color: #4CAF50;">✅ ${a.status}</span></td>
                     </tr>
-                `).join('');
-            }
-        }
-
-        async function loadBehavior() {
-            const res = await fetch('/api/behavior');
-            const data = await res.json();
-            const tbody = document.getElementById('behaviorTable');
-            if (data.behaviors.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">ยังไม่มีข้อมูล</td></tr>';
-            } else {
-                tbody.innerHTML = data.behaviors.slice(0, 50).map(b => `
-                    <tr>
-                        <td>${b.student_id}</td>
-                        <td><strong>${b.student_name}</strong></td>
-                        <td>${b.behavior}</td>
-                        <td><span style="color: ${b.severity === 'danger' ? '#f44336' : b.severity === 'warning' ? '#FF9800' : '#4CAF50'};">${b.severity}</span></td>
-                        <td>${new Date(b.timestamp).toLocaleString('th-TH')}</td>
-                    </tr>
-                `).join('');
-            }
-        }
-
-        async function loadNotifications() {
-            const res = await fetch('/api/notifications');
-            const data = await res.json();
-            const list = document.getElementById('notificationsList');
-            if (data.notifications.length === 0) {
-                list.innerHTML = '<p style="text-align: center; color: #666;">ไม่มีการแจ้งเตือน</p>';
-            } else {
-                list.innerHTML = data.notifications.map(n => `
-                    <div style="padding: 15px; background: ${n.read ? '#f8f9fa' : '#e3f2fd'}; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid #2196F3;">
-                        <strong>${n.title}</strong>
-                        <p style="margin: 5px 0; color: #666;">${n.message}</p>
-                        <small style="color: #999;">${new Date(n.timestamp).toLocaleString('th-TH')}</small>
-                    </div>
                 `).join('');
             }
         }
