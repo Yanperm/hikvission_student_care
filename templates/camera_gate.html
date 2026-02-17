@@ -163,6 +163,17 @@
             </div>
 
             <div class="card">
+                <h2 style="margin-bottom: 16px; font-size: 18px;">📈 สถิติการเข้า-ออกวันนี้</h2>
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 48px; margin: 10px 0;">🟢 <span id="checkinCount">0</span></div>
+                    <div style="color: #666; margin-bottom: 20px;">เข้าโรงเรียน</div>
+                    
+                    <div style="font-size: 48px; margin: 10px 0;">🟠 <span id="checkoutCount">0</span></div>
+                    <div style="color: #666;">ออกโรงเรียน</div>
+                </div>
+            </div>
+
+            <div class="card">
                 <h2 style="margin-bottom: 16px; font-size: 18px;">📋 บันทึก (<span id="count">0</span>)</h2>
                 <div id="logList" style="max-height: 600px; overflow-y: auto;"></div>
             </div>
@@ -212,7 +223,13 @@
 
         // ฟังก์ชันรับ Event จากกล้อง (Polling)
         async function startListening() {
+            // โหลดสถิติครั้งแรก
+            loadStats();
+            
             setInterval(async () => {
+                // อัพเดทสถิติ
+                loadStats();
+                
                 // ตรวจสอบ log ล่าสุดจาก API
                 const res = await fetch('/api/gate/recent');
                 const data = await res.json();
@@ -230,6 +247,20 @@
                     document.getElementById('count').textContent = logCount;
                 }
             }, 3000); // ตรวจสอบทุก 3 วินาที
+        }
+        
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/gate/stats');
+                const data = await res.json();
+                
+                if (data.success) {
+                    document.getElementById('checkinCount').textContent = data.checkin;
+                    document.getElementById('checkoutCount').textContent = data.checkout;
+                }
+            } catch (e) {
+                console.error('Load stats error:', e);
+            }
         }
 
         function addLog(studentId, studentName, type) {
