@@ -33,7 +33,7 @@ class Database:
             self.RealDictCursor = RealDictCursor
             
             self.pool = pool.SimpleConnectionPool(
-                1, 20,
+                1, 50,
                 host=os.environ.get('DB_HOST'),
                 database=os.environ.get('DB_NAME', 'postgres'),
                 user=os.environ.get('DB_USER'),
