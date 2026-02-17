@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Student Care System{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/macos-style.css">
+    <link rel="stylesheet" href="/static/notification.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if show_sidebar %}
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div style="padding: 20px; border-bottom: 1px solid var(--macos-border);">
+            <h2 style="font-size: 18px; font-weight: 600;">🎓 Student Care</h2>
+            {% if school_name %}
+            <p style="font-size: 12px; color: var(--macos-text-secondary); margin-top: 4px;">{{ school_name }}</p>
+            {% endif %}
+        </div>
+        <div style="padding: 12px 8px;">
+            <a href="/admin" class="menu-item {% if active_page == 'admin' %}active{% endif %}">
+                <span>📊</span> ภาพรวม
+            </a>
+            <a href="/import_students" class="menu-item {% if active_page == 'import' %}active{% endif %}">
+                <span>📥</span> นำเข้าข้อมูล
+            </a>
+            <a href="/camera_gate" class="menu-item {% if active_page == 'gate' %}active{% endif %}">
+                <span>🚪</span> กล้องหน้าประตู
+            </a>
+            <a href="/line_setup" class="menu-item {% if active_page == 'line' %}active{% endif %}">
+                <span>💚</span> ตั้งค่า LINE
+            </a>
+            <a href="/camera_settings" class="menu-item {% if active_page == 'camera' %}active{% endif %}">
+                <span>🎥</span> ตั้งค่ากล้อง
+            </a>
+        </div>
+        <div style="padding: 8px; margin-top: auto;">
+            <a href="/logout" style="display: block; padding: 8px 12px; text-align: center; background: rgba(0,0,0,0.04); border-radius: 8px; text-decoration: none; color: var(--macos-text); font-size: 13px;">
+                🚪 ออกจากระบบ
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div style="margin-left: 240px; padding: 24px;">
+    {% else %}
+    <div style="padding: 24px;">
+    {% endif %}
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="/static/notification.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
