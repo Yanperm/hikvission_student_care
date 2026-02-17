@@ -1777,33 +1777,30 @@ def realtime_status():
 @app.route('/api/gate_entry', methods=['POST'])
 def gate_entry():
     """รับ Event จากกล้อง Hikvision"""
-    data = request.json
-    student_id = data.get('student_id')
-    student_name = data.get('student_name')
-    entry_type = data.get('type', 'checkin')
-    school_id = data.get('school_id', 'SCH001')
-    
-    camera_type = 'gate_in' if entry_type == 'checkin' else 'gate_out'
-    db.add_attendance(student_id, student_name, school_id, camera_type)
-    
-    current_time = datetime.now().strftime('%H:%M น.')
-    title = '🟢 บุตรของท่านมาถึงโรงเรียนแล้ว' if entry_type == 'checkin' else '🟠 บุตรของท่านออกจากโรงเรียนแล้ว'
-    message = f'{student_name} {"เข้า" if entry_type == "checkin" else "ออกจาก"}โรงเรียนเวลา {current_time}'
-    
-    db.add_notification(school_id, student_id, 'gate', title, message)
-    
-    line_user_id = db.get_student_line_token(student_id)
-    line_sent = False
-    if line_user_id:
-        school = db.get_school(school_id)
-        if school and school.get('line_channel_token'):
-            from line_oa import LineOA
-            line = LineOA(school['line_channel_token'])
-            line_sent = line.send_gate_entry(line_user_id, student_name, entry_type, current_time)
-    
-    cloud_sync.send_attendance(student_id, student_name, camera_type=camera_type)
-    
-    return jsonify({'success': True, 'line_sent': line_sent})
+    try:
+        data = request.json
+        student_id = data.get('student_id')
+        student_name = data.get('student_name')
+        entry_type = data.get('type', 'checkin')
+        school_id = data.get('school_id', 'SCH001')
+        
+        if not student_id or not student_name:
+            return jsonify({'success': False, 'message': 'Missing student_id or student_name'})
+        
+        camera_type = 'gate_in' if entry_type == 'checkin' else 'gate_out'
+        db.add_attendance(student_id, student_name, school_id, camera_type)
+        
+        current_time = datetime.now().strftime('%H:%M')
+        
+        return jsonify({
+            'success': True,
+            'student_id': student_id,
+            'student_name': student_name,
+            'type': entry_type,
+            'time': current_time
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/api/student/<student_id>/line_token', methods=['POST'])
 @login_required
