@@ -431,6 +431,11 @@ def gate_camera_standalone():
 def camera_management():
     return render_template('camera_management.html')
 
+@app.route('/camera_settings')
+@login_required
+def camera_settings():
+    return render_template('camera_settings.html')
+
 @app.route('/self_register')
 def self_register():
     """Self registration for students - no login required"""
@@ -2291,6 +2296,110 @@ def mental_health_stats():
             'total': len(students)
         }
     })
+
+# ============================================
+# HIKVISION CAMERA APIs
+# ============================================
+
+@app.route('/api/camera/config', methods=['GET'])
+@login_required
+def get_camera_config():
+    try:
+        school_id = get_current_school_id()
+        school = db.get_school(school_id)
+        
+        if school:
+            return jsonify({
+                'success': True,
+                'config': {
+                    'camera_ip': school.get('camera_ip', ''),
+                    'camera_user': school.get('camera_user', 'admin'),
+                    'camera_pass': school.get('camera_pass', '')
+                }
+            })
+        return jsonify({'success': False, 'message': 'ไม่พบข้อมูลโรงเรียน'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/camera/config', methods=['POST'])
+@login_required
+def save_camera_config():
+    try:
+        data = request.json
+        school_id = get_current_school_id()
+        
+        conn = db.get_connection()
+        cursor = conn.cursor()
+        
+        if db.db_type == 'postgresql':
+            cursor.execute("""
+                UPDATE schools 
+                SET camera_ip = %s, camera_user = %s, camera_pass = %s
+                WHERE school_id = %s
+            """, (data['camera_ip'], data['camera_user'], data['camera_pass'], school_id))
+        else:
+            cursor.execute("""
+                UPDATE schools 
+                SET camera_ip = ?, camera_user = ?, camera_pass = ?
+                WHERE school_id = ?
+            """, (data['camera_ip'], data['camera_user'], data['camera_pass'], school_id))
+        
+        conn.commit()
+        db.close_connection(conn)
+        
+        # Clear camera cache
+        if school_id in hikvision_cameras:
+            del hikvision_cameras[school_id]
+        
+        return jsonify({'success': True, 'message': 'บันทึกการตั้งค่าสำเร็จ'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
+@app.route('/api/camera/test', methods=['POST'])
+@login_required
+def test_camera_connection():
+    try:
+        data = request.json
+        from hikvision_face_api import HikvisionFaceAPI
+        
+        camera = HikvisionFaceAPI(
+            data['camera_ip'],
+            data['camera_user'],
+            data['camera_pass']
+        )
+        
+        if camera.test_connection():
+            return jsonify({'success': True, 'message': 'เชื่อมต่อกล้องสำเร็จ!'})
+        else:
+            return jsonify({'success': False, 'message': 'ไม่สามารถเชื่อมต่อกล้องได้'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'เกิดข้อผิดพลาด: {str(e)}'})
+
+@app.route('/api/camera/sync_students', methods=['POST'])
+@login_required
+def sync_students_to_camera():
+    try:
+        school_id = get_current_school_id()
+        camera = get_school_camera(school_id)
+        
+        if not camera:
+            return jsonify({'success': False, 'message': 'กรุณาตั้งค่ากล้องก่อน'})
+        
+        students = db.get_students(school_id)
+        students_with_images = [s for s in students if s.get('image_path') and os.path.exists(s['image_path'])]
+        
+        if not students_with_images:
+            return jsonify({'success': False, 'message': 'ไม่มีนักเรียนที่มีรูปภาพ'})
+        
+        result = camera.sync_all_students(students_with_images)
+        
+        return jsonify({
+            'success': result['success'],
+            'total': result['total'],
+            'message': f"Sync สำเร็จ {result['success']}/{result['total']} คน"
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
 
 # ============================================
 # SUPER ADMIN API ENDPOINTS
