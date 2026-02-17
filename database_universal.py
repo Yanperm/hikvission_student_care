@@ -303,23 +303,25 @@ class Database:
     
     def add_user(self, username, password, name, role, school_id=None):
         conn = self.get_connection()
-        cursor = conn.cursor()
-        hashed = password_manager.hash_password(password)
-        
-        if self.db_type == 'postgresql':
-            cursor.execute('''
-                INSERT INTO users (username, password, name, role, school_id, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            ''', (username, hashed, name, role, school_id, datetime.now()))
-        else:
-            cursor.execute('''
-                INSERT INTO users (username, password, name, role, school_id, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-            ''', (username, hashed, name, role, school_id, datetime.now().isoformat()))
-        
-        conn.commit()
-        cursor.close()
-        self.close_connection(conn)
+        try:
+            cursor = conn.cursor()
+            hashed = password_manager.hash_password(password)
+            
+            if self.db_type == 'postgresql':
+                cursor.execute('''
+                    INSERT INTO users (username, password, name, role, school_id, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                ''', (username, hashed, name, role, school_id, datetime.now()))
+            else:
+                cursor.execute('''
+                    INSERT INTO users (username, password, name, role, school_id, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (username, hashed, name, role, school_id, datetime.now().isoformat()))
+            
+            conn.commit()
+            cursor.close()
+        finally:
+            self.close_connection(conn)
     
     def get_students(self, school_id=None):
         conn = self.get_connection()
@@ -345,73 +347,81 @@ class Database:
     
     def add_student(self, student_id, name, class_name, school_id, image_path, parent_line_token=None):
         conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        if self.db_type == 'postgresql':
-            cursor.execute('''
-                INSERT INTO students (student_id, name, class_name, school_id, image_path, parent_line_token, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ''', (student_id, name, class_name, school_id, image_path, parent_line_token, datetime.now()))
-        else:
-            cursor.execute('''
-                INSERT INTO students (student_id, name, class_name, school_id, image_path, parent_line_token, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            ''', (student_id, name, class_name, school_id, image_path, parent_line_token, datetime.now().isoformat()))
-        
-        conn.commit()
-        cursor.close()
-        self.close_connection(conn)
+        try:
+            cursor = conn.cursor()
+            
+            if self.db_type == 'postgresql':
+                cursor.execute('''
+                    INSERT INTO students (student_id, name, class_name, school_id, image_path, parent_line_token, created_at)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                ''', (student_id, name, class_name, school_id, image_path, parent_line_token, datetime.now()))
+            else:
+                cursor.execute('''
+                    INSERT INTO students (student_id, name, class_name, school_id, image_path, parent_line_token, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (student_id, name, class_name, school_id, image_path, parent_line_token, datetime.now().isoformat()))
+            
+            conn.commit()
+            cursor.close()
+        finally:
+            self.close_connection(conn)
     
     def update_student(self, student_id, name, class_name, school_id, image_path):
         conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        if self.db_type == 'postgresql':
-            cursor.execute('''
-                UPDATE students SET name = %s, class_name = %s, image_path = %s
-                WHERE student_id = %s AND school_id = %s
-            ''', (name, class_name, image_path, student_id, school_id))
-        else:
-            cursor.execute('''
-                UPDATE students SET name = ?, class_name = ?, image_path = ?
-                WHERE student_id = ? AND school_id = ?
-            ''', (name, class_name, image_path, student_id, school_id))
-        
-        conn.commit()
-        cursor.close()
-        self.close_connection(conn)
+        try:
+            cursor = conn.cursor()
+            
+            if self.db_type == 'postgresql':
+                cursor.execute('''
+                    UPDATE students SET name = %s, class_name = %s, image_path = %s
+                    WHERE student_id = %s AND school_id = %s
+                ''', (name, class_name, image_path, student_id, school_id))
+            else:
+                cursor.execute('''
+                    UPDATE students SET name = ?, class_name = ?, image_path = ?
+                    WHERE student_id = ? AND school_id = ?
+                ''', (name, class_name, image_path, student_id, school_id))
+            
+            conn.commit()
+            cursor.close()
+        finally:
+            self.close_connection(conn)
     
     def delete_student(self, student_id):
         conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        if self.db_type == 'postgresql':
-            cursor.execute('DELETE FROM students WHERE student_id = %s', (student_id,))
-        else:
-            cursor.execute('DELETE FROM students WHERE student_id = ?', (student_id,))
-        
-        conn.commit()
-        cursor.close()
-        self.close_connection(conn)
+        try:
+            cursor = conn.cursor()
+            
+            if self.db_type == 'postgresql':
+                cursor.execute('DELETE FROM students WHERE student_id = %s', (student_id,))
+            else:
+                cursor.execute('DELETE FROM students WHERE student_id = ?', (student_id,))
+            
+            conn.commit()
+            cursor.close()
+        finally:
+            self.close_connection(conn)
     
     def add_attendance(self, student_id, student_name, school_id, camera_type='general'):
         conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        if self.db_type == 'postgresql':
-            cursor.execute('''
-                INSERT INTO attendance (student_id, student_name, school_id, camera_type, timestamp)
-                VALUES (%s, %s, %s, %s, %s)
-            ''', (student_id, student_name, school_id, camera_type, datetime.now()))
-        else:
-            cursor.execute('''
-                INSERT INTO attendance (student_id, student_name, school_id, camera_type, timestamp)
-                VALUES (?, ?, ?, ?, ?)
-            ''', (student_id, student_name, school_id, camera_type, datetime.now().isoformat()))
-        
-        conn.commit()
-        cursor.close()
-        self.close_connection(conn)
+        try:
+            cursor = conn.cursor()
+            
+            if self.db_type == 'postgresql':
+                cursor.execute('''
+                    INSERT INTO attendance (student_id, student_name, school_id, camera_type, timestamp)
+                    VALUES (%s, %s, %s, %s, %s)
+                ''', (student_id, student_name, school_id, camera_type, datetime.now()))
+            else:
+                cursor.execute('''
+                    INSERT INTO attendance (student_id, student_name, school_id, camera_type, timestamp)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (student_id, student_name, school_id, camera_type, datetime.now().isoformat()))
+            
+            conn.commit()
+            cursor.close()
+        finally:
+            self.close_connection(conn)
     
     def get_attendance(self, school_id=None, date=None):
         conn = self.get_connection()
@@ -477,16 +487,18 @@ class Database:
     
     def update_student_line_token(self, student_id, line_token):
         conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        if self.db_type == 'postgresql':
-            cursor.execute('UPDATE students SET parent_line_token = %s WHERE student_id = %s', (line_token, student_id))
-        else:
-            cursor.execute('UPDATE students SET parent_line_token = ? WHERE student_id = ?', (line_token, student_id))
-        
-        conn.commit()
-        cursor.close()
-        self.close_connection(conn)
+        try:
+            cursor = conn.cursor()
+            
+            if self.db_type == 'postgresql':
+                cursor.execute('UPDATE students SET parent_line_token = %s WHERE student_id = %s', (line_token, student_id))
+            else:
+                cursor.execute('UPDATE students SET parent_line_token = ? WHERE student_id = ?', (line_token, student_id))
+            
+            conn.commit()
+            cursor.close()
+        finally:
+            self.close_connection(conn)
     
     def get_behavior(self, school_id=None, student_id=None):
         conn = self.get_connection()
