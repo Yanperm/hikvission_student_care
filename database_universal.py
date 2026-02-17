@@ -411,45 +411,49 @@ class Database:
     
     def get_attendance(self, school_id=None, date=None):
         conn = self.get_connection()
-        cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
-        
-        if self.db_type == 'postgresql':
-            if school_id:
-                cursor.execute('SELECT * FROM attendance WHERE school_id = %s ORDER BY timestamp DESC LIMIT 1000', (school_id,))
+        try:
+            cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
+            
+            if self.db_type == 'postgresql':
+                if school_id:
+                    cursor.execute('SELECT * FROM attendance WHERE school_id = %s ORDER BY timestamp DESC LIMIT 1000', (school_id,))
+                else:
+                    cursor.execute('SELECT * FROM attendance ORDER BY timestamp DESC LIMIT 1000')
             else:
-                cursor.execute('SELECT * FROM attendance ORDER BY timestamp DESC LIMIT 1000')
-        else:
-            if school_id:
-                cursor.execute('SELECT * FROM attendance WHERE school_id = ? ORDER BY timestamp DESC LIMIT 1000', (school_id,))
-            else:
-                cursor.execute('SELECT * FROM attendance ORDER BY timestamp DESC LIMIT 1000')
-        
-        attendance = [dict(row) for row in cursor.fetchall()]
-        cursor.close()
-        self.close_connection(conn)
-        return attendance
+                if school_id:
+                    cursor.execute('SELECT * FROM attendance WHERE school_id = ? ORDER BY timestamp DESC LIMIT 1000', (school_id,))
+                else:
+                    cursor.execute('SELECT * FROM attendance ORDER BY timestamp DESC LIMIT 1000')
+            
+            attendance = [dict(row) for row in cursor.fetchall()]
+            cursor.close()
+            return attendance
+        finally:
+            self.close_connection(conn)
     
     def get_school(self, school_id):
         conn = self.get_connection()
-        cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
-        
-        if self.db_type == 'postgresql':
-            cursor.execute('SELECT * FROM schools WHERE school_id = %s', (school_id,))
-        else:
-            cursor.execute('SELECT * FROM schools WHERE school_id = ?', (school_id,))
-        
-        school = cursor.fetchone()
-        cursor.close()
-        self.close_connection(conn)
-        
-        if school:
-            school = dict(school)
-            if school.get('features'):
-                try:
-                    school['features'] = json.loads(school['features'])
-                except:
-                    school['features'] = []
-        return school
+        try:
+            cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
+            
+            if self.db_type == 'postgresql':
+                cursor.execute('SELECT * FROM schools WHERE school_id = %s', (school_id,))
+            else:
+                cursor.execute('SELECT * FROM schools WHERE school_id = ?', (school_id,))
+            
+            school = cursor.fetchone()
+            cursor.close()
+            
+            if school:
+                school = dict(school)
+                if school.get('features'):
+                    try:
+                        school['features'] = json.loads(school['features'])
+                    except:
+                        school['features'] = []
+            return school
+        finally:
+            self.close_connection(conn)
     
     def get_student_line_token(self, student_id):
         conn = self.get_connection()
@@ -480,27 +484,29 @@ class Database:
     
     def get_behavior(self, school_id=None, student_id=None):
         conn = self.get_connection()
-        cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
-        
-        if self.db_type == 'postgresql':
-            if student_id:
-                cursor.execute('SELECT * FROM behavior WHERE student_id = %s ORDER BY timestamp DESC', (student_id,))
-            elif school_id:
-                cursor.execute('SELECT * FROM behavior WHERE school_id = %s ORDER BY timestamp DESC', (school_id,))
+        try:
+            cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
+            
+            if self.db_type == 'postgresql':
+                if student_id:
+                    cursor.execute('SELECT * FROM behavior WHERE student_id = %s ORDER BY timestamp DESC', (student_id,))
+                elif school_id:
+                    cursor.execute('SELECT * FROM behavior WHERE school_id = %s ORDER BY timestamp DESC', (school_id,))
+                else:
+                    cursor.execute('SELECT * FROM behavior ORDER BY timestamp DESC')
             else:
-                cursor.execute('SELECT * FROM behavior ORDER BY timestamp DESC')
-        else:
-            if student_id:
-                cursor.execute('SELECT * FROM behavior WHERE student_id = ? ORDER BY timestamp DESC', (student_id,))
-            elif school_id:
-                cursor.execute('SELECT * FROM behavior WHERE school_id = ? ORDER BY timestamp DESC', (school_id,))
-            else:
-                cursor.execute('SELECT * FROM behavior ORDER BY timestamp DESC')
-        
-        behaviors = [dict(row) for row in cursor.fetchall()]
-        cursor.close()
-        self.close_connection(conn)
-        return behaviors
+                if student_id:
+                    cursor.execute('SELECT * FROM behavior WHERE student_id = ? ORDER BY timestamp DESC', (student_id,))
+                elif school_id:
+                    cursor.execute('SELECT * FROM behavior WHERE school_id = ? ORDER BY timestamp DESC', (school_id,))
+                else:
+                    cursor.execute('SELECT * FROM behavior ORDER BY timestamp DESC')
+            
+            behaviors = [dict(row) for row in cursor.fetchall()]
+            cursor.close()
+            return behaviors
+        finally:
+            self.close_connection(conn)
     
     def get_all_schools(self):
         conn = self.get_connection()

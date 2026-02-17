@@ -1755,42 +1755,34 @@ def realtime_status():
 
 @app.route('/api/gate_entry', methods=['POST'])
 def gate_entry():
+    """รับ Event จากกล้อง Hikvision"""
     data = request.json
     student_id = data.get('student_id')
     student_name = data.get('student_name')
-    entry_type = data.get('type')
-    school_id = 'SCH001'
+    entry_type = data.get('type', 'checkin')
+    school_id = data.get('school_id', 'SCH001')
     
     camera_type = 'gate_in' if entry_type == 'checkin' else 'gate_out'
     db.add_attendance(student_id, student_name, school_id, camera_type)
     
     current_time = datetime.now().strftime('%H:%M น.')
-    if entry_type == 'checkin':
-        title = '🟢 บุตรของท่านมาถึงโรงเรียนแล้ว'
-        message = f'{student_name} เข้าโรงเรียนเวลา {current_time}'
-    else:
-        title = '🟠 บุตรของท่านออกจากโรงเรียนแล้ว'
-        message = f'{student_name} ออกจากโรงเรียนเวลา {current_time}'
+    title = '🟢 บุตรของท่านมาถึงโรงเรียนแล้ว' if entry_type == 'checkin' else '🟠 บุตรของท่านออกจากโรงเรียนแล้ว'
+    message = f'{student_name} {"เข้า" if entry_type == "checkin" else "ออกจาก"}โรงเรียนเวลา {current_time}'
     
     db.add_notification(school_id, student_id, 'gate', title, message)
     
     line_user_id = db.get_student_line_token(student_id)
-    print(f'[DEBUG] LINE user_id: {line_user_id}', flush=True)
     line_sent = False
     if line_user_id:
         school = db.get_school(school_id)
-        print(f'[DEBUG] School token: {school.get("line_channel_token")[:20] if school and school.get("line_channel_token") else "None"}', flush=True)
         if school and school.get('line_channel_token'):
             from line_oa import LineOA
             line = LineOA(school['line_channel_token'])
             line_sent = line.send_gate_entry(line_user_id, student_name, entry_type, current_time)
-            print(f'[DEBUG] LINE sent: {line_sent}', flush=True)
     
-    return jsonify({
-        'success': True,
-        'message': 'บันทึกและแจ้งเตือนผู้ปกครองสำเร็จ (LINE)',
-        'line_sent': line_sent
-    })
+    cloud_sync.send_attendance(student_id, student_name, camera_type=camera_type)
+    
+    return jsonify({'success': True, 'line_sent': line_sent})
 
 @app.route('/api/student/<student_id>/line_token', methods=['POST'])
 @login_required
@@ -2117,59 +2109,8 @@ def face_recognize():
 
 @app.route('/api/gate/recognize', methods=['POST'])
 def gate_recognize():
-    """Face recognition for gate camera - no login required"""
-    try:
-        data = request.json
-        image_data = data.get('image')
-        entry_type = data.get('type', 'checkin')
-        
-        if not image_data:
-            return jsonify({'success': False, 'message': 'No image data'})
-        
-        # ใช้ Face Recognition System ใหม่
-        results = face_recognition_system.recognize_from_base64(image_data)
-        
-        if results and len(results) > 0:
-            best_match = max(results, key=lambda x: x['confidence'])
-            
-            if best_match['confidence'] > 0.6:  # ความแม่นยำ > 60%
-                student_id = best_match['student_id']
-                students = db.get_students(None)
-                student = next((s for s in students if s['student_id'] == student_id), None)
-                
-                if student:
-                    school_id = student.get('school_id', 'SCH001')
-                    camera_type = 'gate_in' if entry_type == 'checkin' else 'gate_out'
-                    
-                    # บันทึกการเข้า-ออก
-                    db.add_attendance(student_id, student['name'], school_id, camera_type)
-                    
-                    # ส่งแจ้งเตือน LINE
-                    line_user_id = db.get_student_line_token(student_id)
-                    if line_user_id:
-                        current_time = datetime.now().strftime('%H:%M น.')
-                        line_notification.send_gate_notification(
-                            line_user_id, 
-                            student['name'], 
-                            entry_type, 
-                            current_time
-                        )
-                    
-                    # Sync to cloud
-                    cloud_sync.send_attendance(student_id, student['name'], camera_type=camera_type)
-                    
-                    return jsonify({
-                        'success': True,
-                        'student_id': student_id,
-                        'student_name': student['name'],
-                        'confidence': round(best_match['confidence'] * 100, 1),
-                        'type': entry_type,
-                        'line_sent': bool(line_user_id)
-                    })
-        
-        return jsonify({'success': False, 'message': 'ไม่พบใบหน้าที่รู้จัก'})
-    except Exception as e:
-        return jsonify({'success': False, 'message': str(e)})
+    """Face recognition for gate camera - Hikvision Only"""
+    return jsonify({'success': False, 'message': 'กรุณาใช้กล้อง Hikvision สำหรับตรวจจับเข้า-ออก'})
 
 @app.route('/api/gate/stats', methods=['GET'])
 def gate_stats():

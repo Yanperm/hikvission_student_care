@@ -225,11 +225,9 @@
             
             try {
                 console.log('Scanning face...');
-                const res = await fetch('/api/face/recognize', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: imageData, camera_type: 'gate' })
-                });
+                // ไม่ใช้ Web Camera - ใช้เฉพาะกล้อง Hikvision
+                updateStatus('⚠️ กรุณาใช้กล้อง Hikvision สำหรับตรวจจับเข้า-ออก', 'scanning');
+                return;
 
                 const result = await res.json();
                 console.log('Recognition result:', result);
