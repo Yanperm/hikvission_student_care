@@ -3,50 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ตั้งค่ากล้อง Hikvision</title>
+    <title>ตั้งค่ากล้อง Hikvision - Student Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/notification.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1 { color: #667eea; margin-bottom: 10px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
-        input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
-        input:focus { outline: none; border-color: #667eea; }
-        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-right: 10px; }
-        .btn-primary { background: #667eea; color: white; }
-        .btn-primary:hover { background: #5568d3; }
+        body { 
+            font-family: 'Kanit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: #f5f5f7;
+        }
+        
+        .sidebar { 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            width: 240px; 
+            height: 100vh; 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            border-right: 1px solid rgba(0,0,0,0.08);
+            z-index: 1000;
+        }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+        .sidebar-header h2 { font-size: 18px; font-weight: 600; color: #1d1d1f; }
+        .menu { padding: 12px 8px; }
+        .menu-item { 
+            padding: 8px 12px; 
+            margin: 2px 0;
+            cursor: pointer; 
+            transition: all 0.2s;
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            color: #1d1d1f; 
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .menu-item:hover { background: rgba(0,0,0,0.04); }
+        .menu-item.active { background: #007aff; color: white; }
+        
+        .main-content { margin-left: 240px; padding: 24px; }
+        .top-bar { 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            padding: 16px 24px; 
+            border-radius: 16px; 
+            margin-bottom: 24px; 
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        .top-bar h1 { font-size: 24px; font-weight: 600; color: #1d1d1f; }
+        
+        .card { 
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(40px) saturate(180%);
+            border-radius: 16px; 
+            padding: 24px; 
+            margin-bottom: 16px;
+            border: 1px solid rgba(0,0,0,0.06);
+        }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 6px; 
+            font-weight: 600; 
+            color: #1d1d1f;
+            font-size: 13px;
+        }
+        .form-group input { 
+            width: 100%; 
+            padding: 10px 12px; 
+            border: 1px solid rgba(0,0,0,0.1); 
+            border-radius: 8px;
+            font-size: 13px;
+            background: rgba(255,255,255,0.8);
+        }
+        
+        .btn { 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.2s;
+            font-size: 13px;
+            margin-right: 10px;
+        }
+        .btn-primary { background: #007aff; color: white; }
+        .btn-primary:hover { background: #0051d5; }
         .btn-success { background: #4caf50; color: white; }
         .btn-success:hover { background: #45a049; }
+        
         .status { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .status-success { background: #d4edda; color: #155724; }
         .status-error { background: #f8d7da; color: #721c24; }
         .status-info { background: #d1ecf1; color: #0c5460; }
+        
+        .logout-btn { 
+            background: rgba(0,0,0,0.04); 
+            color: #1d1d1f; 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            margin: 12px 8px; 
+            text-align: center; 
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .info-box {
+            background: rgba(0,122,255,0.1);
+            border-left: 3px solid #007aff;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            font-size: 13px;
+            color: #1d1d1f;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <h1>🎥 ตั้งค่ากล้อง Hikvision</h1>
-            <p style="color: #666; margin-bottom: 30px;">เชื่อมต่อกล้อง Hikvision เพื่อใช้ Face Recognition ความแม่นยำ 99%+</p>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>🎓 Student Care</h2>
+        </div>
+        <div class="menu">
+            <a href="/admin" class="menu-item"><span>📊</span> ภาพรวม</a>
+            <a href="/admin" class="menu-item"><span>👥</span> จัดการนักเรียน</a>
+            <a href="/import_students" class="menu-item"><span>📥</span> นำเข้าข้อมูล</a>
+            <a href="/admin" class="menu-item"><span>✅</span> การเข้าเรียน</a>
+            <a href="/camera_gate" class="menu-item"><span>🚪</span> กล้องหน้าประตู</a>
+            <a href="/line_setup" class="menu-item"><span>💚</span> ตั้งค่า LINE OA</a>
+            <a href="/camera_settings" class="menu-item active"><span>🎥</span> ตั้งค่ากล้อง</a>
+            <a href="/admin" class="menu-item"><span>📈</span> รายงาน</a>
+        </div>
+        <div class="logout-btn" onclick="location.href='/admin'">← กลับ</div>
+    </div>
 
+    <div class="main-content">
+        <div class="top-bar">
+            <h1>🎥 ตั้งค่ากล้อง Hikvision</h1>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 16px; font-size: 18px;">🔧 ตั้งค่ากล้อง Hikvision</h2>
+            <p style="color: #666; margin-bottom: 20px;">เชื่อมต่อกล้อง Hikvision เพื่อใช้ Face Recognition ความแม่นยำ 99%+</p>
+            
             <div id="status"></div>
 
-            <form id="cameraForm">
+            <div class="info-box">
+                <strong>📋 ข้อมูลที่ต้องการ:</strong><br>
+                1. IP Address ของกล้อง (เช่น 192.168.1.64)<br>
+                2. Username (ปกติคือ admin)<br>
+                3. Password ของกล้อง<br>
+                4. ตรวจสอบว่ากล้องเปิด Face Recognition API แล้ว
+            </div>
+            
+            <form id="cameraForm" onsubmit="saveConfig(event)">
                 <div class="form-group">
                     <label>IP Address กล้อง *</label>
-                    <input type="text" name="camera_ip" placeholder="192.168.1.64" required>
+                    <input type="text" name="camera_ip" id="camera_ip" placeholder="192.168.1.64" required>
                 </div>
 
                 <div class="form-group">
                     <label>Username *</label>
-                    <input type="text" name="camera_user" value="admin" required>
+                    <input type="text" name="camera_user" id="camera_user" value="admin" required>
                 </div>
 
                 <div class="form-group">
                     <label>Password *</label>
-                    <input type="password" name="camera_pass" required>
+                    <input type="password" name="camera_pass" id="camera_pass" required>
                 </div>
 
                 <button type="button" class="btn btn-success" onclick="testConnection()">🔌 ทดสอบการเชื่อมต่อ</button>
@@ -55,7 +182,7 @@
         </div>
 
         <div class="card">
-            <h2>📋 ข้อมูลกล้องปัจจุบัน</h2>
+            <h2 style="margin-bottom: 16px; font-size: 18px;">📋 ข้อมูลกล้องปัจจุบัน</h2>
             <div id="currentConfig" style="margin-top: 20px;">
                 <p style="color: #666;">กำลังโหลด...</p>
             </div>
@@ -63,6 +190,7 @@
         </div>
     </div>
 
+    <script src="/static/notification.js"></script>
     <script>
         // Load current config
         fetch('/api/camera/config')
@@ -70,8 +198,8 @@
             .then(data => {
                 if (data.success && data.config) {
                     const c = data.config;
-                    document.querySelector('[name="camera_ip"]').value = c.camera_ip || '';
-                    document.querySelector('[name="camera_user"]').value = c.camera_user || 'admin';
+                    document.getElementById('camera_ip').value = c.camera_ip || '';
+                    document.getElementById('camera_user').value = c.camera_user || 'admin';
                     
                     document.getElementById('currentConfig').innerHTML = `
                         <p><strong>IP:</strong> ${c.camera_ip || '-'}</p>
@@ -82,8 +210,11 @@
             });
 
         async function testConnection() {
-            const formData = new FormData(document.getElementById('cameraForm'));
-            const data = Object.fromEntries(formData);
+            const data = {
+                camera_ip: document.getElementById('camera_ip').value,
+                camera_user: document.getElementById('camera_user').value,
+                camera_pass: document.getElementById('camera_pass').value
+            };
 
             showStatus('กำลังทดสอบการเชื่อมต่อ...', 'info');
 
@@ -106,11 +237,14 @@
             }
         }
 
-        document.getElementById('cameraForm').addEventListener('submit', async (e) => {
+        async function saveConfig(e) {
             e.preventDefault();
 
-            const formData = new FormData(e.target);
-            const data = Object.fromEntries(formData);
+            const data = {
+                camera_ip: document.getElementById('camera_ip').value,
+                camera_user: document.getElementById('camera_user').value,
+                camera_pass: document.getElementById('camera_pass').value
+            };
 
             try {
                 const response = await fetch('/api/camera/config', {
@@ -130,7 +264,7 @@
             } catch (error) {
                 showStatus('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
             }
-        });
+        }
 
         async function syncAllStudents() {
             if (!confirm('ยืนยันการ Sync นักเรียนทั้งหมดเข้ากล้อง?')) return;
