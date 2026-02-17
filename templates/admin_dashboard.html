@@ -848,11 +848,13 @@
                 tbody.innerHTML = data.attendance.slice(0, 50).map(a => {
                     const type = a.camera_type === 'gate_in' ? '🟢 เข้าโรงเรียน' : '🟠 ออกโรงเรียน';
                     const status = a.camera_type === 'gate_in' ? 'เข้า' : 'ออก';
+                    // แสดงเวลาตรงๆ ไม่ต้องแปลง
+                    const time = a.timestamp.replace('T', ' ').substring(0, 19);
                     return `
                         <tr>
                             <td>${a.student_id}</td>
                             <td><strong>${a.student_name}</strong></td>
-                            <td>${new Date(a.timestamp).toLocaleString('th-TH')}</td>
+                            <td>${time}</td>
                             <td>${type}</td>
                             <td><span style="color: #4CAF50;">✅ ${status}</span></td>
                         </tr>
