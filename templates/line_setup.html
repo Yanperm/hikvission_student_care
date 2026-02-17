@@ -145,7 +145,9 @@
                 1. เข้า <a href="https://developers.line.biz/console/" target="_blank" style="color: #007aff;">LINE Developers Console</a><br>
                 2. เลือก Provider และ Channel ของคุณ<br>
                 3. ไปที่แท็บ "Messaging API"<br>
-                4. คัดลอก "Channel Access Token" และ "Channel Secret"
+                4. คัดลอก "Channel Access Token" และ "Channel Secret"<br>
+                5. ตั้งค่า Webhook URL: <code id="webhookUrl" style="background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 4px; font-size: 12px;">กำลังโหลด...</code>
+                <button onclick="copyWebhookUrl()" class="btn" style="margin-left: 8px; padding: 4px 12px; background: rgba(0,122,255,0.1); color: #007aff; font-size: 12px;">📋 คัดลอก</button>
             </div>
             
             <form id="lineConfigForm" onsubmit="saveLineConfig(event)" style="margin-bottom: 32px;">
@@ -172,6 +174,18 @@
 
     <script src="/static/notification.js"></script>
     <script>
+        // Get webhook URL
+        const webhookUrl = window.location.origin + '/webhook/line';
+        document.getElementById('webhookUrl').textContent = webhookUrl;
+        
+        function copyWebhookUrl() {
+            const url = document.getElementById('webhookUrl').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('คัดลอก Webhook URL สำเร็จ!', 'success');
+            }).catch(err => {
+                showToast('ไม่สามารถคัดลอกได้', 'error');
+            });
+        }
         async function loadStudents() {
             const res = await fetch('/api/students');
             const data = await res.json();

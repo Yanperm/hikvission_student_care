@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตั้งค่ากล้อง Hikvision</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h1 { color: #667eea; margin-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; }
+        input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 16px; }
+        input:focus { outline: none; border-color: #667eea; }
+        .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-right: 10px; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-success { background: #4caf50; color: white; }
+        .btn-success:hover { background: #45a049; }
+        .status { padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .status-success { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+        .status-info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🎥 ตั้งค่ากล้อง Hikvision</h1>
+            <p style="color: #666; margin-bottom: 30px;">เชื่อมต่อกล้อง Hikvision เพื่อใช้ Face Recognition ความแม่นยำ 99%+</p>
+
+            <div id="status"></div>
+
+            <form id="cameraForm">
+                <div class="form-group">
+                    <label>IP Address กล้อง *</label>
+                    <input type="text" name="camera_ip" placeholder="192.168.1.64" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" name="camera_user" value="admin" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" name="camera_pass" required>
+                </div>
+
+                <button type="button" class="btn btn-success" onclick="testConnection()">🔌 ทดสอบการเชื่อมต่อ</button>
+                <button type="submit" class="btn btn-primary">💾 บันทึก</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>📋 ข้อมูลกล้องปัจจุบัน</h2>
+            <div id="currentConfig" style="margin-top: 20px;">
+                <p style="color: #666;">กำลังโหลด...</p>
+            </div>
+            <button class="btn btn-primary" onclick="syncAllStudents()" style="margin-top: 20px;">🔄 Sync นักเรียนทั้งหมดเข้ากล้อง</button>
+        </div>
+    </div>
+
+    <script>
+        // Load current config
+        fetch('/api/camera/config')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.config) {
+                    const c = data.config;
+                    document.querySelector('[name="camera_ip"]').value = c.camera_ip || '';
+                    document.querySelector('[name="camera_user"]').value = c.camera_user || 'admin';
+                    
+                    document.getElementById('currentConfig').innerHTML = `
+                        <p><strong>IP:</strong> ${c.camera_ip || '-'}</p>
+                        <p><strong>Username:</strong> ${c.camera_user || '-'}</p>
+                        <p><strong>สถานะ:</strong> <span style="color: ${c.camera_ip ? '#4caf50' : '#999'}">${c.camera_ip ? '✅ ตั้งค่าแล้ว' : '⚠️ ยังไม่ได้ตั้งค่า'}</span></p>
+                    `;
+                }
+            });
+
+        async function testConnection() {
+            const formData = new FormData(document.getElementById('cameraForm'));
+            const data = Object.fromEntries(formData);
+
+            showStatus('กำลังทดสอบการเชื่อมต่อ...', 'info');
+
+            try {
+                const response = await fetch('/api/camera/test', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('✅ เชื่อมต่อกล้องสำเร็จ!', 'success');
+                } else {
+                    showStatus('❌ ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        document.getElementById('cameraForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/api/camera/config', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus('✅ บันทึกการตั้งค่าสำเร็จ!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showStatus('❌ ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        });
+
+        async function syncAllStudents() {
+            if (!confirm('ยืนยันการ Sync นักเรียนทั้งหมดเข้ากล้อง?')) return;
+
+            showStatus('กำลัง Sync นักเรียนเข้ากล้อง...', 'info');
+
+            try {
+                const response = await fetch('/api/camera/sync_students', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus(`✅ Sync สำเร็จ ${result.success}/${result.total} คน`, 'success');
+                } else {
+                    showStatus('❌ ' + result.message, 'error');
+                }
+            } catch (error) {
+                showStatus('❌ เกิดข้อผิดพลาด: ' + error.message, 'error');
+            }
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = `<div class="status status-${type}">${message}</div>`;
+            if (type !== 'info') {
+                setTimeout(() => status.innerHTML = '', 5000);
+            }
+        }
+    </script>
+</body>
+</html>
