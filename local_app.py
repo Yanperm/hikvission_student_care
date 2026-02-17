@@ -208,10 +208,28 @@ def admin_old():
 @app.route('/student_image/<student_id>')
 def student_image(student_id):
     from flask import send_file
+    from PIL import Image, ImageDraw
+    from io import BytesIO
+    
     image_path = f'data/students/{student_id}.jpg'
     if os.path.exists(image_path):
         return send_file(image_path, mimetype='image/jpeg')
-    return '', 404
+    
+    # สร้างรูป placeholder
+    img = Image.new('RGB', (200, 200), color=(220, 220, 220))
+    draw = ImageDraw.Draw(img)
+    
+    # วาดวงกลม (หัวคน)
+    draw.ellipse([60, 40, 140, 120], fill=(180, 180, 180))
+    # วาดร่างกาย
+    draw.ellipse([50, 100, 150, 180], fill=(180, 180, 180))
+    
+    # แปลงเป็น bytes
+    buffer = BytesIO()
+    img.save(buffer, format='JPEG')
+    buffer.seek(0)
+    
+    return send_file(buffer, mimetype='image/jpeg')
 
 @app.route('/sync_all_students', methods=['POST'])
 @login_required
