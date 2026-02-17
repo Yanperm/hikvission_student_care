@@ -287,17 +287,19 @@ class Database:
     
     def get_user(self, username):
         conn = self.get_connection()
-        cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
-        
-        if self.db_type == 'postgresql':
-            cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
-        else:
-            cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
-        
-        user = cursor.fetchone()
-        cursor.close()
-        self.close_connection(conn)
-        return dict(user) if user else None
+        try:
+            cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
+            
+            if self.db_type == 'postgresql':
+                cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
+            else:
+                cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+            
+            user = cursor.fetchone()
+            cursor.close()
+            return dict(user) if user else None
+        finally:
+            self.close_connection(conn)
     
     def add_user(self, username, password, name, role, school_id=None):
         conn = self.get_connection()
@@ -321,23 +323,25 @@ class Database:
     
     def get_students(self, school_id=None):
         conn = self.get_connection()
-        cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
-        
-        if self.db_type == 'postgresql':
-            if school_id:
-                cursor.execute('SELECT * FROM students WHERE school_id = %s', (school_id,))
+        try:
+            cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
+            
+            if self.db_type == 'postgresql':
+                if school_id:
+                    cursor.execute('SELECT * FROM students WHERE school_id = %s', (school_id,))
+                else:
+                    cursor.execute('SELECT * FROM students')
             else:
-                cursor.execute('SELECT * FROM students')
-        else:
-            if school_id:
-                cursor.execute('SELECT * FROM students WHERE school_id = ?', (school_id,))
-            else:
-                cursor.execute('SELECT * FROM students')
-        
-        students = [dict(row) for row in cursor.fetchall()]
-        cursor.close()
-        self.close_connection(conn)
-        return students
+                if school_id:
+                    cursor.execute('SELECT * FROM students WHERE school_id = ?', (school_id,))
+                else:
+                    cursor.execute('SELECT * FROM students')
+            
+            students = [dict(row) for row in cursor.fetchall()]
+            cursor.close()
+            return students
+        finally:
+            self.close_connection(conn)
     
     def add_student(self, student_id, name, class_name, school_id, image_path, parent_line_token=None):
         conn = self.get_connection()
@@ -457,17 +461,19 @@ class Database:
     
     def get_student_line_token(self, student_id):
         conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        if self.db_type == 'postgresql':
-            cursor.execute('SELECT parent_line_token FROM students WHERE student_id = %s', (student_id,))
-        else:
-            cursor.execute('SELECT parent_line_token FROM students WHERE student_id = ?', (student_id,))
-        
-        result = cursor.fetchone()
-        cursor.close()
-        self.close_connection(conn)
-        return result[0] if result and result[0] else None
+        try:
+            cursor = conn.cursor()
+            
+            if self.db_type == 'postgresql':
+                cursor.execute('SELECT parent_line_token FROM students WHERE student_id = %s', (student_id,))
+            else:
+                cursor.execute('SELECT parent_line_token FROM students WHERE student_id = ?', (student_id,))
+            
+            result = cursor.fetchone()
+            cursor.close()
+            return result[0] if result and result[0] else None
+        finally:
+            self.close_connection(conn)
     
     def update_student_line_token(self, student_id, line_token):
         conn = self.get_connection()
@@ -510,30 +516,34 @@ class Database:
     
     def get_all_schools(self):
         conn = self.get_connection()
-        cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
-        cursor.execute('SELECT * FROM schools ORDER BY created_at DESC')
-        schools = [dict(row) for row in cursor.fetchall()]
-        cursor.close()
-        self.close_connection(conn)
-        return schools
+        try:
+            cursor = conn.cursor() if self.db_type == 'sqlite' else conn.cursor(cursor_factory=self.RealDictCursor)
+            cursor.execute('SELECT * FROM schools ORDER BY created_at DESC')
+            schools = [dict(row) for row in cursor.fetchall()]
+            cursor.close()
+            return schools
+        finally:
+            self.close_connection(conn)
     
     def get_stats(self):
         conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        cursor.execute("SELECT COUNT(*) FROM schools WHERE status = 'active'")
-        total_schools = cursor.fetchone()[0]
-        
-        cursor.execute("SELECT COUNT(*) FROM students")
-        total_students = cursor.fetchone()[0]
-        
-        cursor.close()
-        self.close_connection(conn)
-        
-        return {
-            'total_schools': total_schools,
-            'total_students': total_students
-        }
+        try:
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT COUNT(*) FROM schools WHERE status = 'active'")
+            total_schools = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM students")
+            total_students = cursor.fetchone()[0]
+            
+            cursor.close()
+            
+            return {
+                'total_schools': total_schools,
+                'total_students': total_students
+            }
+        finally:
+            self.close_connection(conn)
 
 db = Database()
 print(f"✅ Database initialized: {db.db_type.upper()} (Pool: {db.pool is not None})")
