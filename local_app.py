@@ -1172,7 +1172,10 @@ def get_dashboard_stats():
     cursor.execute('SELECT COUNT(*) FROM behavior WHERE school_id = %s AND severity IN (%s, %s)', (school_id, 'warning', 'danger'))
     behavior_alerts = cursor.fetchone()[0]
     
-    cursor.execute('SELECT COUNT(*) FROM notifications WHERE school_id = %s AND read = 0', (school_id,))
+    if db.db_type == 'postgresql':
+        cursor.execute('SELECT COUNT(*) FROM notifications WHERE school_id = %s AND read = FALSE', (school_id,))
+    else:
+        cursor.execute('SELECT COUNT(*) FROM notifications WHERE school_id = %s AND read = 0', (school_id,))
     unread_notifications = cursor.fetchone()[0]
     
     conn.close()
