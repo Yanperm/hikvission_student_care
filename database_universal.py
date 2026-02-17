@@ -32,8 +32,8 @@ class Database:
             self.psycopg2 = psycopg2
             self.RealDictCursor = RealDictCursor
             
-            self.pool = pool.SimpleConnectionPool(
-                1, 50,
+            self.pool = pool.ThreadedConnectionPool(
+                10, 100,
                 host=os.environ.get('DB_HOST'),
                 database=os.environ.get('DB_NAME', 'postgres'),
                 user=os.environ.get('DB_USER'),
