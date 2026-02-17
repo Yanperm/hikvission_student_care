@@ -2134,7 +2134,13 @@ def gate_recognize():
 def gate_stats():
     """Get today's gate statistics - no login required"""
     try:
-        today = datetime.now().strftime('%Y-%m-%d')
+        from datetime import timezone, timedelta
+        
+        # ใช้ timezone +07:00 (Bangkok)
+        tz = timezone(timedelta(hours=7))
+        now = datetime.now(tz)
+        today = now.strftime('%Y-%m-%d')
+        
         attendance = db.get_attendance('SCH001')
         
         checkin = 0
@@ -2145,7 +2151,11 @@ def gate_stats():
             if isinstance(timestamp, str):
                 date_part = timestamp.split()[0] if ' ' in timestamp else timestamp[:10]
             else:
-                date_part = timestamp.strftime('%Y-%m-%d')
+                # Convert to Bangkok timezone
+                if timestamp.tzinfo is None:
+                    timestamp = timestamp.replace(tzinfo=timezone.utc)
+                timestamp_bkk = timestamp.astimezone(tz)
+                date_part = timestamp_bkk.strftime('%Y-%m-%d')
             
             if date_part == today:
                 if a['camera_type'] == 'gate_in':
