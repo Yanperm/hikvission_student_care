@@ -171,14 +171,30 @@
 
     <script src="/static/notification.js"></script>
     <script>
-        let video = document.getElementById('video');
-        let canvas = document.getElementById('canvas');
-        let overlay = document.getElementById('overlay');
-        let stream = null;
-        let isScanning = false;
-        let checkedToday = new Set();
-        let currentMode = 'checkin';
         let logCount = 0;
+        let currentMode = 'checkin';
+
+        // โหลดการตั้งค่ากล้อง
+        async function loadCameraConfig() {
+            const res = await fetch('/api/camera/config');
+            const data = await res.json();
+            
+            if (!data.success || !data.config.camera_ip) {
+                updateStatus('⚠️ กรุณาตั้งค่ากล้อง Hikvision ก่อน', 'scanning');
+                document.querySelector('.video-container').innerHTML = `
+                    <div style="padding: 60px; text-align: center; background: rgba(0,0,0,0.05); border-radius: 12px;">
+                        <h2 style="margin-bottom: 20px;">⚠️ ยังไม่ได้ตั้งค่ากล้อง</h2>
+                        <p style="margin-bottom: 20px; color: #666;">กรุณาตั้งค่ากล้อง Hikvision ก่อนใช้งาน</p>
+                        <a href="/camera_settings" class="btn btn-primary">ไปตั้งค่ากล้อง</a>
+                    </div>
+                `;
+                return false;
+            }
+            
+            updateStatus(`✅ เชื่อมต่อกล้อง ${data.config.camera_ip}`, 'success');
+            startListening();
+            return true;
+        }
 
         function setMode(mode) {
             currentMode = mode;
@@ -186,128 +202,57 @@
             showToast('เปลี่ยนโหมดแล้ว', 'info');
         }
 
-        async function startCamera() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                
-                video.onloadedmetadata = () => {
-                    overlay.width = video.videoWidth;
-                    overlay.height = video.videoHeight;
-                    overlay.style.width = video.offsetWidth + 'px';
-                    overlay.style.height = video.offsetHeight + 'px';
-                };
-                
-                isScanning = true;
-                scanFaces();
-                updateStatus('กำลังสแกน...', 'scanning');
-            } catch (err) {
-                showToast('ไม่สามารถเปิดกล้อง: ' + err, 'error');
-            }
+        function startCamera() {
+            showToast('ระบบใช้กล้อง Hikvision เท่านั้น', 'info');
         }
 
         function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                video.srcObject = null;
-                isScanning = false;
-            }
+            showToast('ระบบใช้กล้อง Hikvision เท่านั้น', 'info');
         }
 
-        async function scanFaces() {
-            if (!isScanning) return;
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            const imageData = canvas.toDataURL('image/jpeg', 0.95);
-            
-            try {
-                console.log('Scanning face...');
-                // ไม่ใช้ Web Camera - ใช้เฉพาะกล้อง Hikvision
-                updateStatus('⚠️ กรุณาใช้กล้อง Hikvision สำหรับตรวจจับเข้า-ออก', 'scanning');
-                return;
-
-                const result = await res.json();
-                console.log('Recognition result:', result);
-
-                // Draw face box
-                const ctx = overlay.getContext('2d');
-                ctx.clearRect(0, 0, overlay.width, overlay.height);
+        // ฟังก์ชันรับ Event จากกล้อง (Polling)
+        async function startListening() {
+            setInterval(async () => {
+                // ตรวจสอบ log ล่าสุดจาก API
+                const res = await fetch('/api/gate/recent');
+                const data = await res.json();
                 
-                if (result.face_location) {
-                    const [top, right, bottom, left] = result.face_location;
-                    const scaleX = overlay.width / canvas.width;
-                    const scaleY = overlay.height / canvas.height;
+                if (data.success && data.logs.length > 0) {
+                    // แสดง log ล่าสุด
+                    const list = document.getElementById('logList');
+                    list.innerHTML = '';
                     
-                    ctx.strokeStyle = result.success ? '#34c759' : '#007aff';
-                    ctx.lineWidth = 3;
-                    ctx.strokeRect(left * scaleX, top * scaleY, (right - left) * scaleX, (bottom - top) * scaleY);
+                    data.logs.forEach(log => {
+                        addLogItem(log.student_id, log.student_name, log.type, log.timestamp);
+                    });
                     
-                    if (result.student_name) {
-                        ctx.fillStyle = result.success ? '#34c759' : '#007aff';
-                        ctx.font = 'bold 16px Kanit';
-                        ctx.fillText(result.student_name, left * scaleX, top * scaleY - 10);
-                    }
+                    logCount = data.logs.length;
+                    document.getElementById('count').textContent = logCount;
                 }
-
-                if (result.success && result.student_id) {
-                    const key = result.student_id + '_' + currentMode;
-                    if (!checkedToday.has(key)) {
-                        checkedToday.add(key);
-                        await processEntry(result.student_id, result.student_name, imageData);
-                    }
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-
-            setTimeout(scanFaces, 2000);
-        }
-
-        async function processEntry(studentId, studentName, imageData) {
-            console.log('Processing entry:', studentId, studentName, currentMode);
-            
-            const res = await fetch('/api/gate_entry', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    student_id: studentId,
-                    student_name: studentName,
-                    type: currentMode
-                })
-            });
-            
-            const result = await res.json();
-            console.log('Gate API result:', result);
-            
-            const text = currentMode === 'checkin' ? 'เข้าโรงเรียน' : 'ออกจากโรงเรียน';
-            addLog(studentId, studentName, currentMode);
-            updateStatus('✅ ' + studentName + ' ' + text, 'success');
-            
-            if (result.line_sent) {
-                showToast(studentName + ' ' + text + ' - แจ้งผู้ปกครองแล้ว', 'success');
-            } else {
-                showToast(studentName + ' ' + text, 'success');
-            }
-            
-            setTimeout(() => updateStatus('กำลังสแกน...', 'scanning'), 3000);
+            }, 3000); // ตรวจสอบทุก 3 วินาที
         }
 
         function addLog(studentId, studentName, type) {
-            const list = document.getElementById('logList');
             const time = new Date().toLocaleTimeString('th-TH');
+            addLogItem(studentId, studentName, type, time);
+        }
+
+        function addLogItem(studentId, studentName, type, timestamp) {
+            const list = document.getElementById('logList');
             const item = document.createElement('div');
             item.className = 'log-item';
             
             const icon = type === 'checkin' ? '🟢' : '🟠';
             const text = type === 'checkin' ? 'เข้า' : 'ออก';
+            const time = typeof timestamp === 'string' ? new Date(timestamp).toLocaleTimeString('th-TH') : timestamp;
             
             item.innerHTML = `${icon} <strong>${studentName}</strong><br><small>${studentId} | ${text} ${time}</small>`;
-            list.insertBefore(item, list.firstChild);
-            logCount++;
-            document.getElementById('count').textContent = logCount;
+            
+            // เช็คว่ามีอยู่แล้วหรือไม่
+            const existing = Array.from(list.children).find(el => el.innerHTML === item.innerHTML);
+            if (!existing) {
+                list.insertBefore(item, list.firstChild);
+            }
         }
 
         function updateStatus(message, type) {
@@ -316,7 +261,8 @@
             status.className = 'status ' + type;
         }
 
-        startCamera();
+        // เริ่มต้น
+        loadCameraConfig();
     </script>
 </body>
 </html>
