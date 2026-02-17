@@ -4,6 +4,7 @@ from local_client import CloudSync
 import os
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
+import threading
 
 # Load environment variables
 load_dotenv()
@@ -52,6 +53,26 @@ socketio = init_socketio(app)
 # AWS Cloud API URL
 CLOUD_API_URL = os.environ.get('CLOUD_API_URL', 'http://localhost:8080')
 cloud_sync = CloudSync(CLOUD_API_URL)
+
+# Hikvision Camera Setup
+CAMERA_IP = os.environ.get('CAMERA_IP', '192.168.1.64')
+CAMERA_USER = os.environ.get('CAMERA_USER', 'admin')
+CAMERA_PASS = os.environ.get('CAMERA_PASS', 'admin')
+USE_HIKVISION = os.environ.get('USE_HIKVISION', 'false').lower() == 'true'
+
+hikvision_camera = None
+if USE_HIKVISION:
+    try:
+        from hikvision_face_api import init_hikvision
+        hikvision_camera = init_hikvision(CAMERA_IP, CAMERA_USER, CAMERA_PASS)
+        if hikvision_camera.test_connection():
+            print("✅ Hikvision Camera Connected")
+        else:
+            print("⚠️ Hikvision Camera Connection Failed")
+            hikvision_camera = None
+    except Exception as e:
+        print(f"⚠️ Hikvision Camera Error: {str(e)}")
+        hikvision_camera = None
 
 # Login required decorator
 def login_required(f):
@@ -222,6 +243,13 @@ def delete_student(student_id):
     global face_cache
     if student_id in face_cache:
         del face_cache[student_id]
+    
+    # ลบจาก Hikvision Camera
+    if hikvision_camera:
+        try:
+            hikvision_camera.delete_face(student_id)
+        except Exception as e:
+            print(f"Hikvision Delete Error: {str(e)}")
     
     # ลบจาก database
     db.delete_student(student_id)
@@ -993,7 +1021,17 @@ def add_student():
             db.add_student(student_id, name, class_name, school_id, image_path)
             message = f'เพิ่มนักเรียน {name} สำเร็จ'
         
+        # Sync to Cloud
         cloud_sync.sync_student(student_id, name, class_name, image_path)
+        
+        # Sync to Hikvision Camera
+        if hikvision_camera:
+            try:
+                result = hikvision_camera.add_face(student_id, name, image_path)
+                if result['success']:
+                    message += ' + Sync ไปกล้องสำเร็จ'
+            except Exception as e:
+                print(f"Hikvision Sync Error: {str(e)}")
         
         return jsonify({'success': True, 'message': message})
     except Exception as e:
@@ -2807,6 +2845,52 @@ if __name__ == '__main__':
     os.makedirs('data/students', exist_ok=True)
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
+    
+    # Start Hikvision Event Listener
+    if hikvision_camera:
+        def handle_face_detection(result):
+            try:
+                school_id = 'SCH001'  # หรือดึงจาก session/config
+                
+                # บันทึกการเข้าเรียน
+                db.add_attendance(
+                    result['student_id'],
+                    result['name'],
+                    school_id,
+                    'hikvision_camera'
+                )
+                
+                # ส่งแจ้งเตือน LINE
+                line_user_id = db.get_student_line_token(result['student_id'])
+                if line_user_id:
+                    school = db.get_school(school_id)
+                    if school and school.get('line_channel_token'):
+                        from line_oa import LineOA
+                        line = LineOA(school['line_channel_token'])
+                        line.send_message(line_user_id, f"""💚 บุตรของท่านมาถึงโรงเรียนแล้ว
+
+👤 {result['name']}
+🎯 ความแม่นยำ: {result['confidence']*100:.1f}%
+⏰ เวลา: {datetime.now().strftime('%H:%M น.')}
+
+✅ ตรวจจับโดยกล้อง Hikvision""")
+                
+                # Sync to Cloud
+                cloud_sync.send_attendance(result['student_id'], result['name'], camera_type='hikvision_camera')
+                
+                print(f"✅ บันทึกการเข้าเรียน: {result['name']} ({result['confidence']*100:.1f}%)")
+            
+            except Exception as e:
+                print(f"❌ Error handling face detection: {str(e)}")
+        
+        # เริ่ม Event Listener ใน Thread แยก
+        event_thread = threading.Thread(
+            target=hikvision_camera.get_face_detection_events,
+            args=(handle_face_detection,),
+            daemon=True
+        )
+        event_thread.start()
+        print("🎬 Hikvision Event Listener Started")
     
     # Use socketio.run instead of app.run
     socketio.run(app, host='0.0.0.0', port=port, debug=True, allow_unsafe_werkzeug=True)
