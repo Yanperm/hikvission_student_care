@@ -2135,10 +2135,23 @@ def gate_stats():
     """Get today's gate statistics - no login required"""
     try:
         today = datetime.now().strftime('%Y-%m-%d')
-        attendance = db.get_attendance(None)  # All schools
+        attendance = db.get_attendance('SCH001')
         
-        checkin = len([a for a in attendance if a['camera_type'] == 'gate_in' and a['timestamp'].startswith(today)])
-        checkout = len([a for a in attendance if a['camera_type'] == 'gate_out' and a['timestamp'].startswith(today)])
+        checkin = 0
+        checkout = 0
+        
+        for a in attendance:
+            timestamp = a['timestamp']
+            if isinstance(timestamp, str):
+                date_part = timestamp.split()[0] if ' ' in timestamp else timestamp[:10]
+            else:
+                date_part = timestamp.strftime('%Y-%m-%d')
+            
+            if date_part == today:
+                if a['camera_type'] == 'gate_in':
+                    checkin += 1
+                elif a['camera_type'] == 'gate_out':
+                    checkout += 1
         
         return jsonify({
             'success': True,
