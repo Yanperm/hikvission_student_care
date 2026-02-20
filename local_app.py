@@ -2958,6 +2958,16 @@ def delete_backup():
     except Exception as e:
         return jsonify({'success': False, 'message': str(e)})
 
+@app.route('/api/db/status')
+@login_required
+def db_status():
+    return jsonify({
+        'db_type': db.db_type.upper(),
+        'host': os.environ.get('DB_HOST', 'localhost') if db.db_type == 'postgresql' else 'local file',
+        'database': os.environ.get('DB_NAME', 'postgres') if db.db_type == 'postgresql' else 'data/database.db',
+        'pool': db.pool is not None
+    })
+
 if __name__ == '__main__':
     os.makedirs('data/students', exist_ok=True)
     port = int(os.environ.get('PORT', 5000))

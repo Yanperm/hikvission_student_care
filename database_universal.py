@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 try:
     from security.password_manager import password_manager
