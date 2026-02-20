@@ -113,7 +113,7 @@ def api_login():
     
     user = db.get_user(username)
     
-    if user and user['password'] == password:
+    if user and password_manager.verify_password(password, user['password']):
         session['user'] = username
         session['role'] = user['role']
         session['name'] = user['name']
