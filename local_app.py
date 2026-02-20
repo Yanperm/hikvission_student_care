@@ -3,8 +3,25 @@ from functools import wraps
 from local_client import CloudSync
 import os
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import threading
+import time
+from collections import defaultdict
+
+# Bangkok timezone
+BKK = timezone(timedelta(hours=7))
+def now_bkk():
+    return datetime.now(BKK)
+
+# Simple rate limiter
+_login_attempts = defaultdict(list)
+def is_rate_limited(ip, max_attempts=5, window=300):
+    now = time.time()
+    _login_attempts[ip] = [t for t in _login_attempts[ip] if now - t < window]
+    if len(_login_attempts[ip]) >= max_attempts:
+        return True
+    _login_attempts[ip].append(now)
+    return False
 
 # Load environment variables
 load_dotenv()
@@ -16,6 +33,15 @@ except Exception as e:
     print(f"Database initialization failed: {str(e)}")
     print("Falling back to original database")
     from database import db
+
+try:
+    from security.password_manager import password_manager
+except:
+    from werkzeug.security import generate_password_hash, check_password_hash
+    class _PM:
+        def verify_password(self, pw, hashed): return check_password_hash(hashed, pw)
+        def hash_password(self, pw): return generate_password_hash(pw)
+    password_manager = _PM()
 from line_oa import line_oa
 from face_recognition_system import face_recognition_system
 from line_notification import line_notification
@@ -107,6 +133,10 @@ def login():
 
 @app.route('/api/login', methods=['POST'])
 def api_login():
+    ip = request.remote_addr
+    if is_rate_limited(ip):
+        return jsonify({'success': False, 'message': 'Too many attempts. Try again in 5 minutes.'}), 429
+    
     data = request.json
     username = data.get('username')
     password = data.get('password')
@@ -1790,7 +1820,7 @@ def gate_entry():
         camera_type = 'gate_in' if entry_type == 'checkin' else 'gate_out'
         db.add_attendance(student_id, student_name, school_id, camera_type)
         
-        current_time = datetime.now().strftime('%H:%M')
+        current_time = now_bkk().strftime('%H:%M')
         
         return jsonify({
             'success': True,
@@ -2138,7 +2168,7 @@ def gate_stats():
         
         # ใช้ timezone +07:00 (Bangkok)
         tz = timezone(timedelta(hours=7))
-        now = datetime.now(tz)
+        now = now_bkk()
         today = now.strftime('%Y-%m-%d')
         
         attendance = db.get_attendance('SCH001')
