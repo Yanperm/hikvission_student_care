@@ -113,7 +113,7 @@ def super_admin_required(f):
 
 # Helper functions
 def get_current_school_id():
-    return session.get('school_id', 'SCH001')
+    return session.get('school_id') or 'SCH001'
 
 @app.route('/')
 def index():
@@ -2974,4 +2974,4 @@ if __name__ == '__main__':
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
     
     # Use socketio.run instead of app.run
-    socketio.run(app, host='0.0.0.0', port=port, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=port, debug=debug, allow_unsafe_werkzeug=True)
